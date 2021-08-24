@@ -12,7 +12,7 @@ package mvc
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/youhei-yp/wing/logger"
+	"github.com/wengoldx/wing/logger"
 )
 
 // HSet set the string value of a hash field.

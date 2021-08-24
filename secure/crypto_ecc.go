@@ -14,7 +14,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"github.com/youhei-yp/wing/invar"
+	"github.com/wengoldx/wing/invar"
 	"math/big"
 )
 

@@ -13,7 +13,7 @@ package comm
 import (
 	"container/list"
 	"fmt"
-	"github.com/youhei-yp/wing/invar"
+	"github.com/wengoldx/wing/invar"
 	"sync"
 )
 

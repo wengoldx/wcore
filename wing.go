@@ -13,13 +13,13 @@ package wing
 // package main
 
 // import (
-// 	_ "github.com/youhei-yp/wing/apis"
-// 	_ "github.com/youhei-yp/wing/comm"
-// 	_ "github.com/youhei-yp/wing/invar"
-// 	_ "github.com/youhei-yp/wing/logger"
-// 	_ "github.com/youhei-yp/wing/mvc"
-// 	_ "github.com/youhei-yp/wing/secure"
-// 	_ "github.com/youhei-yp/wing/wechat"
+// 	_ "github.com/wengoldx/wing/apis"
+// 	_ "github.com/wengoldx/wing/comm"
+// 	_ "github.com/wengoldx/wing/invar"
+// 	_ "github.com/wengoldx/wing/logger"
+// 	_ "github.com/wengoldx/wing/mvc"
+// 	_ "github.com/wengoldx/wing/secure"
+// 	_ "github.com/wengoldx/wing/wechat"
 // )
 
 // func main() {}

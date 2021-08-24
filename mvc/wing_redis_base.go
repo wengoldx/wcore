@@ -12,8 +12,8 @@ package mvc
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/youhei-yp/wing/invar"
-	"github.com/youhei-yp/wing/logger"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
 )
 
 // Set set a value of a key.

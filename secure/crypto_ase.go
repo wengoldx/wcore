@@ -13,7 +13,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
-	"github.com/youhei-yp/wing/invar"
+	"github.com/wengoldx/wing/invar"
 	"math/rand"
 	"time"
 )

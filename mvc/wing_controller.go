@@ -15,8 +15,8 @@ import (
 	"encoding/xml"
 	"github.com/astaxie/beego"
 	"github.com/go-playground/validator/v10"
-	"github.com/youhei-yp/wing/invar"
-	"github.com/youhei-yp/wing/logger"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
 	"strings"
 )
 

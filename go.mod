@@ -1,4 +1,4 @@
-module github.com/youhei-yp/wing
+module github.com/wengoldx/wing
 
 go 1.14
 

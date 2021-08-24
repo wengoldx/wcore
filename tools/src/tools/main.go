@@ -13,7 +13,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/youhei-yp/wing/secure"
+	"github.com/wengoldx/wing/secure"
 	"log"
 	"os"
 	"time"

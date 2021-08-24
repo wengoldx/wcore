@@ -14,7 +14,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/astaxie/beego"
-	"github.com/youhei-yp/wing/invar"
+	"github.com/wengoldx/wing/invar"
 	"reflect"
 	"strings"
 )

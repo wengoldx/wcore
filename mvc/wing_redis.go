@@ -13,8 +13,8 @@ package mvc
 import (
 	"github.com/astaxie/beego"
 	"github.com/garyburd/redigo/redis"
-	"github.com/youhei-yp/wing/invar"
-	"github.com/youhei-yp/wing/logger"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
 )
 
 // WingRedisConn content provider to support redis utils

@@ -12,7 +12,7 @@ package secure
 
 import (
 	"fmt"
-	"github.com/youhei-yp/wing/invar"
+	"github.com/wengoldx/wing/invar"
 	"math/rand"
 	"time"
 )

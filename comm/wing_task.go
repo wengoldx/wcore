@@ -11,7 +11,7 @@
 package comm
 
 import (
-	"github.com/youhei-yp/wing/logger"
+	"github.com/wengoldx/wing/logger"
 	"time"
 )
 

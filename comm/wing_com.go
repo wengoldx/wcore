@@ -21,7 +21,7 @@ import (
 	"github.com/astaxie/beego/plugins/cors"
 	"github.com/huichen/sego"
 	"github.com/mozillazg/go-pinyin"
-	"github.com/youhei-yp/wing/logger"
+	"github.com/wengoldx/wing/logger"
 	"os"
 	"os/signal"
 	"regexp"
