@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/plugins/cors"
 	"github.com/huichen/sego"
 	"github.com/mozillazg/go-pinyin"
@@ -232,4 +233,18 @@ func AccessAllowOriginByLocal(category int) {
 		localhosturl := fmt.Sprintf("http://127.0.0.1:%v/", beego.BConfig.Listen.HTTPPort)
 		AccessAllowOriginBy(category, localhosturl)
 	}
+}
+
+// ExecuteServer start and excute backend server
+func ExecuteServer() {
+	IgnoreSysSignalPIPE()
+	AccessAllowOriginBy(beego.BeforeRouter, "*")
+	AccessAllowOriginBy(beego.BeforeStatic, "*")
+
+	// just output log to file on prod mode
+	if beego.BConfig.RunMode != "dev" &&
+		logger.GetLevel() != logger.LevelDebug {
+		beego.BeeLogger.DelLogger(logs.AdapterConsole)
+	}
+	beego.Run()
 }
