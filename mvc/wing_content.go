@@ -46,7 +46,7 @@ var (
 )
 
 // readDBCofnigs read database params from config file, than verify them if empty
-func readDBCofnigs(usingTCP bool) (string, string, string, string, error) {
+func readDBCofnigs() (string, string, string, string, error) {
 	user := beego.AppConfig.String(dbConfigUser)
 	pwd := beego.AppConfig.String(dbConfigPwd)
 	host := beego.AppConfig.String(dbConfigHost)
@@ -70,22 +70,21 @@ func readDBCofnigs(usingTCP bool) (string, string, string, string, error) {
 //	user = "root"
 //	pwd  = "123456"
 //	~
-func OpenDatabase(charset string, useTCP ...bool) error {
-	isUseTCP := (useTCP != nil && len(useTCP) > 0 && useTCP[0])
-	dbuser, dbpwd, dbhost, dbname, err := readDBCofnigs(isUseTCP)
+func OpenDatabase(charset string) error {
+	dbuser, dbpwd, dbhost, dbname, err := readDBCofnigs()
 	if err != nil {
 		return err
 	}
 
 	dsn := ""
-	if isUseTCP && len(dbhost) > 0 {
+	if len(dbhost) > 0 /* configed database host, using TCP to connect */ {
 		// conntect with remote host database server
 		dsn = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s", dbuser, dbpwd, dbhost, dbname, charset)
 	} else {
 		// just connect local database server
 		dsn = fmt.Sprintf("%s:%s@/%s?charset=%s", dbuser, dbpwd, dbname, charset)
 	}
-	logger.D("Database source name:", dsn)
+	logger.D("DSN:", dsn)
 
 	// open and connect database
 	con, err := sql.Open("mysql", dsn)
