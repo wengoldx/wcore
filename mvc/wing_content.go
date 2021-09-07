@@ -18,6 +18,15 @@ import (
 	"github.com/wengoldx/wing/logger"
 	"reflect"
 	"strings"
+	// ----------------------------------------
+	// NOTIC :
+	//
+	// import the follows database drivers when using WingProvider.
+	//
+	// _ "github.com/go-sql-driver/mysql"   // usr fot mysql
+	// _ "github.com/denisenkom/go-mssqldb" // use for sql server 2017 ~ 2019
+	//
+	// ----------------------------------------
 )
 
 // WingProvider content provider to support database utils
@@ -29,33 +38,69 @@ type WingProvider struct {
 type ScanCallback func(rows *sql.Rows) error
 
 const (
-	dbConfigUser = "database::user" // configs key of database user
-	dbConfigPwd  = "database::pwd"  // configs key of database password
-	dbConfigHost = "database::host" // configs key of database host and port
-	dbConfigName = "database::name" // configs key of database name
+	/* MySQL */
+	mysqlConfigUser = "database::user" // configs key of mysql database user
+	mysqlConfigPwd  = "database::pwd"  // configs key of mysql database password
+	mysqlConfigHost = "database::host" // configs key of mysql database host and port
+	mysqlConfigName = "database::name" // configs key of mysql database name
+
+	/* Microsoft SQL Server */
+	mssqlConfigUser = "mssqldb::user" // configs key of mssql database user
+	mssqlConfigPwd  = "mssqldb::pwd"  // configs key of mssql database password
+	mssqlConfigHost = "mssqldb::host" // configs key of mssql database server host
+	mssqlConfigPort = "mssqldb::port" // configs key of mssql database port
+	mssqlConfigName = "mssqldb::name" // configs key of mssql database name
+
+	// Microsoft SQL Server database source name
+	msdsn = "server=%s;port=%d;database=%s;user id=%s;password=%s;Connection Timeout=%d;Connect Timeout=%d;"
 )
 
 var (
 	// WingHelper content provider to hold database connections,
-	// it will nil before mvc.OpenDatabase() called
+	// it will nil before mvc.OpenMySQL() called.
 	WingHelper *WingProvider
+
+	// MssqlHelper content provider to hold mssql database connections,
+	// it will nil before mvc.OpenMssql() called.
+	MssqlHelper *WingProvider
 
 	// limitPageItems limit to show lits items in one page, default is 50,
 	// you can use SetLimitPageItems() to change the limit value.
 	limitPageItems = 50
 )
 
-// readDBCofnigs read database params from config file, than verify them if empty
-func readDBCofnigs() (string, string, string, string, error) {
-	user := beego.AppConfig.String(dbConfigUser)
-	pwd := beego.AppConfig.String(dbConfigPwd)
-	host := beego.AppConfig.String(dbConfigHost)
-	name := beego.AppConfig.String(dbConfigName)
+// readMySQLCofnigs read mysql database params from config file,
+// than verify them if empty except host.
+func readMySQLCofnigs() (string, string, string, string, error) {
+	user := beego.AppConfig.String(mysqlConfigUser)
+	pwd := beego.AppConfig.String(mysqlConfigPwd)
+	host := beego.AppConfig.String(mysqlConfigHost)
+	name := beego.AppConfig.String(mysqlConfigName)
 
 	if user == "" || pwd == "" || name == "" {
 		return "", "", "", "", invar.ErrInvalidConfigs
 	}
 	return user, pwd, host, name, nil
+}
+
+// readMssqlCofnigs read mssql database params from config file,
+// than verify them if empty.
+func readMssqlCofnigs() (string, string, string, int, string, error) {
+	user := beego.AppConfig.String(mssqlConfigUser)
+	pwd := beego.AppConfig.String(mssqlConfigPwd)
+	host := beego.AppConfig.DefaultString(mssqlConfigHost, "127.0.0.1")
+	port := beego.AppConfig.DefaultInt(mssqlConfigPort, 1433)
+	name := beego.AppConfig.String(mssqlConfigName)
+
+	if user == "" || pwd == "" || name == "" {
+		return "", "", "", 0, "", invar.ErrInvalidConfigs
+	}
+	return user, pwd, host, port, name, nil
+}
+
+// Deprecated: use OpenMySQL instead of the function.
+func OpenDatabase(charset string) error {
+	return OpenMySQL(charset)
 }
 
 // OpenDatabase connect database and check ping result,
@@ -70,21 +115,21 @@ func readDBCofnigs() (string, string, string, string, error) {
 //	user = "root"
 //	pwd  = "123456"
 //	~
-func OpenDatabase(charset string) error {
-	dbuser, dbpwd, dbhost, dbname, err := readDBCofnigs()
+func OpenMySQL(charset string) error {
+	dbuser, dbpwd, dbhost, dbname, err := readMySQLCofnigs()
 	if err != nil {
 		return err
 	}
 
 	dsn := ""
-	if len(dbhost) > 0 /* configed database host, using TCP to connect */ {
+	if len(dbhost) > 0 /* check database host whether using TCP to connect */ {
 		// conntect with remote host database server
 		dsn = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s", dbuser, dbpwd, dbhost, dbname, charset)
 	} else {
 		// just connect local database server
 		dsn = fmt.Sprintf("%s:%s@/%s?charset=%s", dbuser, dbpwd, dbname, charset)
 	}
-	logger.D("DSN:", dsn)
+	logger.D("MySQL DSN:", dsn)
 
 	// open and connect database
 	con, err := sql.Open("mysql", dsn)
@@ -100,6 +145,54 @@ func OpenDatabase(charset string) error {
 	con.SetMaxIdleConns(100)
 	con.SetMaxOpenConns(100)
 	WingHelper = &WingProvider{con}
+	return nil
+}
+
+// OpenMssql connect mssql database and check ping result,
+// the connections holded by mvc.MssqlHelper object,
+// the charset maybe 'utf8' or 'utf8mb4' same as database set.
+//
+// NOTICE : you must config database params in /conf/app.config file as:
+//	~
+//	[mssql]
+//	host = "127.0.0.1"
+//	port = 1433
+//	name = "sampledb"
+//	user = "sa"
+//	pwd  = "123456"
+//	~
+func OpenMssql(charset string, timeout ...int) error {
+	user, pwd, server, port, dbn, err := readMssqlCofnigs()
+	if err != nil {
+		return err
+	}
+
+	// get connection and connect timeouts
+	dts, tn := []int{600, 600}, len(timeout)
+	for i := 0; i < tn; i++ {
+		if i < 2 {
+			dts[i] = timeout[i]
+		}
+	}
+
+	driver := "mssql"
+	dsn := fmt.Sprintf(msdsn, server, port, dbn, user, pwd, dts[0], dts[1])
+	logger.D("SQL Server DSN:", dsn)
+
+	// open and connect database
+	con, err := sql.Open(driver, dsn)
+	if err != nil {
+		return err
+	}
+
+	// check database validable
+	if err = con.Ping(); err != nil {
+		return err
+	}
+
+	con.SetMaxIdleConns(100)
+	con.SetMaxOpenConns(100)
+	MssqlHelper = &WingProvider{con}
 	return nil
 }
 
