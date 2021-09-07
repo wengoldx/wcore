@@ -52,8 +52,7 @@ func readDBCofnigs(usingTCP bool) (string, string, string, string, error) {
 	host := beego.AppConfig.String(dbConfigHost)
 	name := beego.AppConfig.String(dbConfigName)
 
-	if (usingTCP && (user == "" || pwd == "" || host == "" || name == "")) ||
-		(!usingTCP && (user == "" || pwd == "" || name == "")) {
+	if user == "" || pwd == "" || name == "" {
 		return "", "", "", "", invar.ErrInvalidConfigs
 	}
 	return user, pwd, host, name, nil
