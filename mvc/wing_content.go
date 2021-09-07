@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
 	"reflect"
 	"strings"
 )
@@ -78,13 +79,14 @@ func OpenDatabase(charset string, useTCP ...bool) error {
 	}
 
 	dsn := ""
-	if isUseTCP {
+	if isUseTCP && len(dbhost) > 0 {
 		// conntect with remote host database server
 		dsn = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s", dbuser, dbpwd, dbhost, dbname, charset)
 	} else {
 		// just connect local database server
 		dsn = fmt.Sprintf("%s:%s@/%s?charset=%s", dbuser, dbpwd, dbname, charset)
 	}
+	logger.D("Database source name:", dsn)
 
 	// open and connect database
 	con, err := sql.Open("mysql", dsn)
