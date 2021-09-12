@@ -191,7 +191,7 @@ func (c *WingController) ErrorState(state int, err ...string) {
 
 // ErrorUnmarshal response 400 unmarshal params error state to client
 func (c *WingController) ErrorUnmarshal(err ...string) {
-	c.ErrorState(invar.StatusErrParseParams, err...)
+	c.ErrorState(invar.E400ParseParams, err...)
 }
 
 // ErrorParams response 400 invalid params error state to client
@@ -199,49 +199,49 @@ func (c *WingController) ErrorUnmarshal(err ...string) {
 //				instead or DoAfterValidated to auto print error log.
 func (c *WingController) ErrorParams(ps interface{}) {
 	logger.E("Invalid input params:", ps)
-	c.ErrorState(invar.StatusErrParseParams)
+	c.ErrorState(invar.E400ParseParams)
 }
 
 // ErrorValidate response 400 invalid params error state to client, then print
 // the params data and validate error
 func (c *WingController) ErrorValidate(ps interface{}, err ...string) {
 	logger.E("Invalid input params:", ps)
-	c.ErrorState(invar.StatusErrParseParams, err...)
+	c.ErrorState(invar.E400ParseParams, err...)
 }
 
 // ErrorUnauthed response 401 unauthenticated error state to client
 func (c *WingController) ErrorUnauthed(err ...string) {
-	c.ErrorState(invar.StatusErrUnauthorized, err...)
+	c.ErrorState(invar.E401Unauthorized, err...)
 }
 
 // ErrorDenind response 403 permission denind error state to client
 func (c *WingController) ErrorDenind(err ...string) {
-	c.ErrorState(invar.StatusErrPermissionDenind, err...)
+	c.ErrorState(invar.E403PermissionDenied, err...)
 }
 
 // ErrorException response 404 not found error state to client
 func (c *WingController) ErrorException(err ...string) {
-	c.ErrorState(invar.StatusErrCaseException, err...)
+	c.ErrorState(invar.E404Exception, err...)
 }
 
 // ErrorDisabled response 405 function disabled error state to client
 func (c *WingController) ErrorDisabled(err ...string) {
-	c.ErrorState(invar.StatusErrFuncDisabled, err...)
+	c.ErrorState(invar.E405FuncDisabled, err...)
 }
 
 // ErrorInput response 406 invalid inputs error state to client
 func (c *WingController) ErrorInput(err ...string) {
-	c.ErrorState(invar.StatusErrInputParams, err...)
+	c.ErrorState(invar.E406InputParams, err...)
 }
 
 // ErrorDuplicate response 409 duplicate error state to client
 func (c *WingController) ErrorDuplicate(err ...string) {
-	c.ErrorState(invar.StatusErrDuplicate, err...)
+	c.ErrorState(invar.E409Duplicate, err...)
 }
 
 // ErrorGone response 410 gone error state to client
 func (c *WingController) ErrorGone(err ...string) {
-	c.ErrorState(invar.StatusErrGone, err...)
+	c.ErrorState(invar.E410Gone, err...)
 }
 
 // ClientFrom return client ip from who requested

@@ -31,8 +31,9 @@ const (
 	oauthCodeSeedsNum   = "0123456789"
 	oauthCodeSeedsLower = "abcdefghijklmnopqrstuvwxyz"
 	oauthCodeSeedsUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	oauthCodeSeedsChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 	radixCodeCharMap    = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	passwordHashBytes   = 64 // password hash length
+	passwordHashBytes   = 64 // default password hash length
 )
 
 // uuidNode : generate uuid string
@@ -57,6 +58,21 @@ func GenUUID() int64 {
 // GenUUIDString generate a new uuid in string
 func GenUUIDString() string {
 	return uuidNode.Generate().String()
+}
+
+// GenRandUUID generate a random number uuid with specified digits
+func GenRandUUID(buflen ...int) string {
+	length := passwordHashBytes
+	if len(buflen) > 0 && buflen[0] > 0 {
+		length = buflen[0]
+	}
+
+	letters := []rune(oauthCodeSeedsChars)
+	buf, letlen := make([]rune, length), len(letters)
+	for i := range buf {
+		buf[i] = letters[rand.Intn(letlen)]
+	}
+	return string(buf)
 }
 
 // GenCode generate a code by using current nanosecond
@@ -162,18 +178,32 @@ func GenOAuthCode(length int, randomType string) (string, error) {
 	return buf.String(), nil
 }
 
-// GenSalt generates a random salt
-func GenSalt() (string, error) {
-	buf := make([]byte, passwordHashBytes)
+// GenSalt generates a random salt, default length is 64 * 2,
+// you may set buffer length by buflen input param, and return
+// (buflen * 2) length salt string.
+func GenSalt(buflen ...int) (string, error) {
+	length := passwordHashBytes
+	if len(buflen) > 0 && buflen[0] > 0 {
+		length = buflen[0]
+	}
+
+	buf := make([]byte, length)
 	if _, err := io.ReadFull(crypto.Reader, buf); err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("%x", buf), nil
 }
 
-// GenHash hash the given source with salt
-func GenHash(src, salt string) (string, error) {
-	hex, err := scrypt.Key([]byte(src), []byte(salt), 16384, 8, 1, passwordHashBytes)
+// GenHash hash the given source with salt, default length is 64 * 2,
+// you may set buffer length by buflen input param, and return
+// (buflen * 2) length hash string.
+func GenHash(src, salt string, buflen ...int) (string, error) {
+	length := passwordHashBytes
+	if len(buflen) > 0 && buflen[0] > 0 {
+		length = buflen[0]
+	}
+
+	hex, err := scrypt.Key([]byte(src), []byte(salt), 16384, 8, 1, length)
 	if err != nil {
 		return "", err
 	}

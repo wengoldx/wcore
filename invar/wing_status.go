@@ -15,33 +15,46 @@ import (
 )
 
 const (
-	StatusOK                  = http.StatusOK
-	StatusErrParseParams      = http.StatusBadRequest
-	StatusErrInputParams      = http.StatusNotAcceptable
-	StatusErrUnauthorized     = http.StatusUnauthorized
-	StatusErrCaseException    = http.StatusNotFound
-	StatusErrPermissionDenind = http.StatusForbidden
-	StatusErrFuncDisabled     = http.StatusMethodNotAllowed
-	StatusErrTimeout          = http.StatusRequestTimeout
-	StatusErrDuplicate        = http.StatusConflict
-	StatusErrInvalidState     = http.StatusPreconditionFailed
-	StatusErrLocked           = http.StatusLocked
-	StatusErrGone             = http.StatusGone
+	StatusOK             = http.StatusOK
+	E400ParseParams      = http.StatusBadRequest
+	E401Unauthorized     = http.StatusUnauthorized
+	E403PermissionDenied = http.StatusForbidden
+	E404Exception        = http.StatusNotFound
+	E405FuncDisabled     = http.StatusMethodNotAllowed
+	E406InputParams      = http.StatusNotAcceptable
+	E408Timeout          = http.StatusRequestTimeout
+	E409Duplicate        = http.StatusConflict
+	E410Gone             = http.StatusGone
+	E412InvalidState     = http.StatusPreconditionFailed
+	E424Locked           = http.StatusLocked
+
+	// @deprecated: use the up define of ExxxXXXX
+	StatusErrParseParams      = E400ParseParams
+	StatusErrInputParams      = E406InputParams
+	StatusErrUnauthorized     = E401Unauthorized
+	StatusErrCaseException    = E404Exception
+	StatusErrPermissionDenind = E403PermissionDenied
+	StatusErrFuncDisabled     = E405FuncDisabled
+	StatusErrTimeout          = E408Timeout
+	StatusErrDuplicate        = E409Duplicate
+	StatusErrInvalidState     = E412InvalidState
+	StatusErrLocked           = E424Locked
+	StatusErrGone             = E410Gone
 )
 
 var statusText = map[int]string{
-	StatusOK:                  "OK",
-	StatusErrParseParams:      "Parse Input Params Error",
-	StatusErrInputParams:      "Invalid Input Params",
-	StatusErrUnauthorized:     "Unauthorized",
-	StatusErrCaseException:    "Case Exception",
-	StatusErrPermissionDenind: "Permission Denind",
-	StatusErrFuncDisabled:     "Function Disabled",
-	StatusErrTimeout:          "Request Timeout",
-	StatusErrDuplicate:        "Duplicate Request",
-	StatusErrInvalidState:     "Invalid State",
-	StatusErrLocked:           "Resource Locked",
-	StatusErrGone:             "Gone",
+	StatusOK:             "OK",
+	E400ParseParams:      "Parse Input Params Error",
+	E401Unauthorized:     "Unauthorized",
+	E403PermissionDenied: "Permission Denied",
+	E404Exception:        "Case Exception",
+	E405FuncDisabled:     "Function Disabled",
+	E406InputParams:      "Invalid Input Params",
+	E408Timeout:          "Request Timeout",
+	E409Duplicate:        "Duplicate Request",
+	E410Gone:             "Gone",
+	E412InvalidState:     "Invalid State",
+	E424Locked:           "Resource Locked",
 }
 
 // StatusText returns a text for the HTTP status code. It returns the empty
