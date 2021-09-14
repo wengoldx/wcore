@@ -278,15 +278,21 @@ func (w *WingProvider) Insert(query string, args ...interface{}) (int64, error) 
 
 // Execute call sql.Prepare() and stmt.Exec() to update or delete records
 func (w *WingProvider) Execute(query string, args ...interface{}) error {
+	_, err := w.ExecuteWithResult(query, args...)
+	return err
+}
+
+// Execute call sql.Prepare() and stmt.Exec() to update or delete records
+func (w *WingProvider) ExecuteWithResult(query string, args ...interface{}) (int64, error) {
 	stmt, err := w.Conn.Prepare(query)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer stmt.Close()
 
 	result, err := stmt.Exec(args...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	return w.Affected(result)
 }
@@ -313,11 +319,12 @@ func (w *WingProvider) AppendLikeLimit(query, filed, keyword string, page int, a
 }
 
 // CheckAffected append page limitation end of sql string
-func (w *WingProvider) Affected(result sql.Result) error {
-	if row, err := result.RowsAffected(); err != nil || row == 0 {
-		return invar.ErrNotChanged
+func (w *WingProvider) Affected(result sql.Result) (int64, error) {
+	row, err := result.RowsAffected()
+	if err != nil || row == 0 {
+		return 0, invar.ErrNotChanged
 	}
-	return nil
+	return row, nil
 }
 
 // FormatSets format update sets for sql update
@@ -391,7 +398,7 @@ func (w *WingProvider) Atomicity(args map[string][]interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err = w.Affected(result); err != nil {
+		if _, err = w.Affected(result); err != nil {
 			return err
 		}
 	}
