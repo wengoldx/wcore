@@ -112,28 +112,48 @@ func Tommorrow() int64 {
 	return time.Now().AddDate(0, 0, 1).Unix()
 }
 
-// NextWeek return next week unix time start from current
-func NextWeek() int64 {
+// NextWeek return next week unix time start from current,
+// or from the given unix seconds and nano seconds
+func NextWeek(start ...int64) int64 {
+	if len(start) > 1 && start[0] > 0 {
+		return time.Unix(start[0], start[1]).AddDate(0, 0, 7).Unix()
+	}
 	return time.Now().AddDate(0, 0, 7).Unix()
 }
 
-// NextMonth return next month unix time start from current
-func NextMonth() int64 {
+// NextMonth return next month unix time start from current,
+// or from the given unix seconds and nano seconds
+func NextMonth(start ...int64) int64 {
+	if len(start) > 1 && start[0] > 0 {
+		return time.Unix(start[0], start[1]).AddDate(0, 1, 0).Unix()
+	}
 	return time.Now().AddDate(0, 1, 0).Unix()
 }
 
-// NextQuarter return next quarter unix time start from current
-func NextQuarter() int64 {
+// NextQuarter return next quarter unix time start from current,
+// or from the given unix seconds and nano seconds
+func NextQuarter(start ...int64) int64 {
+	if len(start) > 1 && start[0] > 0 {
+		return time.Unix(start[0], start[1]).AddDate(0, 3, 0).Unix()
+	}
 	return time.Now().AddDate(0, 3, 0).Unix()
 }
 
-// NextYear return next year unix time start from current
-func NextYear() int64 {
+// NextYear return next year unix time start from current,
+// or from the given unix seconds and nano seconds
+func NextYear(start ...int64) int64 {
+	if len(start) > 1 && start[0] > 0 {
+		return time.Unix(start[0], start[1]).AddDate(1, 0, 0).Unix()
+	}
 	return time.Now().AddDate(1, 0, 0).Unix()
 }
 
-// NextTime return next unix time start from current
-func NextTime(duration time.Duration) int64 {
+// NextTime return next unix time start from current,
+// or from the given unix seconds and nano seconds
+func NextTime(duration time.Duration, start ...int64) int64 {
+	if len(start) > 1 && start[0] > 0 {
+		return time.Unix(start[0], start[1]).Add(duration).Unix()
+	}
 	return time.Now().Add(duration).Unix()
 }
 
