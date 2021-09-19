@@ -139,6 +139,15 @@ func NextQuarter(start ...int64) int64 {
 	return time.Now().AddDate(0, 3, 0).Unix()
 }
 
+// NextHalfYear return next half a year unix time start from current,
+// or from the given unix seconds and nano seconds
+func NextHalfYear(start ...int64) int64 {
+	if len(start) > 1 && start[0] > 0 {
+		return time.Unix(start[0], start[1]).AddDate(0, 6, 0).Unix()
+	}
+	return time.Now().AddDate(0, 6, 0).Unix()
+}
+
 // NextYear return next year unix time start from current,
 // or from the given unix seconds and nano seconds
 func NextYear(start ...int64) int64 {
