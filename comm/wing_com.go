@@ -58,8 +58,8 @@ func Ternary(condition bool, trueResult interface{}, falseResult interface{}) in
 	return falseResult
 }
 
-// Contain check the given list if contains item
-func Contain(list *[]interface{}, item interface{}) bool {
+// Contain check the given string list if contains item
+func Contain(list *[]string, item string) bool {
 	for _, v := range *list {
 		if v == item {
 			return true
