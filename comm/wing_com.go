@@ -58,6 +58,16 @@ func Ternary(condition bool, trueResult interface{}, falseResult interface{}) in
 	return falseResult
 }
 
+// Contain check the given list if contains item
+func Contain(list *[]interface{}, item interface{}) bool {
+	for _, v := range *list {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
+
 // To2Digits fill zero if input digit not enough 2
 func To2Digits(input interface{}) string {
 	return fmt.Sprintf("%02d", input)
