@@ -189,58 +189,58 @@ func (c *WingController) ErrorState(state int, err ...string) {
 	w.Write([]byte(""))
 }
 
-// ErrorUnmarshal response 400 unmarshal params error state to client
-func (c *WingController) ErrorUnmarshal(err ...string) {
+// E400rUnmarshal response 400 unmarshal params error state to client
+func (c *WingController) E400Unmarshal(err ...string) {
 	c.ErrorState(invar.E400ParseParams, err...)
 }
 
-// ErrorParams response 400 invalid params error state to client
+// E400Params response 400 invalid params error state to client
 //	@deprecated this method will delete at the next version, use ErrorValidate
 //				instead or DoAfterValidated to auto print error log.
-func (c *WingController) ErrorParams(ps interface{}) {
+func (c *WingController) E400Params(ps interface{}) {
 	logger.E("Invalid input params:", ps)
 	c.ErrorState(invar.E400ParseParams)
 }
 
-// ErrorValidate response 400 invalid params error state to client, then print
+// E400Validate response 400 invalid params error state to client, then print
 // the params data and validate error
-func (c *WingController) ErrorValidate(ps interface{}, err ...string) {
+func (c *WingController) E400Validate(ps interface{}, err ...string) {
 	logger.E("Invalid input params:", ps)
 	c.ErrorState(invar.E400ParseParams, err...)
 }
 
-// ErrorUnauthed response 401 unauthenticated error state to client
-func (c *WingController) ErrorUnauthed(err ...string) {
+// E401Unauthed response 401 unauthenticated error state to client
+func (c *WingController) E401Unauthed(err ...string) {
 	c.ErrorState(invar.E401Unauthorized, err...)
 }
 
-// ErrorDenind response 403 permission denind error state to client
-func (c *WingController) ErrorDenind(err ...string) {
+// E403Denind response 403 permission denind error state to client
+func (c *WingController) E403Denind(err ...string) {
 	c.ErrorState(invar.E403PermissionDenied, err...)
 }
 
-// ErrorException response 404 not found error state to client
-func (c *WingController) ErrorException(err ...string) {
+// E404Exception response 404 not found error state to client
+func (c *WingController) E404Exception(err ...string) {
 	c.ErrorState(invar.E404Exception, err...)
 }
 
-// ErrorDisabled response 405 function disabled error state to client
-func (c *WingController) ErrorDisabled(err ...string) {
+// E405Disabled response 405 function disabled error state to client
+func (c *WingController) E405Disabled(err ...string) {
 	c.ErrorState(invar.E405FuncDisabled, err...)
 }
 
-// ErrorInput response 406 invalid inputs error state to client
-func (c *WingController) ErrorInput(err ...string) {
+// E406Input response 406 invalid inputs error state to client
+func (c *WingController) E406Input(err ...string) {
 	c.ErrorState(invar.E406InputParams, err...)
 }
 
-// ErrorDuplicate response 409 duplicate error state to client
-func (c *WingController) ErrorDuplicate(err ...string) {
+// E409Duplicate response 409 duplicate error state to client
+func (c *WingController) E409Duplicate(err ...string) {
 	c.ErrorState(invar.E409Duplicate, err...)
 }
 
-// ErrorGone response 410 gone error state to client
-func (c *WingController) ErrorGone(err ...string) {
+// E410Gone response 410 gone error state to client
+func (c *WingController) E410Gone(err ...string) {
 	c.ErrorState(invar.E410Gone, err...)
 }
 
@@ -267,16 +267,16 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 	switch datatype {
 	case "json":
 		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.ErrorUnmarshal(err.Error())
+			c.E400Unmarshal(err.Error())
 			return
 		}
 	case "xml":
 		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.ErrorUnmarshal(err.Error())
+			c.E400Unmarshal(err.Error())
 			return
 		}
 	default: // current not support the jsonp and yaml parse
-		c.ErrorException("Invalid data type:" + datatype)
+		c.E404Exception("Invalid data type:" + datatype)
 		return
 	}
 
@@ -285,14 +285,14 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 		logger.D("Validating the input params:", ps)
 		ensureValidatorGenerated()
 		if err := Validator.Struct(ps); err != nil {
-			c.ErrorValidate(ps, err.Error())
+			c.E400Validate(ps, err.Error())
 			return
 		}
 	}
 
 	// execute business function after unmarshal and validated
 	status, resp := nextFunc()
-	logger.D("Using protect:", isprotect, "mode limit response error to client")
+	// logger.D("Using protect:", isprotect, "mode limit response error to client")
 	if resp != nil {
 		c.responCheckState(datatype, isprotect, status, resp)
 	} else {

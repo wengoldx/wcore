@@ -39,20 +39,27 @@ type ScanCallback func(rows *sql.Rows) error
 
 const (
 	/* MySQL */
-	mysqlConfigUser = "database::user" // configs key of mysql database user
-	mysqlConfigPwd  = "database::pwd"  // configs key of mysql database password
-	mysqlConfigHost = "database::host" // configs key of mysql database host and port
-	mysqlConfigName = "database::name" // configs key of mysql database name
+	mysqlConfigUser = "mysql::user" // configs key of mysql database user
+	mysqlConfigPwd  = "mysql::pwd"  // configs key of mysql database password
+	mysqlConfigHost = "mysql::host" // configs key of mysql database host and port
+	mysqlConfigName = "mysql::name" // configs key of mysql database name
 
 	/* Microsoft SQL Server */
-	mssqlConfigUser = "mssqldb::user" // configs key of mssql database user
-	mssqlConfigPwd  = "mssqldb::pwd"  // configs key of mssql database password
-	mssqlConfigHost = "mssqldb::host" // configs key of mssql database server host
-	mssqlConfigPort = "mssqldb::port" // configs key of mssql database port
-	mssqlConfigName = "mssqldb::name" // configs key of mssql database name
+	mssqlConfigUser = "mssql::user"    // configs key of mssql database user
+	mssqlConfigPwd  = "mssql::pwd"     // configs key of mssql database password
+	mssqlConfigHost = "mssql::host"    // configs key of mssql database server host
+	mssqlConfigPort = "mssql::port"    // configs key of mssql database port
+	mssqlConfigName = "mssql::name"    // configs key of mssql database name
+	mssqlConfigTout = "mssql::timeout" // configs key of mssql database connect timeout
+
+	// Mysql Server database source name for local connection
+	mysqldsnLocal = "%s:%s@/%s?charset=%s"
+
+	// Mysql Server database source name for tcp connection
+	mysqldsnTcp = "%s:%s@tcp(%s)/%s?charset=%s"
 
 	// Microsoft SQL Server database source name
-	msdsn = "server=%s;port=%d;database=%s;user id=%s;password=%s;Connection Timeout=%d;Connect Timeout=%d;"
+	mssqldsn = "server=%s;port=%d;database=%s;user id=%s;password=%s;Connection Timeout=%d;Connect Timeout=%d;"
 )
 
 var (
@@ -85,31 +92,27 @@ func readMySQLCofnigs() (string, string, string, string, error) {
 
 // readMssqlCofnigs read mssql database params from config file,
 // than verify them if empty.
-func readMssqlCofnigs() (string, string, string, int, string, error) {
+func readMssqlCofnigs() (string, string, string, int, string, int, error) {
 	user := beego.AppConfig.String(mssqlConfigUser)
 	pwd := beego.AppConfig.String(mssqlConfigPwd)
 	host := beego.AppConfig.DefaultString(mssqlConfigHost, "127.0.0.1")
 	port := beego.AppConfig.DefaultInt(mssqlConfigPort, 1433)
 	name := beego.AppConfig.String(mssqlConfigName)
+	timeout := beego.AppConfig.DefaultInt(mssqlConfigTout, 600)
 
 	if user == "" || pwd == "" || name == "" {
-		return "", "", "", 0, "", invar.ErrInvalidConfigs
+		return "", "", "", 0, "", 0, invar.ErrInvalidConfigs
 	}
-	return user, pwd, host, port, name, nil
+	return user, pwd, host, port, name, timeout, nil
 }
 
-// Deprecated: use OpenMySQL instead of the function.
-func OpenDatabase(charset string) error {
-	return OpenMySQL(charset)
-}
-
-// OpenDatabase connect database and check ping result,
+// OpenMySQL connect database and check ping result,
 // the connections holded by mvc.WingHelper object,
 // the charset maybe 'utf8' or 'utf8mb4' same as database set.
 //
 // NOTICE : you must config database params in /conf/app.config file as:
 //	~
-//	[database]
+//	[mysql]
 //	host = "127.0.0.1:3306"
 //	name = "sampledb"
 //	user = "root"
@@ -124,10 +127,10 @@ func OpenMySQL(charset string) error {
 	dsn := ""
 	if len(dbhost) > 0 /* check database host whether using TCP to connect */ {
 		// conntect with remote host database server
-		dsn = fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s", dbuser, dbpwd, dbhost, dbname, charset)
+		dsn = fmt.Sprintf(mysqldsnTcp, dbuser, dbpwd, dbhost, dbname, charset)
 	} else {
 		// just connect local database server
-		dsn = fmt.Sprintf("%s:%s@/%s?charset=%s", dbuser, dbpwd, dbname, charset)
+		dsn = fmt.Sprintf(mysqldsnLocal, dbuser, dbpwd, dbname, charset)
 	}
 	logger.D("MySQL DSN:", dsn)
 
@@ -155,28 +158,28 @@ func OpenMySQL(charset string) error {
 // NOTICE : you must config database params in /conf/app.config file as:
 //	~
 //	[mssql]
-//	host = "127.0.0.1"
-//	port = 1433
-//	name = "sampledb"
-//	user = "sa"
-//	pwd  = "123456"
+//	host    = "127.0.0.1"
+//	port    = 1433
+//	name    = "sampledb"
+//	user    = "sa"
+//	pwd     = "123456"
+//	timeout = 600
 //	~
-func OpenMssql(charset string, timeout ...int) error {
-	user, pwd, server, port, dbn, err := readMssqlCofnigs()
+func OpenMssql(charset string) error {
+	user, pwd, server, port, dbn, to, err := readMssqlCofnigs()
 	if err != nil {
 		return err
 	}
 
 	// get connection and connect timeouts
-	dts, tn := []int{600, 600}, len(timeout)
-	for i := 0; i < tn; i++ {
-		if i < 2 {
-			dts[i] = timeout[i]
-		}
+	dts := []int{600, 600}
+	if to > 0 {
+		dts[0] = to
+		dts[1] = to
 	}
 
 	driver := "mssql"
-	dsn := fmt.Sprintf(msdsn, server, port, dbn, user, pwd, dts[0], dts[1])
+	dsn := fmt.Sprintf(mssqldsn, server, port, dbn, user, pwd, dts[0], dts[1])
 	logger.D("SQL Server DSN:", dsn)
 
 	// open and connect database
