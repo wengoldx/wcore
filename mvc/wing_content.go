@@ -39,18 +39,28 @@ type ScanCallback func(rows *sql.Rows) error
 
 const (
 	/* MySQL */
-	mysqlConfigUser = "mysql::user" // configs key of mysql database user
-	mysqlConfigPwd  = "mysql::pwd"  // configs key of mysql database password
-	mysqlConfigHost = "mysql::host" // configs key of mysql database host and port
-	mysqlConfigName = "mysql::name" // configs key of mysql database name
+	mysqlConfigUser    = "mysql::user"     // configs key of mysql database user
+	mysqlConfigPwd     = "mysql::pwd"      // configs key of mysql database password
+	mysqlConfigHost    = "mysql::host"     // configs key of mysql database host and port
+	mysqlConfigName    = "mysql::name"     // configs key of mysql database name
+	mysqlConfigDevUser = "mysql-dev::user" // DEV : configs key of mysql database user
+	mysqlConfigDevPwd  = "mysql-dev::pwd"  // DEV : configs key of mysql database password
+	mysqlConfigDevHost = "mysql-dev::host" // DEV : configs key of mysql database host and port
+	mysqlConfigDevName = "mysql-dev::name" // DEV : configs key of mysql database name
 
 	/* Microsoft SQL Server */
-	mssqlConfigUser = "mssql::user"    // configs key of mssql database user
-	mssqlConfigPwd  = "mssql::pwd"     // configs key of mssql database password
-	mssqlConfigHost = "mssql::host"    // configs key of mssql database server host
-	mssqlConfigPort = "mssql::port"    // configs key of mssql database port
-	mssqlConfigName = "mssql::name"    // configs key of mssql database name
-	mssqlConfigTout = "mssql::timeout" // configs key of mssql database connect timeout
+	mssqlConfigUser    = "mssql::user"        // configs key of mssql database user
+	mssqlConfigPwd     = "mssql::pwd"         // configs key of mssql database password
+	mssqlConfigHost    = "mssql::host"        // configs key of mssql database server host
+	mssqlConfigPort    = "mssql::port"        // configs key of mssql database port
+	mssqlConfigName    = "mssql::name"        // configs key of mssql database name
+	mssqlConfigTout    = "mssql::timeout"     // configs key of mssql database connect timeout
+	mssqlConfigDevUser = "mssql-dev::user"    // configs key of mssql database user
+	mssqlConfigDevPwd  = "mssql-dev::pwd"     // configs key of mssql database password
+	mssqlConfigDevHost = "mssql-dev::host"    // configs key of mssql database server host
+	mssqlConfigDevPort = "mssql-dev::port"    // configs key of mssql database port
+	mssqlConfigDevName = "mssql-dev::name"    // configs key of mssql database name
+	mssqlConfigDevTout = "mssql-dev::timeout" // configs key of mssql database connect timeout
 
 	// Mysql Server database source name for local connection
 	mysqldsnLocal = "%s:%s@/%s?charset=%s"
@@ -79,10 +89,23 @@ var (
 // readMySQLCofnigs read mysql database params from config file,
 // than verify them if empty except host.
 func readMySQLCofnigs() (string, string, string, string, error) {
-	user := beego.AppConfig.String(mysqlConfigUser)
-	pwd := beego.AppConfig.String(mysqlConfigPwd)
-	host := beego.AppConfig.String(mysqlConfigHost)
-	name := beego.AppConfig.String(mysqlConfigName)
+	user, pwd, host, name := "", "", "", ""
+	if beego.BConfig.RunMode == "dev" {
+		user = beego.AppConfig.String(mysqlConfigDevUser)
+		pwd = beego.AppConfig.String(mysqlConfigDevPwd)
+		host = beego.AppConfig.String(mysqlConfigDevHost)
+		name = beego.AppConfig.String(mysqlConfigDevName)
+	}
+
+	// if curren mode is dev and not found [mysql-dev] session,
+	// try to load configs from [mysql] session same as prod mode.
+	invalidConfigs := (user == "" || pwd == "" || name == "")
+	if invalidConfigs {
+		user = beego.AppConfig.String(mysqlConfigDevUser)
+		pwd = beego.AppConfig.String(mysqlConfigDevPwd)
+		host = beego.AppConfig.String(mysqlConfigDevHost)
+		name = beego.AppConfig.String(mysqlConfigDevName)
+	}
 
 	if user == "" || pwd == "" || name == "" {
 		return "", "", "", "", invar.ErrInvalidConfigs
@@ -93,12 +116,27 @@ func readMySQLCofnigs() (string, string, string, string, error) {
 // readMssqlCofnigs read mssql database params from config file,
 // than verify them if empty.
 func readMssqlCofnigs() (string, string, string, int, string, int, error) {
-	user := beego.AppConfig.String(mssqlConfigUser)
-	pwd := beego.AppConfig.String(mssqlConfigPwd)
-	host := beego.AppConfig.DefaultString(mssqlConfigHost, "127.0.0.1")
-	port := beego.AppConfig.DefaultInt(mssqlConfigPort, 1433)
-	name := beego.AppConfig.String(mssqlConfigName)
-	timeout := beego.AppConfig.DefaultInt(mssqlConfigTout, 600)
+	user, pwd, host, port, name, timeout := "", "", "", 0, "", 0
+	if beego.BConfig.RunMode == "dev" {
+		user = beego.AppConfig.String(mssqlConfigDevUser)
+		pwd = beego.AppConfig.String(mssqlConfigDevPwd)
+		host = beego.AppConfig.DefaultString(mssqlConfigDevHost, "127.0.0.1")
+		port = beego.AppConfig.DefaultInt(mssqlConfigDevPort, 1433)
+		name = beego.AppConfig.String(mssqlConfigDevName)
+		timeout = beego.AppConfig.DefaultInt(mssqlConfigDevTout, 600)
+	}
+
+	// if curren mode is dev and not found [mssql-dev] session,
+	// try to load configs from [mssql] session same as prod mode.
+	invalidConfigs := (user == "" || pwd == "" || name == "")
+	if invalidConfigs {
+		user = beego.AppConfig.String(mssqlConfigUser)
+		pwd = beego.AppConfig.String(mssqlConfigPwd)
+		host = beego.AppConfig.DefaultString(mssqlConfigHost, "127.0.0.1")
+		port = beego.AppConfig.DefaultInt(mssqlConfigPort, 1433)
+		name = beego.AppConfig.String(mssqlConfigName)
+		timeout = beego.AppConfig.DefaultInt(mssqlConfigTout, 600)
+	}
 
 	if user == "" || pwd == "" || name == "" {
 		return "", "", "", 0, "", 0, invar.ErrInvalidConfigs
@@ -118,6 +156,19 @@ func readMssqlCofnigs() (string, string, string, int, string, int, error) {
 //	user = "root"
 //	pwd  = "123456"
 //	~
+//
+// Or, config as dev mode as:
+//	~
+//	[mysql-dev]
+//	host = "127.0.0.1:3306"
+//	name = "sampledb"
+//	user = "root"
+//	pwd  = "123456"
+//	~
+//
+// Or both or them for dev and prod mode.
+// It will load configs from [mssql-dev] session first, if not
+// found, try agen load from [mssql] session.
 func OpenMySQL(charset string) error {
 	dbuser, dbpwd, dbhost, dbname, err := readMySQLCofnigs()
 	if err != nil {
@@ -165,6 +216,21 @@ func OpenMySQL(charset string) error {
 //	pwd     = "123456"
 //	timeout = 600
 //	~
+//
+// Or, config as dev mode as:
+//	~
+//	[mssql-dev]
+//	host    = "127.0.0.1"
+//	port    = 1433
+//	name    = "sampledb"
+//	user    = "sa"
+//	pwd     = "123456"
+//	timeout = 600
+//	~
+//
+// Or both or them for dev and prod mode.
+// It will load configs from [mssql-dev] session first, if not
+// found, try agen load from [mssql] session.
 func OpenMssql(charset string) error {
 	user, pwd, server, port, dbn, to, err := readMssqlCofnigs()
 	if err != nil {
