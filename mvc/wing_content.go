@@ -55,12 +55,12 @@ const (
 	mssqlConfigPort    = "mssql::port"        // configs key of mssql database port
 	mssqlConfigName    = "mssql::name"        // configs key of mssql database name
 	mssqlConfigTout    = "mssql::timeout"     // configs key of mssql database connect timeout
-	mssqlConfigDevUser = "mssql-dev::user"    // configs key of mssql database user
-	mssqlConfigDevPwd  = "mssql-dev::pwd"     // configs key of mssql database password
-	mssqlConfigDevHost = "mssql-dev::host"    // configs key of mssql database server host
-	mssqlConfigDevPort = "mssql-dev::port"    // configs key of mssql database port
-	mssqlConfigDevName = "mssql-dev::name"    // configs key of mssql database name
-	mssqlConfigDevTout = "mssql-dev::timeout" // configs key of mssql database connect timeout
+	mssqlConfigDevUser = "mssql-dev::user"    // DEV : configs key of mssql database user
+	mssqlConfigDevPwd  = "mssql-dev::pwd"     // DEV : configs key of mssql database password
+	mssqlConfigDevHost = "mssql-dev::host"    // DEV : configs key of mssql database server host
+	mssqlConfigDevPort = "mssql-dev::port"    // DEV : configs key of mssql database port
+	mssqlConfigDevName = "mssql-dev::name"    // DEV : configs key of mssql database name
+	mssqlConfigDevTout = "mssql-dev::timeout" // DEV : configs key of mssql database connect timeout
 
 	// Mysql Server database source name for local connection
 	mysqldsnLocal = "%s:%s@/%s?charset=%s"
@@ -99,7 +99,7 @@ func readMySQLCofnigs() (string, string, string, string, error) {
 
 	// if curren mode is dev and not found [mysql-dev] session,
 	// try to load configs from [mysql] session same as prod mode.
-	invalidConfigs := (user == "" || pwd == "" || name == "")
+	invalidConfigs := (user == "" && pwd == "" && name == "")
 	if invalidConfigs {
 		user = beego.AppConfig.String(mysqlConfigDevUser)
 		pwd = beego.AppConfig.String(mysqlConfigDevPwd)
@@ -128,7 +128,7 @@ func readMssqlCofnigs() (string, string, string, int, string, int, error) {
 
 	// if curren mode is dev and not found [mssql-dev] session,
 	// try to load configs from [mssql] session same as prod mode.
-	invalidConfigs := (user == "" || pwd == "" || name == "")
+	invalidConfigs := (user == "" && pwd == "" && name == "")
 	if invalidConfigs {
 		user = beego.AppConfig.String(mssqlConfigUser)
 		pwd = beego.AppConfig.String(mssqlConfigPwd)

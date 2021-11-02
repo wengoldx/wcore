@@ -34,10 +34,14 @@ type WingRedisConn struct {
 }
 
 const (
-	redisConfigHost = "redis::host"      // configs key of redis host and port
-	redisConfigPwd  = "redis::pwd"       // configs key of redis password
-	redisConfigNs   = "redis::namespace" // configs key of redis namespace
-	redisConfigLock = "redis::deadlock"  // configs key of redis lock max duration
+	redisConfigHost    = "redis::host"          // configs key of redis host and port
+	redisConfigPwd     = "redis::pwd"           // configs key of redis password
+	redisConfigNs      = "redis::namespace"     // configs key of redis namespace
+	redisConfigLock    = "redis::deadlock"      // configs key of redis lock max duration
+	redisConfigDevHost = "redis-dev::host"      // DEV : configs key of redis host and port
+	redisConfigDevPwd  = "redis-dev::pwd"       // DEV : configs key of redis password
+	redisConfigDevNs   = "redis-dev::namespace" // DEV : configs key of redis namespace
+	redisConfigDevLock = "redis-dev::deadlock"  // DEV : configs key of redis lock max duration
 )
 
 // The follow options may support by diffrent Redis version, get more infor
@@ -66,14 +70,28 @@ var (
 
 // readRedisCofnigs read redis params from config file, than verify them if empty.
 func readRedisCofnigs() (string, string, string, int64, error) {
-	host := beego.AppConfig.String(redisConfigHost)
-	pwd := beego.AppConfig.String(redisConfigPwd)
-	ns := beego.AppConfig.String(redisConfigNs) // allow empty
+	host, pwd, ns, lock := "", "", "", int64(20)
+	if beego.BConfig.RunMode == "dev" {
+		host = beego.AppConfig.String(redisConfigDevHost)
+		pwd = beego.AppConfig.String(redisConfigDevPwd)
+		ns = beego.AppConfig.String(redisConfigDevNs) // allow empty
+		lock, _ = beego.AppConfig.Int64(redisConfigDevLock)
+	}
+
+	// if curren mode is dev and not found [mysql-dev] session,
+	// try to load configs from [redis] session same as prod mode.
+	invalidConfigs := (host == "" && pwd == "")
+	if invalidConfigs {
+		host = beego.AppConfig.String(redisConfigHost)
+		pwd = beego.AppConfig.String(redisConfigPwd)
+		ns = beego.AppConfig.String(redisConfigNs) // allow empty
+		lock, _ = beego.AppConfig.Int64(redisConfigLock)
+	}
+
 	if host == "" || pwd == "" {
 		return "", "", "", 0, invar.ErrInvalidConfigs
 	}
 
-	lock, _ := beego.AppConfig.Int64(redisConfigLock)
 	if lock <= 0 {
 		lock = 20 // default 20 seconds
 	}
@@ -92,10 +110,24 @@ func readRedisCofnigs() (string, string, string, int64, error) {
 //	deadlock = 20
 //	~
 //
-//	host is the redis server host ip and port.
-//	pwd is the redis server authenticate password.
-//	namespace is the prefix string or store key.
-//	deadlock is the max time of deadlock, in seconds.
+// Or, config as dev mode as:
+//	~
+//	[redis]
+//	host = "127.0.0.1:6379"
+//	pwd = "123456"
+//	namespace = "project_namespace"
+//	deadlock = 20
+//	~
+//
+// Or both or them for dev and prod mode.
+// It will load configs from [mssql-dev] session first, if not
+// found, try agen load from [mssql] session.
+//
+// The configs means as:
+//	host - is the redis server host ip and port.
+//	pwd  - is the redis server authenticate password.
+//	namespace - is the prefix string or store key.
+//	deadlock  - is the max time of deadlock, in seconds.
 func OpenRedis() error {
 	host, pwd, ns, lock, err := readRedisCofnigs()
 	if err != nil {
