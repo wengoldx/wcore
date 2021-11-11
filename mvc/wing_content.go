@@ -101,10 +101,10 @@ func readMySQLCofnigs() (string, string, string, string, error) {
 	// try to load configs from [mysql] session same as prod mode.
 	invalidConfigs := (user == "" && pwd == "" && name == "")
 	if invalidConfigs {
-		user = beego.AppConfig.String(mysqlConfigDevUser)
-		pwd = beego.AppConfig.String(mysqlConfigDevPwd)
-		host = beego.AppConfig.String(mysqlConfigDevHost)
-		name = beego.AppConfig.String(mysqlConfigDevName)
+		user = beego.AppConfig.String(mysqlConfigUser)
+		pwd = beego.AppConfig.String(mysqlConfigPwd)
+		host = beego.AppConfig.String(mysqlConfigHost)
+		name = beego.AppConfig.String(mysqlConfigName)
 	}
 
 	if user == "" || pwd == "" || name == "" {
