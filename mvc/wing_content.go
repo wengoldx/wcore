@@ -43,24 +43,14 @@ const (
 	mysqlConfigPwd  = "%s::pwd"  // configs key of mysql database password
 	mysqlConfigHost = "%s::host" // configs key of mysql database host and port
 	mysqlConfigName = "%s::name" // configs key of mysql database name
-	// mysqlConfigDevUser = "%s-dev::user" // DEV : configs key of mysql database user
-	// mysqlConfigDevPwd  = "%s-dev::pwd"  // DEV : configs key of mysql database password
-	// mysqlConfigDevHost = "%s-dev::host" // DEV : configs key of mysql database host and port
-	// mysqlConfigDevName = "%s-dev::name" // DEV : configs key of mysql database name
 
 	/* Microsoft SQL Server */
-	mssqlConfigUser    = "mssql::user"        // configs key of mssql database user
-	mssqlConfigPwd     = "mssql::pwd"         // configs key of mssql database password
-	mssqlConfigHost    = "mssql::host"        // configs key of mssql database server host
-	mssqlConfigPort    = "mssql::port"        // configs key of mssql database port
-	mssqlConfigName    = "mssql::name"        // configs key of mssql database name
-	mssqlConfigTout    = "mssql::timeout"     // configs key of mssql database connect timeout
-	mssqlConfigDevUser = "mssql-dev::user"    // DEV : configs key of mssql database user
-	mssqlConfigDevPwd  = "mssql-dev::pwd"     // DEV : configs key of mssql database password
-	mssqlConfigDevHost = "mssql-dev::host"    // DEV : configs key of mssql database server host
-	mssqlConfigDevPort = "mssql-dev::port"    // DEV : configs key of mssql database port
-	mssqlConfigDevName = "mssql-dev::name"    // DEV : configs key of mssql database name
-	mssqlConfigDevTout = "mssql-dev::timeout" // DEV : configs key of mssql database connect timeout
+	mssqlConfigUser = "%s::user"    // configs key of mssql database user
+	mssqlConfigPwd  = "%s::pwd"     // configs key of mssql database password
+	mssqlConfigHost = "%s::host"    // configs key of mssql database server host
+	mssqlConfigPort = "%s::port"    // configs key of mssql database port
+	mssqlConfigName = "%s::name"    // configs key of mssql database name
+	mssqlConfigTout = "%s::timeout" // configs key of mssql database connect timeout
 
 	// Mysql Server database source name for local connection
 	mysqldsnLocal = "%s:%s@/%s?charset=%s"
@@ -77,12 +67,12 @@ var (
 	// it will nil before mvc.OpenMySQL() called.
 	WingHelper *WingProvider
 
-	// DBConnPool save databases conn pool
-	ConnPool = make(map[string]*WingProvider)
-
 	// MssqlHelper content provider to hold mssql database connections,
 	// it will nil before mvc.OpenMssql() called.
 	MssqlHelper *WingProvider
+
+	// ConnPool save databases connection pool
+	ConnPool = make(map[string]*WingProvider)
 
 	// limitPageItems limit to show lits items in one page, default is 50,
 	// you can use SetLimitPageItems() to change the limit value.
@@ -91,24 +81,11 @@ var (
 
 // readMySQLCofnigs read mysql database params from config file,
 // than verify them if empty except host.
-func readMySQLCofnigs(key string) (string, string, string, string, error) {
-	// user, pwd, host, name := "", "", "", ""
-	// if beego.BConfig.RunMode == "dev" {
-	// 	user = beego.AppConfig.String(fmt.Sprintf(mysqlConfigDevUser, key))
-	// 	pwd = beego.AppConfig.String(fmt.Sprintf(mysqlConfigDevPwd, key))
-	// 	host = beego.AppConfig.String(fmt.Sprintf(mysqlConfigDevHost, key))
-	// 	name = beego.AppConfig.String(fmt.Sprintf(mysqlConfigDevName, key))
-	// }
-
-	// // if curren mode is dev and not found [mysql-dev] session,
-	// // try to load configs from [mysql] session same as prod mode.
-	// invalidConfigs := (user == "" && pwd == "" && name == "")
-	// if invalidConfigs {
-	user := beego.AppConfig.String(fmt.Sprintf(mysqlConfigUser, key))
-	pwd := beego.AppConfig.String(fmt.Sprintf(mysqlConfigPwd, key))
-	host := beego.AppConfig.String(fmt.Sprintf(mysqlConfigHost, key))
-	name := beego.AppConfig.String(fmt.Sprintf(mysqlConfigName, key))
-	// }
+func readMySQLCofnigs(session string) (string, string, string, string, error) {
+	user := beego.AppConfig.String(fmt.Sprintf(mysqlConfigUser, session))
+	pwd := beego.AppConfig.String(fmt.Sprintf(mysqlConfigPwd, session))
+	host := beego.AppConfig.String(fmt.Sprintf(mysqlConfigHost, session))
+	name := beego.AppConfig.String(fmt.Sprintf(mysqlConfigName, session))
 
 	if user == "" || pwd == "" || name == "" {
 		return "", "", "", "", invar.ErrInvalidConfigs
@@ -118,28 +95,13 @@ func readMySQLCofnigs(key string) (string, string, string, string, error) {
 
 // readMssqlCofnigs read mssql database params from config file,
 // than verify them if empty.
-func readMssqlCofnigs() (string, string, string, int, string, int, error) {
-	user, pwd, host, port, name, timeout := "", "", "", 0, "", 0
-	if beego.BConfig.RunMode == "dev" {
-		user = beego.AppConfig.String(mssqlConfigDevUser)
-		pwd = beego.AppConfig.String(mssqlConfigDevPwd)
-		host = beego.AppConfig.DefaultString(mssqlConfigDevHost, "127.0.0.1")
-		port = beego.AppConfig.DefaultInt(mssqlConfigDevPort, 1433)
-		name = beego.AppConfig.String(mssqlConfigDevName)
-		timeout = beego.AppConfig.DefaultInt(mssqlConfigDevTout, 600)
-	}
-
-	// if curren mode is dev and not found [mssql-dev] session,
-	// try to load configs from [mssql] session same as prod mode.
-	invalidConfigs := (user == "" && pwd == "" && name == "")
-	if invalidConfigs {
-		user = beego.AppConfig.String(mssqlConfigUser)
-		pwd = beego.AppConfig.String(mssqlConfigPwd)
-		host = beego.AppConfig.DefaultString(mssqlConfigHost, "127.0.0.1")
-		port = beego.AppConfig.DefaultInt(mssqlConfigPort, 1433)
-		name = beego.AppConfig.String(mssqlConfigName)
-		timeout = beego.AppConfig.DefaultInt(mssqlConfigTout, 600)
-	}
+func readMssqlCofnigs(session string) (string, string, string, int, string, int, error) {
+	user := beego.AppConfig.String(fmt.Sprintf(mssqlConfigUser, session))
+	pwd := beego.AppConfig.String(fmt.Sprintf(mssqlConfigPwd, session))
+	host := beego.AppConfig.DefaultString(fmt.Sprintf(mssqlConfigHost, session), "127.0.0.1")
+	port := beego.AppConfig.DefaultInt(fmt.Sprintf(mssqlConfigPort, session), 1433)
+	name := beego.AppConfig.String(fmt.Sprintf(mssqlConfigName, session))
+	timeout := beego.AppConfig.DefaultInt(fmt.Sprintf(mssqlConfigTout, session), 600)
 
 	if user == "" || pwd == "" || name == "" {
 		return "", "", "", 0, "", 0, invar.ErrInvalidConfigs
@@ -147,101 +109,16 @@ func readMssqlCofnigs() (string, string, string, int, string, int, error) {
 	return user, pwd, host, port, name, timeout, nil
 }
 
-// OpenMySQL connect database and check ping result,
-// the connections holded by mvc.WingHelper object,
-// the charset maybe 'utf8' or 'utf8mb4' same as database set.
-//
-// NOTICE : you must config database params in /conf/app.config file as:
-//	~
-//	[mysql]
-//	host = "127.0.0.1:3306"
-//	name = "sampledb"
-//	user = "root"
-//	pwd  = "123456"
-//	~
-//
-// Or, config as dev mode as:
-//	~
-//	[mysql-dev]
-//	host = "127.0.0.1:3306"
-//	name = "sampledb"
-//	user = "root"
-//	pwd  = "123456"
-//	~
-//
-// Or both or them for dev and prod mode.
-// It will load configs from [mysql-dev] session first, if not
-// found, try agen load from [mysql] session.
-func OpenMySQL(charset string) error {
-	key := "mysql"
-	if beego.BConfig.RunMode == "dev" {
-		key = "mysql-dev"
-	}
-
-	dbuser, dbpwd, dbhost, dbname, err := readMySQLCofnigs(key)
-	if err != nil {
-		return err
-	}
-
-	dsn := ""
-	if len(dbhost) > 0 /* check database host whether using TCP to connect */ {
-		// conntect with remote host database server
-		dsn = fmt.Sprintf(mysqldsnTcp, dbuser, dbpwd, dbhost, dbname, charset)
-	} else {
-		// just connect local database server
-		dsn = fmt.Sprintf(mysqldsnLocal, dbuser, dbpwd, dbname, charset)
-	}
-	logger.D("MySQL DSN:", dsn)
-
-	// open and connect database
-	con, err := sql.Open("mysql", dsn)
-	if err != nil {
-		return err
-	}
-
-	// check database validable
-	if err = con.Ping(); err != nil {
-		return err
-	}
-
-	con.SetMaxIdleConns(100)
-	con.SetMaxOpenConns(100)
-	WingHelper = &WingProvider{con}
-	return nil
-}
-
-// OpenMySQLByKeys connect databases and check ping result,
-// the connections holded by mvc.WingHelper object,
-// the charset maybe 'utf8' or 'utf8mb4' same as database set.
-//
-// NOTICE : you must config database params in /conf/app.config file as:
-// confing as prod mode as
-//	~
-//	[xxxx]
-//	host = "127.0.0.1:3306"
-//	name = "sampledb"
-//	user = "root"
-//	pwd  = "123456"
-//	~
-//
-// Or, config as dev mode as:
-//	~
-//	[xxxx-dev]
-//	host = "127.0.0.1:3306"
-//	name = "sampledb"
-//	user = "root"
-//	pwd  = "123456"
-//	~
-//
-// Or both or them for dev and prod mode.
-// It will load configs from [xxxx-dev] session first, if not
-// found, try agen load from [xxxx] session.
-func OpenMySQLByKeys(charset string, keys ...string) error {
-	for _, key := range keys {
+// openMySQLPool open mysql and cached to connection pool by given session keys
+func openMySQLPool(charset string, sessions []string) error {
+	for _, session := range sessions {
+		// combine develop session key on dev mode
 		if beego.BConfig.RunMode == "dev" {
-			key = key + "-dev"
+			session = session + "-dev"
 		}
-		dbuser, dbpwd, dbhost, dbname, err := readMySQLCofnigs(key)
+
+		// load configs by session key
+		dbuser, dbpwd, dbhost, dbname, err := readMySQLCofnigs(session)
 		if err != nil {
 			return err
 		}
@@ -254,7 +131,7 @@ func OpenMySQLByKeys(charset string, keys ...string) error {
 			// just connect local database server
 			dsn = fmt.Sprintf(mysqldsnLocal, dbuser, dbpwd, dbname, charset)
 		}
-		logger.D("Open config setting key", key, "MySQL DSN:", dsn)
+		logger.D("Mysql session:", session, " for DSN:", dsn)
 
 		// open and connect database
 		con, err := sql.Open("mysql", dsn)
@@ -269,18 +146,79 @@ func OpenMySQLByKeys(charset string, keys ...string) error {
 
 		con.SetMaxIdleConns(100)
 		con.SetMaxOpenConns(100)
-		ConnPool[key] = &WingProvider{con}
+		ConnPool[session] = &WingProvider{con}
 	}
 	return nil
 }
 
+// OpenMySQL connect database and check ping result, the connection holded
+// by mvc.WingHelper object if signle connect, or cached connections in ConnPool map
+// if multiple connect and select same one by given sessions of input params.
+// the datatable charset maybe 'utf8' or 'utf8mb4' same as database set.
+//
+// USAGE : you must config database params in /conf/app.config file as follows
+// (1). For signle connect on prod mode.
+//	~
+//	[mysql]
+//	host = "127.0.0.1:3306"
+//	name = "sampledb"
+//	user = "root"
+//	pwd  = "123456"
+//	~
+//
+// (2). For signle connect on dev mode.
+//	~
+//	[mysql-dev]
+//	host = "127.0.0.1:3306"
+//	name = "sampledb"
+//	user = "root"
+//	pwd  = "123456"
+//	~
+//
+// (3). For both dev and prod mode, you can config all of (1) and (2).
+//
+// (4). Other ways, you can set custom mysql session keywords for multiple connections.
+//	~
+//	[mysql-a]
+//	... same as (1)
+//
+//	[mysql-a-dev]
+//	... same as (2)
+//
+//	[mysql-x]
+//	... same as (1)
+//
+//	[mysql-x-dev]
+//	... same as (2)
+//	~
+func OpenMySQL(charset string, sessions ...string) error {
+	if len(sessions) > 0 {
+		if err := openMySQLPool(charset, sessions); err != nil {
+			return err
+		}
+		WingHelper = Select(sessions[0]) // using the first connection as primary helper
+	} else {
+		session := "mysql"
+		if err := openMySQLPool(charset, []string{session}); err != nil {
+			return err
+		}
+		WingHelper = Select(session)
+	}
+	return nil
+}
+
+// @deprecated Use OpenMySQL instead
+func OpenMySQLByKeys(charset string, sessions ...string) error {
+	return OpenMySQL(charset, sessions...)
+}
+
 // Select mysql Connection by request key words
 // if mode is dev, the key will auto splice '-dev'
-func Select(key string) *WingProvider {
+func Select(session string) *WingProvider {
 	if beego.BConfig.RunMode == "dev" {
-		key = key + "-dev"
+		session = session + "-dev"
 	}
-	return ConnPool[key]
+	return ConnPool[session]
 }
 
 // OpenMssql connect mssql database and check ping result,
@@ -310,10 +248,13 @@ func Select(key string) *WingProvider {
 //	~
 //
 // Or both or them for dev and prod mode.
-// It will load configs from [mssql-dev] session first, if not
-// found, try agen load from [mssql] session.
 func OpenMssql(charset string) error {
-	user, pwd, server, port, dbn, to, err := readMssqlCofnigs()
+	session := "mssql"
+	if beego.BConfig.RunMode == "dev" {
+		session = session + "-dev"
+	}
+
+	user, pwd, server, port, dbn, to, err := readMssqlCofnigs(session)
 	if err != nil {
 		return err
 	}
