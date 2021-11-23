@@ -85,7 +85,7 @@ func (a *PaychainAgent) UpdateOrderBody(url, tradeno string, ps interface{}) err
 	return nil
 }
 
-// UpdateOrderBody update trade number information by struct
+// GenerateOrderBody generate trade body by struct, and return trade number
 func (a *PaychainAgent) GenerateOrderBody(url string, ps interface{}) (string, error) {
 	body, err := json.Marshal(ps)
 	if err != nil {
@@ -103,7 +103,7 @@ func (a *PaychainAgent) GenerateOrderBody(url string, ps interface{}) (string, e
 }
 
 // OrderDetail get the order detail by tardeno from paychain server
-//	@TODO this method should use rpc instead of hppt post.
+//	@TODO this method should use rpc instead of http post.
 func (a *PaychainAgent) OrderDetail(url, tradeno string) ([]*OrderDetailResp, error) {
 	params := &OrderDetailReq{
 		AID:   a.Aid,
@@ -127,7 +127,7 @@ func (a *PaychainAgent) OrderDetail(url, tradeno string) ([]*OrderDetailResp, er
 }
 
 // OrderUpdate update order information to paychain server
-//	@TODO this method should use rpc instead of hppt post.
+//	@TODO this method should use rpc instead of http post.
 func (a *PaychainAgent) OrderUpdate(url, tradeno, body string) error {
 	signkey, eb, ts, err := a.Encrypt(body)
 	if err != nil {
@@ -152,7 +152,7 @@ func (a *PaychainAgent) OrderUpdate(url, tradeno, body string) error {
 }
 
 // OrderGen generate the out request number
-// 	@TODO this method should use rpc instead of hppt post.
+// 	@TODO this method should use rpc instead of http post.
 func (a *PaychainAgent) OrderGen(url, body string) (string, error) {
 	signkey, eb, ts, err := a.Encrypt(body)
 	if err != nil {
