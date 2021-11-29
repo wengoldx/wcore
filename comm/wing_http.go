@@ -24,6 +24,12 @@ import (
 	"strings"
 )
 
+// SetRequest use for set http request before execute http.Client.Do,
+// you can use this middle-ware to set auth as username and passord, and so on.
+// @return bool - if current request ignore TLS verify or not, false is verify by default.
+//              - set http request error
+type SetRequest func(req *http.Request) (bool, error)
+
 const (
 	// ContentTypeJson json content type
 	ContentTypeJson = "application/json;charset=UTF-8"
@@ -31,6 +37,66 @@ const (
 	// ContentTypeForm form content type
 	ContentTypeForm = "application/x-www-form-urlencoded"
 )
+
+// readResponse read response body after executed request, it should return
+// invar.ErrInvalidState when response code is not http.StatusOK.
+func readResponse(resp *http.Response) ([]byte, error) {
+	if resp.StatusCode != http.StatusOK {
+		logger.E("Failed http client, status:", resp.StatusCode)
+		return nil, invar.ErrInvalidState
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger.E("Failed read response, err:", err)
+		return nil, err
+	}
+	logger.D("Read response:", string(body))
+	return body, nil
+}
+
+// unmarshalResponse unmarshal response body after execute request,
+// it may not check the given body if empty.
+func unmarshalResponse(body []byte, out interface{}) error {
+	if err := json.Unmarshal(body, out); err != nil {
+		logger.E("Unmarshal body to struct err:", err)
+		return err
+	}
+	logger.D("Response to struct:", out)
+	return nil
+}
+
+// httpPostJson http post method, you can set post data as json struct.
+func httpPostJson(tagurl string, postdata interface{}) ([]byte, error) {
+	params, err := json.Marshal(postdata)
+	if err != nil {
+		logger.E("Marshal post data err:", err)
+		return nil, err
+	}
+
+	resp, err := http.Post(tagurl, ContentTypeJson, bytes.NewReader(params))
+	if err != nil {
+		logger.E("Http post json err:", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	return readResponse(resp)
+}
+
+// httpPostForm http post method, you can set post data as url.Values.
+func httpPostForm(tagurl string, postdata url.Values) ([]byte, error) {
+	resp, err := http.PostForm(tagurl, postdata)
+	if err != nil {
+		logger.E("Http post form err:", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	return readResponse(resp)
+}
+
+// --------------------------------------------------
 
 // EncodeUrl encode url params
 func EncodeUrl(rawurl string) string {
@@ -50,21 +116,15 @@ func HttpGet(tagurl string, params ...interface{}) ([]byte, error) {
 	}
 
 	rawurl := EncodeUrl(tagurl)
-	logger.D("HttpGet:", rawurl)
+	logger.D("Http get:", rawurl)
+
 	resp, err := http.Get(rawurl)
 	if err != nil {
-		logger.E("Handle http get err:", err)
+		logger.E("Failed http get, err:", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.E("Read get response err:", err)
-		return nil, err
-	}
-	logger.D("HttpGet: body:", string(body))
-	return body, nil
+	return readResponse(resp)
 }
 
 // HttpPost handle http post method, you can set content type as
@@ -83,7 +143,7 @@ func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byt
 	if len(contentType) > 0 {
 		ct = contentType[0]
 	}
-	logger.D("HttpPost:", tagurl, "past data:", postdata, "contentType:", ct)
+	logger.D("Http post:", tagurl, "input:", postdata, "contentType:", ct)
 
 	switch ct {
 	case ContentTypeJson:
@@ -119,13 +179,7 @@ func HttpGetStruct(tagurl string, out interface{}, params ...interface{}) error 
 	if err != nil {
 		return err
 	}
-
-	if err := json.Unmarshal(body, out); err != nil {
-		logger.E("Unmarshal bady to struct err:", err)
-		return err
-	}
-	logger.D("HttpGetStruct:", out)
-	return nil
+	return unmarshalResponse(body, out)
 }
 
 // HttpPostStruct handle http post method and unmarshal data to struct object
@@ -134,32 +188,54 @@ func HttpPostStruct(tagurl string, postdata, out interface{}, contentType ...str
 	if err != nil {
 		return err
 	}
-
-	if err := json.Unmarshal(body, out); err != nil {
-		logger.E("Unmarshal bady to struct err:", err)
-		return err
-	}
-	logger.D("HttpPostStruct:", out)
-	return nil
+	return unmarshalResponse(body, out)
 }
 
-// HttpClientGet handle get by http.Client, you can set useTLS to enable TLS or not
-func HttpClientGet(tagurl string, useTLS bool, params ...interface{}) ([]byte, error) {
+// ==================================================
+
+// HttpClientGet handle http get by http.Client, you can set request headers or
+// ignore TLS verfiy of https url by setRequstFunc middle-ware function as :
+//
+//	[CODE:]
+//	comm.HttpClientGet(tagurl, func(req *http.Request) (bool, error) {
+//			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+//			req.SetBasicAuth("username", "password") // set auther header
+//			return true, nil  // true is ignore TLS verify of https url
+//		}, "same-params") ([]byte, error) {
+//		// TODO do samething
+//	}
+//	[:CODE]
+func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface{}) ([]byte, error) {
 	if len(params) > 0 {
 		tagurl = fmt.Sprintf(tagurl, params...)
 	}
 
 	rawurl := EncodeUrl(tagurl)
+	logger.D("Http client get:", rawurl)
+
+	// generate new request instanse
 	req, err := http.NewRequest("GET", rawurl, http.NoBody)
 	if err != nil {
 		logger.E("Create http request err:", err)
 		return nil, err
 	}
-	return httpClientDo(req, useTLS)
+
+	return httpClientDo(req, setRequestFunc)
 }
 
-// HttpClientGet handle post by http.Client, you can set useTLS to enable TLS or not
-func HttpClientPost(tagurl string, useTLS bool, postdata ...interface{}) ([]byte, error) {
+// HttpClientPost handle https post by http.Client, you can set request headers or
+// ignore TLS verfiy of https url by setRequstFunc middle-ware function as :
+//
+//	[CODE:]
+//	comm.HttpClientPost(tagurl, func(req *http.Request) (bool, error) {
+//			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+//			req.SetBasicAuth("username", "password") // set auther header
+//			return true, nil  // true is ignore TLS verify of https url
+//		}, "post-data") ([]byte, error) {
+//		// TODO do samething
+//	}
+//	[:CODE]
+func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interface{}) ([]byte, error) {
 	var body io.Reader
 	if len(postdata) > 0 {
 		params, err := json.Marshal(postdata)
@@ -171,128 +247,65 @@ func HttpClientPost(tagurl string, useTLS bool, postdata ...interface{}) ([]byte
 	} else {
 		body = http.NoBody
 	}
+	logger.D("Http client post:", tagurl)
 
+	// generate new request instanse
 	req, err := http.NewRequest("POST", tagurl, body)
 	if err != nil {
 		logger.E("Create http request err:", err)
 		return nil, err
 	}
+
+	// set json as default content type
 	req.Header.Set("Content-Type", ContentTypeJson)
-	return httpClientDo(req, useTLS)
+	return httpClientDo(req, setRequestFunc)
 }
 
 // HttpClientGetStruct handle http get method and unmarshal data to struct object
-func HttpClientGetStruct(tagurl string, useTLS bool, out interface{}, params ...interface{}) error {
-	body, err := HttpClientGet(tagurl, useTLS, params...)
+func HttpClientGetStruct(tagurl string, setRequestFunc SetRequest, out interface{}, params ...interface{}) error {
+	body, err := HttpClientGet(tagurl, setRequestFunc, params...)
 	if err != nil {
 		return err
 	}
-
-	if err := json.Unmarshal(body, out); err != nil {
-		logger.E("Unmarshal bady to struct err:", err)
-		return err
-	}
-	logger.D("HttpClientGetStruct:", out)
-	return nil
+	return unmarshalResponse(body, out)
 }
 
 // HttpClientPostStruct handle http post method and unmarshal data to struct object
-func HttpClientPostStruct(tagurl string, useTLS bool, out interface{}, postdata ...interface{}) error {
-	body, err := HttpClientPost(tagurl, useTLS, postdata...)
+func HttpClientPostStruct(tagurl string, setRequestFunc SetRequest, out interface{}, postdata ...interface{}) error {
+	body, err := HttpClientPost(tagurl, setRequestFunc, postdata...)
 	if err != nil {
 		return err
 	}
-
-	if err := json.Unmarshal(body, out); err != nil {
-		logger.E("Unmarshal bady to struct err:", err)
-		return err
-	}
-	logger.D("HttpClientPostStruct:", out)
-	return nil
-}
-
-// httpPostJson http post method, you can set post data as json struct.
-func httpPostJson(tagurl string, postdata interface{}) ([]byte, error) {
-	params, err := json.Marshal(postdata)
-	if err != nil {
-		logger.E("Marshal post data err:", err)
-		return nil, err
-	}
-
-	resp, err := http.Post(tagurl, ContentTypeJson, bytes.NewReader(params))
-	if err != nil {
-		logger.E("Http post json err:", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// check response status
-	if resp.StatusCode != http.StatusOK {
-		logger.E("Failed http post, status:", resp.StatusCode)
-		return nil, invar.ErrInvalidState
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.E("Read post response err:", err)
-		return nil, err
-	}
-	logger.D("HttpPostJson:", tagurl, "data:", postdata, "body:", string(body))
-	return body, nil
-}
-
-// httpPostForm http post method, you can set post data as url.Values.
-func httpPostForm(tagurl string, postdata url.Values) ([]byte, error) {
-	resp, err := http.PostForm(tagurl, postdata)
-	if err != nil {
-		logger.E("Http post form err:", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// check response status
-	if resp.StatusCode != http.StatusOK {
-		logger.E("Failed http post, status:", resp.StatusCode)
-		return nil, invar.ErrInvalidState
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.E("Read post response err:", err)
-		return nil, err
-	}
-	logger.D("HttpPostForm:", tagurl, "data:", postdata, "body:", string(body))
-	return body, nil
+	return unmarshalResponse(body, out)
 }
 
 // httpClientDo handle http client DO method, and return response.
-func httpClientDo(req *http.Request, useTLS bool) ([]byte, error) {
-	client := &http.Client{
-		Transport: &http.Transport{
+func httpClientDo(req *http.Request, setRequestFunc SetRequest) ([]byte, error) {
+	client := &http.Client{}
+
+	// use middle-ware to set request header
+	if setRequestFunc != nil {
+		ignoreTLS, err := setRequestFunc(req)
+		if err != nil {
+			logger.E("Set http request err:", err)
+			return nil, err
+		}
+
+		logger.D("httpClientDo: ignore TLS:", ignoreTLS)
+		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: !useTLS,
+				InsecureSkipVerify: ignoreTLS,
 			},
-		},
+		}
 	}
 
+	// execute http request
 	resp, err := client.Do(req)
 	if err != nil {
 		logger.E("Execute client DO err:", err)
 		return nil, err
 	}
+
 	defer resp.Body.Close()
-
-	// check response status
-	if resp.StatusCode != http.StatusOK {
-		logger.E("Failed http client, status:", resp.StatusCode)
-		return nil, invar.ErrInvalidState
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.E("Read client response err:", err)
-		return nil, err
-	}
-	logger.D("HttpClientDo: body:", string(body))
-	return body, nil
+	return readResponse(resp)
 }
