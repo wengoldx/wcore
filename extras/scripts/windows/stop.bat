@@ -6,18 +6,15 @@
 :: Email       : ping.yang@wengold.net
 :: Version     : 1.0.1
 :: Description :
-::   Start scenegreeting server.
+::   Stop server.
 ::
 :: Prismy.No | Date       | Modified by. | Description
 :: -------------------------------------------------------------------
-:: 00001       2020/05/08   yangping       New version
-:: 00002       2020/08/16   yangping       Support for windows
+:: 00001       2021/08/29   yangping       New version
 :: -------------------------------------------------------------------
 
 set BINPATH=%~dp0
 call %BINPATH%\scripts\exports.bat
 
 cd /d %BINPATH%\..
-call %SERVICE_APP_NAME%.exe
-echo started server...
-
+taskkill /F /IM %SERVICE_APP_NAME%.exe

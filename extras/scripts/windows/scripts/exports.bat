@@ -6,16 +6,21 @@
 :: Email       : ping.yang@wengold.net
 :: Version     : 1.0.1
 :: Description :
-::   Stop scenegreeting server.
+::   Export the temp params for bat script.
 ::
 :: Prismy.No | Date       | Modified by. | Description
 :: -------------------------------------------------------------------
-:: 00001       2020/05/08   yangping       New version
-:: 00002       2020/08/16   yangping       Support for windows
+:: 00001       2021/08/29   yangping       New version
 :: -------------------------------------------------------------------
 
-set BINPATH=%~dp0
-call %BINPATH%\scripts\exports.bat
+:: service project module name
+set SERVICE_APP_NAME=xxx
 
-cd /d %BINPATH%\..
-taskkill /F /IM %SERVICE_APP_NAME%.exe
+# service database name
+set SERVICE_DATABASE=xxxdb
+
+:: service database user
+set SERVICE_DB_USER=root
+
+:: service database host
+set SERVICE_DB_HOST=10.239.xx.xx

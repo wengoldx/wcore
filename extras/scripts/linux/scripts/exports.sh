@@ -6,17 +6,21 @@
 # Email       : ping.yang@wengold.net
 # Version     : 1.0.1
 # Description :
-#   Stop scenegreeting server.
+#   Export the temp params for sh script.
 #
 # Prismy.No | Date       | Modified by. | Description
 # -------------------------------------------------------------------
-# 00001       2020/05/08   yangping       New version
-# 00002       2020/08/16   yangping       Support for windows
+# 00001       2021/08/29   yangping       New version
 # -------------------------------------------------------------------
 
-bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
+# service project module name
+export SERVICE_APP_NAME=xxx
 
-source ${bin}/scripts/exports.sh
-${bin}/scripts/daemon.sh stop ${SERVICE_APP_NAME}
+# service database name
+export SERVICE_DATABASE=xxxdb
 
+# service database user
+export SERVICE_DB_USER=root
+
+# service database host
+export SERVICE_DB_HOST=10.239.xx.xx

@@ -3,36 +3,34 @@
 :: Copyright (c) 2019-2029 Dunyu All Rights Reserved.
 ::
 :: Author      : yangping
-:: Email       : youhei_yp@163.com
+:: Email       : ping.yang@wengold.net
 :: Version     : 1.0.1
 :: Description :
-::   Create database for xxx server.
+::   Create database for server.
 ::
 :: Prismy.No | Date       | Modified by. | Description
 :: -------------------------------------------------------------------
-:: 00001       2020/05/08   yangping       New version
-:: 00002       2020/08/16   yangping       Support for windows
+:: 00001       2021/08/29   yangping       New version
 :: -------------------------------------------------------------------
 
 set BINPATH=%~dp0
-set DATABASE_USER=%1
 call %BINPATH%\exports.bat
 
 :: check database user and password input data
-if "%DATABASE_USER%"=="" goto ERROR
+if "%SERVICE_DB_USER%"=="" goto ERROR
 
 :: init database from .sql file
-mysql -u%DATABASE_USER% -p < %BINPATH%\db_create.sql --default-character-set=utf8mb4
-echo Inited database %SERVICE_DATABASE% for mysql user : %DATABASE_USER%
+mysql -u%SERVICE_DB_USER% -p < %BINPATH%\db_create.sql --default-character-set=utf8mb4
+echo Inited database %SERVICE_DATABASE% for mysql user : %SERVICE_DB_USER%
 
 :: upgrade database to version-1
 echo Next to upgrade database to version-1
-mysql -u%DATABASE_USER% -p < %BINPATH%\db_upgrade_v1.sql --default-character-set=utf8mb4
+mysql -u%SERVICE_DB_USER% -p < %BINPATH%\db_upgrade_v1.sql --default-character-set=utf8mb4
 goto END
 
 :: print out error or end messages
 :ERROR
-echo Usage: initdb.bat (database user)
+echo "Invalid database user or password!"
 pause
 exit 0
 

@@ -1,7 +1,10 @@
-CREATE DATABASE IF NOT EXISTS scenegreetingdb;
+-- Create service database if not exist
+CREATE DATABASE IF NOT EXISTS xxxdb;
 
-USE scenegreetingdb;
+-- Use service database
+USE xxxdb;
 
+-- Account table, contain all account profiles.
 CREATE TABLE IF NOT EXISTS account (
     uuid             varchar (64)       NOT NULL,
     pwd              varchar (24)       NOT NULL,
@@ -10,8 +13,6 @@ CREATE TABLE IF NOT EXISTS account (
     PRIMARY KEY (uuid)
 ) DEFAULT CHARSET=utf8mb4 COMMENT='Account table';
 
--- comment out describe table structure
--- describe account;
 
 -- add trigger to flag unused state when delete greeting node
 -- 0 : IT_Greeting - ImgType - types.go

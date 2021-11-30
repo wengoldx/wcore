@@ -3,15 +3,14 @@
 # Copyright (c) 2019-2029 Dunyu All Rights Reserved.
 #
 # Author      : yangping
-# Email       : youhei_yp@163.com
+# Email       : ping.yang@wengold.net
 # Version     : 1.0.1
 # Description :
 #   This script to start, stop and show status of server.
 #
 # Prismy.No | Date       | Modified by. | Description
 # -------------------------------------------------------------------
-# 00001       2020/05/08   yangping       New version
-# 00002       2020/08/16   yangping       Support for windows
+# 00001       2021/08/29   yangping       New version
 # -------------------------------------------------------------------
 
 usage="
@@ -45,15 +44,15 @@ umask 0000
 
 # parse the '-f' option of stop command
 forced=$1
-FORCEDKILL=false
+FORCED_KILL=false
 shopt -s extglob
 if [ ! -z ${forced} ]; then
   case ${forced} in
     *(-)f )
-      FORCEDKILL=true
+      FORCED_KILL=true
       ;;
     *(-)force )
-      FORCEDKILL=true
+      FORCED_KILL=true
       ;;
   esac
 fi
@@ -85,7 +84,7 @@ case $commands in
       if ps -p `cat $pid` > /dev/null 2>&1; then
         if ! kill -0 `cat $pid` > /dev/null 2>&1; then
           echo cannot stop server with pid `cat $pid` - permission denied
-        elif ${FORCEDKILL}; then
+        elif ${FORCED_KILL}; then
           kill -9 `cat $pid` > /dev/null 2>&1;
           sleep 1;
           echo server killed

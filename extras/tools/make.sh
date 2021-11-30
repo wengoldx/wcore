@@ -2,5 +2,5 @@
 
 go build -i -o ./tools ./src/tools/main.go
 
-sudo chown -R youhei:youhei ./
-sudo chmod -R 755 ./
+sudo chown $USER:$USER ./tools
+sudo chmod 755 ./tools
