@@ -210,17 +210,26 @@ func GenHash(src, salt string, buflen ...int) (string, error) {
 	return fmt.Sprintf("%x", hex), nil
 }
 
-// HashMD5 hash string by md5
+// HashMD5 hash string by md5, it ignore write buffer errors
 func HashMD5(original []byte) []byte {
 	h := md5.New()
 	h.Write(original)
 	return h.Sum(nil)
 }
 
+// HashMD5Check hash string by md5 and check write buffer errors
+func HashMD5Check(original []byte) ([]byte, error) {
+	h := md5.New()
+	if _, err := h.Write(original); err != nil {
+		return nil, err
+	}
+	return h.Sum(nil), nil
+}
+
 // HashSHA256 hash byte array by sha256
 func HashSHA256(original []byte) []byte {
 	// h := sha256.New()
-	// h.Write([]byte(original))
+	// h.Write(original)
 	// hashed := h.Sum(nil)
 	hashed := sha256.Sum256(original)
 	return hashed[:]
@@ -274,9 +283,18 @@ func HashByteThenBase64(data []byte) string {
 	return ByteToBase64(HashSHA256(data))
 }
 
-// EncodeMD5 encode string by md5
+// EncodeMD5 encode string by md5, it ignore write buffer errors
 func EncodeMD5(original string) string {
 	return hex.EncodeToString(HashMD5([]byte(original)))
+}
+
+// EncodeMD5Check encode string by md5 and check write buffer errors
+func EncodeMD5Check(original string) (string, error) {
+	cipher, err := HashMD5Check([]byte(original))
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(cipher), nil
 }
 
 // EncodeB64MD5 encode string to base64, and then encode by md5
@@ -300,4 +318,22 @@ func ToMD5Hex(input ...string) string {
 	}
 	cipher := h.Sum(nil)
 	return hex.EncodeToString(cipher)
+}
+
+// ToMD5Upper encode string to md5 and then transform to uppers.
+func ToMD5Upper(original string) (string, error) {
+	md5sign, err := EncodeMD5Check(original)
+	if err != nil {
+		return "", err
+	}
+	return strings.ToUpper(md5sign), nil
+}
+
+// ToMD5Lower encode string to md5 and then transform to lowers.
+func ToMD5Lower(original string) (string, error) {
+	md5sign, err := EncodeMD5Check(original)
+	if err != nil {
+		return "", err
+	}
+	return strings.ToUpper(md5sign), nil
 }

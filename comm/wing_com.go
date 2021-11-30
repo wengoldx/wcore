@@ -141,6 +141,15 @@ func ToXMLReplace(input interface{}, from, to string) (string, error) {
 	return xmlout, nil
 }
 
+// SignLines combine strings into multiple lines
+func SignLines(inputs ...string) string {
+	packet := ""
+	for _, line := range inputs {
+		packet += line + "\n"
+	}
+	return packet
+}
+
 // GetSortKey get first letter of Chinese Pinyin
 func GetSortKey(str string) string {
 	if str == "" { // check the input param

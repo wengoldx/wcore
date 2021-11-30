@@ -19,6 +19,7 @@ import (
 	"github.com/wengoldx/wing/logger"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -97,6 +98,16 @@ func httpPostForm(tagurl string, postdata url.Values) ([]byte, error) {
 }
 
 // --------------------------------------------------
+
+// GetIP get just ip not port from controller.Ctx.Request.RemoteAddr of beego
+func GetIP(remoteaddr string) string {
+	ip, _, _ := net.SplitHostPort(remoteaddr)
+	if ip == "::1" {
+		ip = "127.0.0.1"
+	}
+	logger.D("Got ip [", ip, "] from [", remoteaddr, "]")
+	return ip
+}
 
 // EncodeUrl encode url params
 func EncodeUrl(rawurl string) string {
