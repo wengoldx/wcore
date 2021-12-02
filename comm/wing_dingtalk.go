@@ -132,46 +132,59 @@ type DTMsgFeedCard struct {
 //
 // WARNING :
 //
-// Notice that the sender may not success @ sameone or members of group chat
+// Notice that the sender may not success @ anyones of chat's group members
 // when using DingTalk user ids and the target robot have no enterprise ownership,
-// so recommend use DingTalk user phone number to @ sameone or members when
-// you not ensure the robot if have enterprise ownership.
+// so recommend use DingTalk user phone number to @ anyones or all when you
+// not ensure the robot if have enterprise ownership.
 //
 // USAGES :
 //
-// the below only show send text type messages usages, the others type message as same.
-// see more access link https://developers.dingtalk.com/document/robots/custom-robot-access
+// the below only show send text type message's usages, the others as same.
+// see more with link https://developers.dingtalk.com/document/robots/custom-robot-access
 //
 // [CODE:]
 //	sender := comm.DTalkSender{
-//		WebHook: "https://xxxx", Keyword: "KEY to filter message", Secure: "secure token"
+//		WebHook: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
+//		Keyword: "FILTERKEY",
+//		Secure: "SECxxxxxxxxxxxxxxxxxxxxxxxxxx"
 //	}
 //
-//	// at sameone or members of group chat by user phone number
+//	// at anyones of chat's group members by user phone number
 //	atMobiles := []string{"130xxxxxxxx","150xxxxxxxx"}
 //
-//	// at sameone or members of group chat by user id
+//	// at anyones of chat's group members by user id
 //	atUserIds := []string{"userid1","userid2"}
 //
 //	// Usage 1 :
-//	// send text message filter by keyword without at sameone
-//	sender.SendText("message content", nil, nil, false)
+//	// send text message filter by keyword without at anyones
+//	sender.SendText("FILTERKEY message content", nil, nil, false)
 //
 //	// Usage 2 :
-//	// send text message filter by keyword and at group chat members
-//	sender.SendText("message content", nil, atUserIds, false)
-//	sender.SendText("message content", atMobiles, nil, false)
-//	sender.SendText("message content", atMobiles, atUserIds, false)
+//	// send text message filter by keyword and at chat's group anyones
+//	sender.SendText("FILTERKEY message content", nil, atUserIds, false)
+//	sender.SendText("message FILTERKEY content", atMobiles, nil, false)
+//	sender.SendText("message content FILTERKEY", atMobiles, atUserIds, false)
 //
 //	// Usage 3 :
-//	// send text message filter by keyword and at all group chat members
-//	sender.SendText("message content", nil, nil, true)
+//	// send text message filter by keyword and at chat's group all members
+//	sender.SendText("FILTERKEY message content", nil, nil, true)
+//
+//	// remove keyword, just using secure token,
+//	// you may using both keyword and secure token too
+//	sender.UsingKey("")
 //
 //	// Usage 4 :
 //	// send text message with secure token
 //	sender.SendText("message content", atMobiles, atUserIds, false, true)
 //	sender.SendText("message content", nil, nil, true, true)
 //	sender.SendText("message content", nil, nil, false, true)
+//
+//	// Usage 5 :
+//	// send text message with secure token and filter by keyword
+//	sender.UsingKey("FILTERKEY2")
+//	sender.SendText("FILTERKEY2 message content", atMobiles, atUserIds, false, true)
+//	sender.SendText("message FILTERKEY2 content", nil, nil, true, true)
+//	sender.SendText("message content FILTERKEY2", nil, nil, false, true)
 // [:CODE]
 type DTalkSender struct {
 	WebHook string // custom group chat robot access webhook
@@ -208,10 +221,15 @@ func (s *DTalkSender) checkKeyAndURL(content string, isSecure ...bool) (string, 
 		return "", "", invar.ErrInvalidData
 	}
 
+	// sign post url when using secure token
 	posturl := s.WebHook
 	if len(isSecure) > 0 && isSecure[0] {
 		posturl = s.signURL()
-	} else if s.Keyword == "" || !strings.Contains(content, s.Keyword) {
+	}
+
+	// check the message content if contain keyword whatever
+	// using secure token or not
+	if s.Keyword != "" && !strings.Contains(content, s.Keyword) {
 		logger.E("Empty keyword, or not found keyword in message content!")
 		return "", "", invar.ErrInvalidToken
 	}
