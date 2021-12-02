@@ -30,6 +30,7 @@ const (
 
 // -------------------------------------------------------------------
 // WARNING :
+//
 // Do NOT change the json labels of below structs, it must
 // same as DingTalk offical APIs define.
 // -------------------------------------------------------------------
@@ -130,19 +131,18 @@ type DTMsgFeedCard struct {
 // DTalkSender message sender for DingTalk custom robot, it just support
 // inited with keywords, secure token functions, but not ips range sets.
 //
-// WARNING :
+// `WARNING` :
 //
 // Notice that the sender may not success @ anyones of chat's group members
 // when using DingTalk user ids and the target robot have no enterprise ownership,
 // so recommend use DingTalk user phone number to @ anyones or all when you
 // not ensure the robot if have enterprise ownership.
 //
-// USAGES :
+// `USAGES` :
 //
 // the below only show send text type message's usages, the others as same.
 // see more with link https://developers.dingtalk.com/document/robots/custom-robot-access
 //
-// [CODE:]
 //	sender := comm.DTalkSender{
 //		WebHook: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
 //		Keyword: "FILTERKEY",
@@ -163,6 +163,7 @@ type DTMsgFeedCard struct {
 //	// send text message filter by keyword and at chat's group anyones
 //	sender.SendText("FILTERKEY message content", nil, atUserIds, false)
 //	sender.SendText("message FILTERKEY content", atMobiles, nil, false)
+//	sender.SendText("message FILTERKEY @130xxxxxxxx content", atMobiles, nil, false)
 //	sender.SendText("message content FILTERKEY", atMobiles, atUserIds, false)
 //
 //	// Usage 3 :
@@ -185,7 +186,6 @@ type DTMsgFeedCard struct {
 //	sender.SendText("FILTERKEY2 message content", atMobiles, atUserIds, false, true)
 //	sender.SendText("message FILTERKEY2 content", nil, nil, true, true)
 //	sender.SendText("message content FILTERKEY2", nil, nil, false, true)
-// [:CODE]
 type DTalkSender struct {
 	WebHook string // custom group chat robot access webhook
 	Keyword string // message content keyword filter
@@ -198,7 +198,7 @@ func (s *DTalkSender) SetSecure(secure string) {
 	s.Secure = strings.TrimSpace(secure)
 }
 
-// UsingKey using keyword to check message content if valid, , it
+// UsingKey using keyword to check message content if valid, it
 // may remove all leading and trailing white space.
 func (s *DTalkSender) UsingKey(keyword string) {
 	s.Keyword = strings.TrimSpace(keyword)
@@ -260,7 +260,21 @@ func (s *DTalkSender) send(posturl string, data interface{}) error {
 	return nil
 }
 
-// SendText send text message, it support at sameone or members of group chat.
+// SendText send text message, it support at anyones of chat's group members.
+//
+// `Notice` :
+//
+// You can change the '@anyone-user' text display position in DintTalk message
+// by add '@130xxxxxxxx' user phone in content string as:
+//	"text": { "content": "the weather is nice today, @130xxxxxxxx is that?" },
+//	-> `the weather is nice today, {@UserX} is that?`
+//
+// Or the '@anyone-user' text should display as trailing in DingTalk message
+// when content string not contain '@130xxxxxxxx' user phone:
+//	"text": { "content": "the weather is nice today" },
+//	-> `the weather is nice today {@UserX}`
+//
+// `Post Data Format` :
 //
 //	{
 //		"at": {
@@ -294,6 +308,12 @@ func (s *DTalkSender) SendText(content string, atMobiles, atUserIDs []string, is
 
 // SendLink send link message, it not support at anyone but have a picture and web link.
 //
+// `Notice` :
+//
+// The title, text, msgURL input params must not empty.
+//
+// `Post Data Format` :
+//
 //	{
 //		"msgtype": "link",
 //		"link": {
@@ -304,8 +324,8 @@ func (s *DTalkSender) SendText(content string, atMobiles, atUserIDs []string, is
 //		}
 //	}
 func (s *DTalkSender) SendLink(title, text, picURL, msgURL string, isSecure ...bool) error {
-	if title == "" || text == "" {
-		logger.E("Empty title or text in link message")
+	if title == "" || text == "" || msgURL == "" {
+		logger.E("Empty title, text or message url in link message")
 		return invar.ErrInvalidData
 	}
 
@@ -322,6 +342,17 @@ func (s *DTalkSender) SendLink(title, text, picURL, msgURL string, isSecure ...b
 }
 
 // SendMarkdown send markdown type message, it support anyone and pick, message link urls.
+//
+// `Notice` :
+//
+// You MUST add '@130xxxxxxxx' user phone in content string when want to at anyones
+// of chat's group members, and enable change the '@anyone-user' text display position
+// in DintTalk message by move '@130xxxxxxxx' position in content string as:
+//	"text": "### the weather is nice today, '@130xxxxxxxx' is that? \n > yes"
+//	-> `the weather is nice today, {@UserX} is that?
+//		yes`
+//
+// `Post Data Format` :
 //
 //	{
 //		"msgtype": "markdown",
@@ -356,6 +387,12 @@ func (s *DTalkSender) SendMarkdown(title, text string, atMobiles, atUserIds []st
 
 // SendActionCard send action card type message, it not support at anyone but has a single link.
 //
+// `Notice` :
+//
+// The title, text, singleTitle, singleURL input params must not empty.
+//
+// `Post Data Format` :
+//
 //	{
 //		"actionCard": {
 //			"title": "Hellow",
@@ -385,6 +422,15 @@ func (s *DTalkSender) SendActionCard(title, text, singleTitle, singleURL string,
 }
 
 // SendActionCard2 send action card type message with multiple buttons.
+//
+// `Notice` :
+//
+// The title, text, btns input params must not empty.
+//
+// And the buttons layout will aways disply as vertical orientation when buttons count over 2,
+// so you can change buttons layout orientation only 2 buttons.
+//
+// `Post Data Format` :
 //
 //	{
 //		"msgtype": "actionCard",
@@ -427,6 +473,15 @@ func (s *DTalkSender) SendActionCard2(title, text string, btns []DTButton, isVer
 
 // SendFeedCard send feed card type message, it not support at anyone.
 //
+// `Notice` :
+//
+// The all links input params must not empty.
+//
+// And the buttons layout will aways disply as vertical when the buttons count over 2,
+// so you can change buttons layout orientation only 2 buttons.
+//
+// `Post Data Format` :
+//
 //	{
 //		"msgtype":"feedCard",
 //		"feedCard": {
@@ -458,3 +513,132 @@ func (s *DTalkSender) SendFeedCard(links []DTFeedLink, isSecure ...bool) error {
 		MsgType: DTalkFeedCard,
 	})
 }
+
+// -------------------------------------------------------------------
+// FOR TEST SCRIPTS :
+// -------------------------------------------------------------------
+//
+// package main
+//
+// import (
+// 	"fmt"
+// 	"github.com/wengoldx/wing/comm"
+// )
+//
+// func main() {
+// 	sender := comm.DTalkSender{
+// 		WebHook: "https://oapi.dingtalk.com/robot/send?access_token=xxxxxx",
+// 		Keyword: "BUILD",
+// 		Secure:  "SECxxxxxxxxxxxx",
+// 	}
+//
+// 	fmt.Println("fmt :: start sending...")
+//
+// 	var err error
+// 	atMobiles := []string{"188xxxxxxxx"}
+// 	atUserIds := []string{"zhangsan"}
+// 	messageurl := "https://www.baidu.com"
+// 	pictureurl := "https://himg.bdimg.com/sys/portraitn/item/423bb6dceedab9abcbbe9bf4"
+// 	pictureurl2 := "https://img.alicdn.com/tfs/TB1NwmBEL9TBuNjy1zbXXXpepXa-2400-1218.png"
+// 	btns := []comm.DTButton{
+// 		{Title: "Go Baidu", ActionURL: "https://www.baidu.com"},
+// 		{Title: "Go Fanyi", ActionURL: "https://fanyi.baidu.com"},
+// 		{Title: "Go LanHu", ActionURL: "https://lanhuapp.com"},
+// 	}
+// 	links := []comm.DTFeedLink{
+// 		{Title: "Item title BUILD", PicURL: pictureurl2, MsgURL: "https://www.baidu.com"},
+// 		{Title: "Item title 1", PicURL: pictureurl2, MsgURL: "https://www.baidu.com"},
+// 		{Title: "Item title 2", PicURL: pictureurl2, MsgURL: "https://fanyi.baidu.com"},
+// 		{Title: "Item title 3", PicURL: pictureurl, MsgURL: "https://lanhuapp.com"},
+// 		{Title: "Item title 4", PicURL: pictureurl, MsgURL: "https://lanhuapp.com"},
+// 		{Title: "Item title 5", PicURL: pictureurl, MsgURL: "https://lanhuapp.com"},
+// 		{Title: "Item title 6", PicURL: pictureurl, MsgURL: "https://lanhuapp.com"},
+// 		{Title: "Item title 7", PicURL: pictureurl, MsgURL: "https://lanhuapp.com"},
+// 	}
+//
+// 	/* For Text */
+//
+// 	err = sender.SendText("message content", nil, nil, false)
+// 	err = sender.SendText("BUILD message content", nil, nil, false)
+// 	err = sender.SendText("BUILD message content", nil, nil, true)
+// 	err = sender.SendText("message content BUILD", nil, atUserIds, false)
+// 	err = sender.SendText("@188xxxxxxxx messageBUILDcontent", atMobiles, nil, false)
+// 	err = sender.SendText("messageBUILD@188xxxxxxxxcontent", atMobiles, nil, false)
+// 	err = sender.SendText("mesBUILDsage content", atMobiles, atUserIds, false)
+// 	sender.UsingKey("")
+// 	err = sender.SendText("the weather is nice today", nil, nil, false, true)
+// 	err = sender.SendText("the weather is nice today", nil, nil, true, true)
+// 	err = sender.SendText("the weather is nice today", atMobiles, atUserIds, false, true)
+// 	err = sender.SendText("the weather is nice today", atMobiles, atUserIds, true, true)
+//
+// 	/* For Link */
+//
+// 	err = sender.SendLink("Hellow", "the weather is nice today", "", "")
+// 	err = sender.SendLink("BUILD Hellow", "the weather is nice today", "", messageurl)
+// 	err = sender.SendLink("BUILD Hellow", "the weather is nice today", pictureurl, messageurl)
+// 	err = sender.SendLink("Hellow", "BUILD - the weather is nice today", "", messageurl)
+// 	sender.UsingKey("")
+// 	err = sender.SendLink("Hellow", "the weather is nice today", "", "", true)
+// 	err = sender.SendLink("Hellow", "the weather is nice today", "", messageurl, true)
+// 	err = sender.SendLink("BUILD Hellow", "the weather is nice today", "", "", true)
+// 	err = sender.SendLink("BUILD Hellow", "the weather is nice today", "", messageurl, true)
+// 	err = sender.SendLink("BUILD Hellow", "the weather is nice today", pictureurl, messageurl, true)
+// 	err = sender.SendLink("Hellow", "BUILD \n the weather is nice today", "", messageurl, true)
+//
+// 	/* For Markdown */
+//
+// 	err = sender.SendMarkdown("Hellow", "the weather is nice today", nil, nil, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "the weather is nice today", nil, nil, false)
+// 	err = sender.SendMarkdown("Hellow", "BUILD the weather is nice today", nil, nil, false)
+// 	err = sender.SendMarkdown("", "BUILD the weather is nice today", nil, nil, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "", nil, nil, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "the weather is nice today", atMobiles, nil, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "@188xxxxxxxx the weather is nice today", atMobiles, nil, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "# the weather is nice today \n## line 2 \n> line3 @188xxxxxxxx", atMobiles, nil, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "the weather @youhei is nice today", nil, atUserIds, false)
+// 	err = sender.SendMarkdown("BUILD @188xxxxxxxx Hellow", "the weather is nice today", atMobiles, atUserIds, false)
+// 	err = sender.SendMarkdown("BUILD Hellow", "the weather is nice today", nil, nil, true)
+// 	err = sender.SendMarkdown("BUILD Hellow", "the weather is nice today", atMobiles, atUserIds, true)
+// 	sender.UsingKey("")
+// 	err = sender.SendMarkdown("Hellow", "the weather is nice today", nil, nil, false, true)
+// 	err = sender.SendMarkdown("Hellow", "BUILD the weather is nice today", nil, nil, false, true)
+// 	err = sender.SendMarkdown("", "the weather is nice today", nil, nil, false, true)
+// 	err = sender.SendMarkdown("Hellow", "", nil, nil, false, true)
+// 	err = sender.SendMarkdown("Hellow", "@188xxxxxxxx the weather is nice today", atMobiles, nil, false, true)
+// 	err = sender.SendMarkdown("Hellow", "# the weather is nice today \n## line 2 \n> line3 @188xxxxxxxx", atMobiles, nil, false, true)
+// 	err = sender.SendMarkdown("Hellow", "the weather @youhei is nice today", nil, atUserIds, false, true)
+// 	err = sender.SendMarkdown("@188xxxxxxxx Hellow", "the weather is nice today", atMobiles, atUserIds, false, true)
+//
+// 	/* For ActionCard */
+//
+// 	err = sender.SendActionCard("Hellow", "the weather is nice today", "", "")
+// 	err = sender.SendActionCard("BUILD Hellow", "the weather is nice today", "Let GO", "")
+// 	err = sender.SendActionCard("BUILD Hellow", "the weather is nice today", "Let GO", messageurl)
+// 	err = sender.SendActionCard("BUILD Hellow", "# the weather is nice today \n## line 2 \n> line3", "Let GO", messageurl, false)
+// 	err = sender.SendActionCard("BUILD Hellow", "# the weather is nice today \n ![screenshot](https://img.alicdn.com/tfs/TB1NwmBEL9TBuNjy1zbXXXpepXa-2400-1218.png) \n## line 2 \n> line3", "Let GO", messageurl)
+// 	err = sender.SendActionCard("Hellow", "BUILD the weather is nice today", "Let GO", messageurl)
+// 	sender.UsingKey("")
+// 	err = sender.SendActionCard("", "the weather is nice today", "Let GO", messageurl, true)
+// 	err = sender.SendActionCard("Hellow", "the weather is nice today", "Let GO", messageurl, true)
+// 	err = sender.SendActionCard("Hellow", "", "Let GO", messageurl, true)
+//
+// 	/* For ActionCard2 */
+//
+// 	err = sender.SendActionCard2("Hellow", "the weather is nice today", btns, true)
+// 	err = sender.SendActionCard2("BUILD Hellow", "the weather is nice today", btns, true)
+// 	err = sender.SendActionCard2("BUILD Hellow", "the weather is nice today", btns, true)
+// 	err = sender.SendActionCard2("BUILD Hellow", "# the weather is nice today \n ![screenshot](https://img.alicdn.com/tfs/TB1NwmBEL9TBuNjy1zbXXXpepXa-2400-1218.png) \n## line 2 \n> line3", btns, true)
+// 	sender.UsingKey("")
+// 	err = sender.SendActionCard2("BUILD", "the weather is nice today", btns, false, true)
+//
+// 	/* For FeedCard */
+//
+// 	err = sender.SendFeedCard(links)
+// 	err = sender.SendFeedCard(links, true)
+//
+// 	if err != nil {
+// 		fmt.Println("fmt :: sended message err:" + err.Error())
+// 	} else {
+// 		fmt.Println("fmt :: sended message.")
+// 	}
+// }
