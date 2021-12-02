@@ -12,8 +12,10 @@ package secure
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"crypto/md5"
 	crypto "crypto/rand"
+	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
@@ -243,6 +245,22 @@ func HashSHA256Hex(original []byte) string {
 // HashSHA256String hash string by sha256
 func HashSHA256String(original string) []byte {
 	return HashSHA256([]byte(original))
+}
+
+// SignSHA1 use HmacSHA1 to calculate the signature,
+// and format as base64 string
+func SignSHA1(securekey string, src string) string {
+	mac := hmac.New(sha1.New, []byte(securekey))
+	mac.Write([]byte(src))
+	return ByteToBase64(mac.Sum(nil))
+}
+
+// SignSHA256 use HmacSHA256 to calculate the signature,
+// and format as base64 string
+func SignSHA256(securekey string, src string) string {
+	mac := hmac.New(sha256.New, []byte(securekey))
+	mac.Write([]byte(src))
+	return ByteToBase64(mac.Sum(nil))
 }
 
 // ByteToBase64 decode base64 string to byte array

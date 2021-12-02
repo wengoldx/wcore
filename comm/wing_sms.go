@@ -11,8 +11,6 @@
 package comm
 
 import (
-	"crypto/hmac"
-	"crypto/sha1"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,7 +25,6 @@ import (
 )
 
 const (
-	timeLayout      = "2006-01-02T15:04:05Z"
 	sortQueryFormat = "AccessKeyId=%s" +
 		"&Action=SendSms" +
 		"&Format=JSON" +
@@ -110,7 +107,7 @@ func (s *SmsSender) requestRemoteSend(requesturl string) ([]byte, error) {
 // getQueryString parse sms request url query string
 func (s *SmsSender) getQueryString(phones, signname, tplcode, content string) string {
 	signnonce := uuid.NewV4()
-	timestamp := url.QueryEscape(time.Now().UTC().Format(timeLayout))
+	timestamp := url.QueryEscape(time.Now().UTC().Format(time.RFC3339))
 	return fmt.Sprintf(sortQueryFormat,
 		s.accessKeyID, // access key id of aiyun
 		phones,        // target phone numbers to send to
@@ -124,16 +121,11 @@ func (s *SmsSender) getQueryString(phones, signname, tplcode, content string) st
 
 // Send sends
 func (s *SmsSender) Send(phones, signname, tplcode, content string) error {
-	queryString := s.getQueryString(phones, signname, tplcode, content)
+	querystr := s.getQueryString(phones, signname, tplcode, content)
+	signstr := fmt.Sprintf("GET&%%2F&%s", s.encodeURL(querystr))
 
-	key := []byte(s.accessSecret)
-	signstr := fmt.Sprintf("GET&%%2F&%s", s.encodeURL(queryString))
-
-	mac := hmac.New(sha1.New, key)
-	mac.Write([]byte(signstr))
-
-	signture := s.encodeURL(secure.EncodeBase64(string(mac.Sum(nil))))
-	requesturl := fmt.Sprintf(s.requestURLFormat, signture, queryString)
+	signture := s.encodeURL(secure.SignSHA1(s.accessSecret, signstr))
+	requesturl := fmt.Sprintf(s.requestURLFormat, signture, querystr)
 	logger.I("Send sms, request url:", requesturl)
 
 	resp, err := s.requestRemoteSend(requesturl)

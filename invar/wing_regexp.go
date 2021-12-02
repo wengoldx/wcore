@@ -16,13 +16,14 @@ import (
 )
 
 const (
-	ExpOnlyNumbers     = "^[0-9]*$"
-	ExpOnlyLowerChars  = "^[a-z]*$"
-	ExpOnlyUpperChars  = "^[A-Z]*$"
-	ExpOnlyCaseChars   = "^[a-zA-Z]*$"
-	ExpNumOrLowerChars = "^[0-9a-z]*$"
-	ExpNumOrUpperChars = "^[0-9A-Z]*$"
-	ExpNumOrCaseChars  = "^[0-9a-zA-Z]*$"
+	ExpSingleChar      = "[a-zA-Z]"       // only a lower or upper char in a-z
+	ExpOnlyNumbers     = "^[0-9]*$"       // number string
+	ExpOnlyLowerChars  = "^[a-z]*$"       // lower chars string
+	ExpOnlyUpperChars  = "^[A-Z]*$"       // upper chars string
+	ExpOnlyCaseChars   = "^[a-zA-Z]*$"    // lower or upper chars string
+	ExpNumOrLowerChars = "^[0-9a-z]*$"    // number or lower chars string
+	ExpNumOrUpperChars = "^[0-9A-Z]*$"    // number or upper chars string
+	ExpNumOrCaseChars  = "^[0-9a-zA-Z]*$" // contain number, lower or upper chars string
 )
 
 // MatchRegexp validate the src if matched by expression

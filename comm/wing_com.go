@@ -50,12 +50,44 @@ func Try(do func(), catcher func(error), finaly ...func()) {
 	do()
 }
 
-// Ternary ternary operation
-func Ternary(condition bool, trueResult interface{}, falseResult interface{}) interface{} {
+// Condition return the trueData when pass the condition, or return falseData
+func Condition(condition bool, trueData interface{}, falseData interface{}) interface{} {
 	if condition {
-		return trueResult
+		return trueData
 	}
-	return falseResult
+	return falseData
+}
+
+// CondiString return the trueString when pass the condition, or return falseString
+func CondiString(condition bool, trueString string, falseString string) string {
+	if condition {
+		return trueString
+	}
+	return falseString
+}
+
+// CondiInt return the trueInt when pass the condition, or return falseInt
+func CondiInt(condition bool, trueInt int, falseInt int) int {
+	if condition {
+		return trueInt
+	}
+	return falseInt
+}
+
+// CondiInt64 return the trueInt64 when pass the condition, or return falseInt64
+func CondiInt64(condition bool, trueInt64 int, falseInt64 int) int {
+	if condition {
+		return trueInt64
+	}
+	return falseInt64
+}
+
+// CondiFloat return the trueFloat when pass the condition, or return falseFloat
+func CondiFloat(condition bool, trueFloat float64, falseFloat float64) float64 {
+	if condition {
+		return trueFloat
+	}
+	return falseFloat
 }
 
 // Contain check the given string list if contains item
@@ -133,16 +165,16 @@ func ToXMLReplace(input interface{}, from, to string) (string, error) {
 		return "", err
 	}
 
-	from = strings.TrimSpace(from)
-	if from != "" && len(from) > 0 {
-		logger.D("Replace xml string from:", from, "to:", to)
-		xmlout = strings.Replace(xmlout, from, to, -1)
+	trimsrc := strings.TrimSpace(from)
+	if trimsrc != "" {
+		logger.D("Replace xml string from:", trimsrc, "to:", to)
+		xmlout = strings.Replace(xmlout, trimsrc, to, -1)
 	}
 	return xmlout, nil
 }
 
-// SignLines combine strings into multiple lines
-func SignLines(inputs ...string) string {
+// JoinLines combine strings into multiple lines
+func JoinLines(inputs ...string) string {
 	packet := ""
 	for _, line := range inputs {
 		packet += line + "\n"

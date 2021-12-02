@@ -15,15 +15,23 @@ import (
 	"time"
 )
 
-// Task the type of task
+/* ----------------------------------------------------------------- */
+/* WARNING :                                                         */
+/* The Task functions should restruct as TaskPool and new type Task, */
+/* please do not use the old Task functions.                         */
+/* ----------------------------------------------------------------- */
+
+// Task the type of task, it support execute mutilpe jobs with job datas.
 type Task struct {
-	queue     *Queue
-	interrupt bool
-	interval  time.Duration
-	executing bool
+	queue     *Queue        // jobs data queue of task
+	interrupt bool          // enable interrupt task
+	interval  time.Duration // sleep interval betwwen tow task job
+	executing bool          // task executing status
+
 }
 
-var chexe = make(chan string)
+// Notice that all generated tasks will using this chain
+var chexe = make(chan string) // tasks chain
 
 // TaskCallback task callback
 type TaskCallback func(data interface{}) error
@@ -31,38 +39,38 @@ type TaskCallback func(data interface{}) error
 // GenTask generat a new task instance, you can set the interval duration
 // and interrupt flag as the follow format:
 // [CODE:]
-//   interrupt := 1  // interrupt to execut the remain tasks when case error
-//   interval := 500 // sleep interval between tasks in microseconds
+//   interrupt := 1  // interrupt to execut the remain task jobs when case error
+//   interval := 500 // sleep interval between task jobs in millisecond
 //   task := comm.GenTask(callback, interrupt, interval)
-//   task.Post(taskdata)
+//   task.Post(jobdata)
 // [CODE]
-func GenTask(callback TaskCallback, configs ...int) *Task {
-	// generat the task and fill default configs
+func GenTask(callback TaskCallback, options ...int) *Task {
+	// generat the task and fill default options
 	task := &Task{
 		queue: GenQueue(), interrupt: false, interval: 0, executing: false,
 	}
 
-	// set task configs from given data
-	if configs != nil {
-		task.interrupt = len(configs) > 0 && configs[0] > 0
-		if len(configs) > 1 && configs[1] > 0 {
-			task.interval = time.Duration(configs[1] * 1000)
+	// set task options from given data
+	if optlen := len(options); optlen > 0 {
+		task.interrupt = options[0] > 0
+		if optlen > 1 {
+			task.interval = time.Duration(options[1]) * time.Millisecond
 		}
 	}
 
 	// start task channel to listen
 	go task.innerTaskExecuter(callback)
-	logger.I("Generat a task:{interrupt:", task.interrupt, ", interval:", task.interval, "}")
+	logger.I("Generat task:{interrupt:", task.interrupt, ", interval:", task.interval, "}")
 	return task
 }
 
-// Post post a task to tasks queue back
-func (t *Task) Post(taskdata interface{}) {
-	if taskdata == nil {
-		logger.E("Invalid task data, abort post")
+// Post post a job to queue back
+func (t *Task) Post(jobdata interface{}) {
+	if jobdata == nil {
+		logger.E("Invalid job data, abort post")
 		return
 	}
-	t.queue.Push(taskdata)
+	t.queue.Push(jobdata)
 	t.innerPostFor("Post Action")
 }
 
@@ -73,24 +81,22 @@ func (t *Task) SetInterrupt(interrupt bool) {
 
 // setInterval set wait interval between tasks in microseconds, and it must > 0.
 func (t *Task) SetInterval(interval int) {
-	if interval > 0 {
-		t.interval = time.Duration(interval * 1000)
-	}
+	t.interval = time.Duration(interval) * time.Millisecond
 }
 
 // innerPostFor start runtime to post action
 func (t *Task) innerPostFor(action string) {
-	logger.I("Start runtime to post action:", action)
+	logger.D("Start runtime to post action:", action)
 	go func() { chexe <- action }()
 }
 
 // innerTaskExecuter task execute monitor to listen tasks
 func (t *Task) innerTaskExecuter(callback TaskCallback) {
 	for {
-		logger.I("Blocking for task requir select...")
+		logger.D("Blocking for task requir select...")
 		select {
 		case action := <-chexe:
-			logger.I("Received request from:", action)
+			logger.D("Received request from:", action)
 			if callback == nil {
 				logger.E("Nil task callback, abort request")
 				break
@@ -114,13 +120,13 @@ func (t *Task) innerTaskExecuter(callback TaskCallback) {
 			if err := callback(taskdata); err != nil {
 				logger.E("Execute task callback err:", err)
 				if t.interrupt {
-					logger.I("Interrupted tasks when case error")
+					logger.D("Interrupted tasks when case error")
 					t.executing = false
 					break
 				}
 			}
 			if t.interval > 0 {
-				logger.I("Waiting to next task after:", t.interval)
+				logger.D("Waiting to next task after:", t.interval)
 				time.Sleep(t.interval)
 			}
 			t.executing = false
