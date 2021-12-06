@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package vcall;
+
+service Agent {
+	/// registry one new agent ,add profile
+	rpc Registry(AgentInfo) returns (PhoneResp) {}
+	/// get all agents profile 
+	rpc GetAgents(OwnerPage) returns (AgentProfiles) {}
+	/// get agent profile by phone
+	rpc GetProfile(PhoneReq) returns (AgentProfile) {}
+	/// get agent profile by uuid
+	rpc IsExist(UUIDPhone) returns (Exist) {}
+}
+
+message AgentInfo {
+	string owner = 1;
+	string logo = 2;
+	string corp = 3;
+	string dep = 4;
+}
+
+message UUIDPhone {
+	string uuid = 1;
+	string phone = 2;
+}
+
+message Exist {
+	bool exist = 1;
+}
+
+message OwnerPage {
+	string owner = 1;
+	int64 page = 2;
+}
+
+message AgentProfile {
+	string logo = 1;
+	string corporation = 2;
+	string department = 3;
+	string phone = 4;
+	int64  remained = 5; 
+}
+
+message AgentProfiles {
+	repeated AgentProfile agents = 2;
+}
+
+service User {
+	rpc CheckPhone(PhoneReq) returns (PhoneResp) {}
+}
+
+message PhoneReq {
+	string phone = 1;
+}
+
+message PhoneResp {
+	string result = 1;
+}
+
+service Trade {
+	rpc SetRemained(TradeReq) returns (StatusResp) {}
+}
+
+message TradeReq {
+	string phone = 1;
+	string remained = 2; 
+}
+
+message StatusResp {
+	int64 status = 1;
+}
