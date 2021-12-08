@@ -143,6 +143,8 @@ type DTMsgFeedCard struct {
 // the below only show send text type message's usages, the others as same.
 // see more with link https://developers.dingtalk.com/document/robots/custom-robot-access
 //
+// ---
+//
 //	sender := comm.DTalkSender{
 //		WebHook: "https://oapi.dingtalk.com/robot/send?access_token=xxx",
 //		Keyword: "FILTERKEY",
@@ -266,11 +268,13 @@ func (s *DTalkSender) send(posturl string, data interface{}) error {
 //
 // You can change the '@anyone-user' text display position in DintTalk message
 // by add '@130xxxxxxxx' user phone in content string as:
+//
 //	"text": { "content": "the weather is nice today, @130xxxxxxxx is that?" },
 //	-> `the weather is nice today, {@UserX} is that?`
 //
 // Or the '@anyone-user' text should display as trailing in DingTalk message
 // when content string not contain '@130xxxxxxxx' user phone:
+//
 //	"text": { "content": "the weather is nice today" },
 //	-> `the weather is nice today {@UserX}`
 //

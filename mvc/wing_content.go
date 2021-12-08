@@ -156,29 +156,32 @@ func openMySQLPool(charset string, sessions []string) error {
 // if multiple connect and select same one by given sessions of input params.
 // the datatable charset maybe 'utf8' or 'utf8mb4' same as database set.
 //
-// USAGE : you must config database params in /conf/app.config file as follows
-// (1). For signle connect on prod mode.
-//	~
+// `USAGE`
+//
+// you must config database params in /conf/app.config file as follows
+//
+// ---
+//
+// #### Case 1 : For signle connect on prod mode.
+//
 //	[mysql]
 //	host = "127.0.0.1:3306"
 //	name = "sampledb"
 //	user = "root"
 //	pwd  = "123456"
-//	~
 //
-// (2). For signle connect on dev mode.
-//	~
+// #### Case 2 : For signle connect on dev mode.
+//
 //	[mysql-dev]
 //	host = "127.0.0.1:3306"
 //	name = "sampledb"
 //	user = "root"
 //	pwd  = "123456"
-//	~
 //
-// (3). For both dev and prod mode, you can config all of (1) and (2).
+// #### Case 3 : For both dev and prod mode, you can config all of up cases.
 //
-// (4). Other ways, you can set custom mysql session keywords for multiple connections.
-//	~
+// #### Case 4 : For multi-connections to set custom session keywords.
+//
 //	[mysql-a]
 //	... same as (1)
 //
@@ -190,7 +193,6 @@ func openMySQLPool(charset string, sessions []string) error {
 //
 //	[mysql-x-dev]
 //	... same as (2)
-//	~
 func OpenMySQL(charset string, sessions ...string) error {
 	if len(sessions) > 0 {
 		if err := openMySQLPool(charset, sessions); err != nil {
@@ -225,8 +227,14 @@ func Select(session string) *WingProvider {
 // the connections holded by mvc.MssqlHelper object,
 // the charset maybe 'utf8' or 'utf8mb4' same as database set.
 //
-// NOTICE : you must config database params in /conf/app.config file as:
-//	~
+// `NOTICE`
+//
+// you must config database params in /conf/app.config file as:
+//
+// ---
+//
+// #### Case 1 For connect on prod mode.
+//
 //	[mssql]
 //	host    = "127.0.0.1"
 //	port    = 1433
@@ -234,10 +242,9 @@ func Select(session string) *WingProvider {
 //	user    = "sa"
 //	pwd     = "123456"
 //	timeout = 600
-//	~
 //
-// Or, config as dev mode as:
-//	~
+// #### Case 2 For connect on dev mode.
+//
 //	[mssql-dev]
 //	host    = "127.0.0.1"
 //	port    = 1433
@@ -245,9 +252,8 @@ func Select(session string) *WingProvider {
 //	user    = "sa"
 //	pwd     = "123456"
 //	timeout = 600
-//	~
 //
-// Or both or them for dev and prod mode.
+// #### Case 3 For both dev and prod mode, you can config all of up cases.
 func OpenMssql(charset string) error {
 	session := "mssql"
 	if beego.BConfig.RunMode == "dev" {
@@ -420,7 +426,8 @@ func (w *WingProvider) Affected(result sql.Result) (int64, error) {
 
 // FormatSets format update sets for sql update
 //
-// [CODE:]
+// ---
+//
 //	sets := w.FormatSets(struct {
 //		StringFiled string
 //		EmptyString string
@@ -435,7 +442,6 @@ func (w *WingProvider) Affected(result sql.Result) (int64, error) {
 //	}{"string", "", " ", " trim ", 123, 32, 64, 32.123, 64.123, true})
 //	// sets: stringfiled='string', trimstring='trim', intfiled=123, i32filed=32, i64filed=64, f32filed=32.123, f64filed=64.123, boolfiled=true
 //	logger.I("sets:", sets)
-// [CODE]
 func (w *WingProvider) FormatSets(updates interface{}) string {
 	sets := []string{}
 	keys, values := reflect.TypeOf(updates), reflect.ValueOf(updates)
@@ -474,10 +480,10 @@ func (w *WingProvider) FormatSets(updates interface{}) string {
 // All operations in a transaction are either completed or not completed. They will not end in an intermediate link.
 // If an error occurs during the execution of the transaction, it will be rolled back to the state before the transaction starts
 //
-// [CODE:]
-//		args := make(map[string][]interface{})
-//		args[query] = []interface{}{...arg}
-// [CODE]
+// ---
+//
+//	args := make(map[string][]interface{})
+//	args[query] = []interface{}{...arg}
 func (w *WingProvider) Atomicity(args map[string][]interface{}) error {
 	atomic, err := w.Conn.Begin()
 	if err != nil {

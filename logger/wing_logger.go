@@ -34,15 +34,19 @@ const (
 
 // init initialize app logger
 //
-// NOTICE : you must config logger params in /conf/app.config file as:
-//	~
+// `NOTICE` : you must config logger params in /conf/app.config file as:
+//
+// ---
+//
 //	[logger]
 //	level = "debug"
 //	maxdays = "7"
-//	~
 //
-//	level values range in : [debug, info, warn, error], default is info.
-//	maxdays is the max days to hold logs cache, default is 7 days.
+// ---
+//
+// - the level values range in : [debug, info, warn, error], default is info.
+//
+// - maxdays is the max days to hold logs cache, default is 7 days.
 func init() {
 	config := readLoggerConfigs()
 	beego.SetLogger(logs.AdapterFile, config)

@@ -38,12 +38,13 @@ type TaskCallback func(data interface{}) error
 
 // GenTask generat a new task instance, you can set the interval duration
 // and interrupt flag as the follow format:
-// [CODE:]
-//   interrupt := 1  // interrupt to execut the remain task jobs when case error
-//   interval := 500 // sleep interval between task jobs in millisecond
-//   task := comm.GenTask(callback, interrupt, interval)
-//   task.Post(jobdata)
-// [CODE]
+//
+// ---
+//
+//	interrupt := 1  // interrupt to execut the remain task jobs when case error
+//	interval := 500 // sleep interval between task jobs in millisecond
+//	task := comm.GenTask(callback, interrupt, interval)
+//	task.Post(jobdata)
 func GenTask(callback TaskCallback, options ...int) *Task {
 	// generat the task and fill default options
 	task := &Task{

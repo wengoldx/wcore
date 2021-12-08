@@ -303,9 +303,11 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 // DoAfterValidated do bussiness action after success validate the given json data,
 // notice that you should register the field level validator for the input data's struct,
 // then use it in struct describetion label as validate target.
-//	[CODE:]
-//	types.go
-//	~~~~~~~~~~~~~~~
+//
+// ---
+//
+// `types.go`
+//
 //	type struct Accout {
 //		Acc string `json:"acc" validate:"required,IsVaildUuid"`
 //		PWD string `json:"pwd" validate:"required_without"`
@@ -323,8 +325,10 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 //		mvc.RegisterFieldValidator("IsVaildUuid", isVaildUuid)
 //	}
 //
-//	controller.go
-//	~~~~~~~~~~~~~~~
+// ---
+//
+// `controller.go`
+//
 //	func (c *AccController) AccLogin() {
 //		ps := &types.Accout{}
 //		c.DoAfterValidated(ps, func() (int, interface{}) {
@@ -334,7 +338,6 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 //			return http.StatusOK, "Done business"
 //		} /** , false /* not limit error message even code is 40x */ */)
 //	}
-//	[CODE]
 func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("json", ps, nextFunc, true, isprotect)

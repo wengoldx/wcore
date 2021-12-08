@@ -178,17 +178,17 @@ func (a *PaychainAgent) OrderGen(url, body string) (string, error) {
 	return tradeno, nil
 }
 
-/**
- * Encrypt encrypt the given body, and return sign code, timestamp and body ciphertext.
- *
- * @param body payment content to be encrypted.
- * @return string sign code of hashed payment body.
- * @return string encrypted body ciphertext.
- * @return int64  encrypte timestamp.
- * @return error  invar.ErrInvalidClient or exception errors.
- *
- * WARNING : the body string max lenght DO NOT lagger than 400 chars.
- */
+//	Encrypt encrypt the given body, and return sign code, timestamp and body ciphertext.
+//
+//	@param body payment content to be encrypted.
+//	@return string sign code of hashed payment body.
+//	@return string encrypted body ciphertext.
+//	@return int64  encrypte timestamp.
+//	@return error  invar.ErrInvalidClient or exception errors.
+//
+//	`WARNING` :
+//
+// The body string max lenght DO NOT lagger than 400 chars.
 func (a *PaychainAgent) Encrypt(body string) (string, string, int64, error) {
 	hashcode := secure.EncodeMD5(body)
 	timestamp := time.Now().UnixNano()

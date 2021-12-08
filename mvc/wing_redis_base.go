@@ -21,7 +21,8 @@ import (
 //	option[0] : OptEX, OptPX, OptEXAT, OptPXAT, OptNX, OptXX, OptKEEPTTL
 //	option[1] : time number in seconds, milliseconds, or unix timestampe
 //
-//	[CODE:]
+// ---
+//
 //	err := c.Set("foo1", 123456)
 //	err := c.Set("foo2", 123456, OptEX, 60 * 10)
 //	err := c.Set("foo3", 56.789, OptPX, 1000000)
@@ -30,9 +31,8 @@ import (
 //	err := c.Set("foo6", 111333, OptNX)
 //	err := c.Set("foo7", 222444, OptXX)
 //	err := c.Set("foo8", 333555, OptKEEPTTL)
-//	[CODE]
 //
-//	see https://redis.io/commands/set
+// see https://redis.io/commands/set
 func (c *WingRedisConn) Set(key string, value interface{}, options ...interface{}) error {
 	err := invar.ErrInvalidRedisOptions
 	if options != nil && len(options) > 0 {
@@ -71,7 +71,7 @@ func (c *WingRedisConn) SetPx(key string, value interface{}, expire int64) error
 
 // SetNx set a value of a unexist key, it return false when failed set on exist key.
 //
-//	see https://redis.io/commands/setnx
+// see https://redis.io/commands/setnx
 func (c *WingRedisConn) SetNx(key string, value interface{}) (bool, error) {
 	exist, err := c.Conn.Do("SETNX", c.serviceNamespace+key, value)
 	if err != nil {
@@ -83,7 +83,7 @@ func (c *WingRedisConn) SetNx(key string, value interface{}) (bool, error) {
 // SetRange overwrite part of a string at key starting at the specified offset,
 // it will transform the given value to string first, and retuen the memery length.
 //
-//	see https://redis.io/commands/setrange
+// see https://redis.io/commands/setrange
 func (c *WingRedisConn) SetRange(key string, value interface{}, offset int) int {
 	length, err := redis.Int(c.Conn.Do("SETRANGE", c.serviceNamespace+key, offset, value))
 	if err != nil {
@@ -96,7 +96,7 @@ func (c *WingRedisConn) SetRange(key string, value interface{}, offset int) int 
 // Append append a value of a key, it will transform the given value to string first,
 // than append end of exist string, or set value same as SET commond.
 //
-//	see https://redis.io/commands/append
+// see https://redis.io/commands/append
 func (c *WingRedisConn) Append(key string, value interface{}) int {
 	length, err := redis.Int(c.Conn.Do("APPEND", c.serviceNamespace+key, value))
 	if err != nil {
@@ -108,7 +108,7 @@ func (c *WingRedisConn) Append(key string, value interface{}) int {
 
 // StrLength get the string value of key, it return 0 if the key unexist.
 //
-//	see https://redis.io/commands/strlen
+// see https://redis.io/commands/strlen
 func (c *WingRedisConn) StrLength(key string) int {
 	length, _ := redis.Int(c.Conn.Do("STRLEN", c.serviceNamespace+key))
 	return length
@@ -123,7 +123,7 @@ func (c *WingRedisConn) Exist(key string) (bool, error) {
 // you can use NsKey() or Nskeys() to transform origin keys to namespaced keys,
 // and then call Exists(nskeys[0], nskeys[1] ... nskeys[m]) to multiple check.
 //
-//	see https://redis.io/commands/exists
+// see https://redis.io/commands/exists
 func (c *WingRedisConn) Exists(nskeys ...string) (int, error) {
 	return redis.Int(c.Conn.Do("EXISTS", nskeys))
 }
@@ -142,7 +142,7 @@ func (c *WingRedisConn) ExpireAt(key string, expire int64, option ...string) boo
 
 // Persist remove the expiration from a key.
 //
-//	see https://redis.io/commands/persist
+// see https://redis.io/commands/persist
 func (c *WingRedisConn) Persist(key string) bool {
 	set, err := redis.Bool(c.Conn.Do("PERSIST", c.serviceNamespace+key))
 	if err != nil {
@@ -176,14 +176,14 @@ func (c *WingRedisConn) Delete(key string) bool {
 // you can use NsKey() or Nskeys() to transform origin keys to namespaced keys,
 // and then call Deletes(nskeys[0], nskeys[1] ... nskeys[m]) to multiple delete.
 //
-//	see https://redis.io/commands/del
+// see https://redis.io/commands/del
 func (c *WingRedisConn) Deletes(nskeys ...string) (int, error) {
 	return redis.Int(c.Conn.Do("DEL", nskeys))
 }
 
 // GetRange get the string value of key cut by given range.
 //
-//	see https://redis.io/commands/getrange
+// see https://redis.io/commands/getrange
 func (c *WingRedisConn) GetRange(key string, start, end int) (string, error) {
 	return redis.String(c.Conn.Do("GETRANGE", c.serviceNamespace+key, start, end))
 }

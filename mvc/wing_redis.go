@@ -11,6 +11,7 @@
 package mvc
 
 import (
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/garyburd/redigo/redis"
 	"github.com/wengoldx/wing/invar"
@@ -24,7 +25,8 @@ type WingRedisConn struct {
 	// serviceNamespace service namespace to distinguish others server, it will
 	// append with key as prefix to get or set data to redis database, default is empty.
 	//
-	// NOTICE :
+	// `NOTICE` :
+	//
 	// you must config namespace in /conf/app.config file, or call WingRedis.SetNamespace(ns)
 	// to set unique server namespace when multiple services connecting the one redis server.
 	serviceNamespace string
@@ -34,14 +36,10 @@ type WingRedisConn struct {
 }
 
 const (
-	redisConfigHost    = "redis::host"          // configs key of redis host and port
-	redisConfigPwd     = "redis::pwd"           // configs key of redis password
-	redisConfigNs      = "redis::namespace"     // configs key of redis namespace
-	redisConfigLock    = "redis::deadlock"      // configs key of redis lock max duration
-	redisConfigDevHost = "redis-dev::host"      // DEV : configs key of redis host and port
-	redisConfigDevPwd  = "redis-dev::pwd"       // DEV : configs key of redis password
-	redisConfigDevNs   = "redis-dev::namespace" // DEV : configs key of redis namespace
-	redisConfigDevLock = "redis-dev::deadlock"  // DEV : configs key of redis lock max duration
+	redisConfigHost = "%s::host"      // configs key of redis host and port
+	redisConfigPwd  = "%s::pwd"       // configs key of redis password
+	redisConfigNs   = "%s::namespace" // configs key of redis namespace
+	redisConfigLock = "%s::deadlock"  // configs key of redis lock max duration
 )
 
 // The follow options may support by diffrent Redis version, get more infor
@@ -69,24 +67,11 @@ var (
 )
 
 // readRedisCofnigs read redis params from config file, than verify them if empty.
-func readRedisCofnigs() (string, string, string, int64, error) {
-	host, pwd, ns, lock := "", "", "", int64(20)
-	if beego.BConfig.RunMode == "dev" {
-		host = beego.AppConfig.String(redisConfigDevHost)
-		pwd = beego.AppConfig.String(redisConfigDevPwd)
-		ns = beego.AppConfig.String(redisConfigDevNs) // allow empty
-		lock, _ = beego.AppConfig.Int64(redisConfigDevLock)
-	}
-
-	// if curren mode is dev and not found [mysql-dev] session,
-	// try to load configs from [redis] session same as prod mode.
-	invalidConfigs := (host == "" && pwd == "")
-	if invalidConfigs {
-		host = beego.AppConfig.String(redisConfigHost)
-		pwd = beego.AppConfig.String(redisConfigPwd)
-		ns = beego.AppConfig.String(redisConfigNs) // allow empty
-		lock, _ = beego.AppConfig.Int64(redisConfigLock)
-	}
+func readRedisCofnigs(session string) (string, string, string, int64, error) {
+	host := beego.AppConfig.String(fmt.Sprintf(redisConfigHost, session))
+	pwd := beego.AppConfig.String(fmt.Sprintf(redisConfigPwd, session))
+	ns := beego.AppConfig.String(fmt.Sprintf(redisConfigNs, session)) // allow empty
+	lock := beego.AppConfig.DefaultInt64(fmt.Sprintf(redisConfigLock, session), 20)
 
 	if host == "" || pwd == "" {
 		return "", "", "", 0, invar.ErrInvalidConfigs
@@ -101,35 +86,43 @@ func readRedisCofnigs() (string, string, string, int64, error) {
 // OpenRedis connect redis database server and auth password,
 // the connections holded by mvc.WingRedis object.
 //
-// NOTICE : you must config redis params in /conf/app.config file as:
-//	~
+// `NOTICE` :
+//
+// you must config redis params in /conf/app.config file as:
+//
+// ---
+//
+// #### Case 1 : For connect on prod mode.
+//
 //	[redis]
 //	host = "127.0.0.1:6379"
 //	pwd = "123456"
 //	namespace = "project_namespace"
 //	deadlock = 20
-//	~
 //
-// Or, config as dev mode as:
-//	~
-//	[redis]
+// #### Case 2 : For connect on dev mode.
+//
+//	[redis-dev]
 //	host = "127.0.0.1:6379"
 //	pwd = "123456"
 //	namespace = "project_namespace"
 //	deadlock = 20
-//	~
 //
-// Or both or them for dev and prod mode.
-// It will load configs from [mssql-dev] session first, if not
-// found, try agen load from [mssql] session.
+// #### Case 3 For both dev and prod mode, you can config all of up cases.
 //
 // The configs means as:
-//	host - is the redis server host ip and port.
-//	pwd  - is the redis server authenticate password.
-//	namespace - is the prefix string or store key.
-//	deadlock  - is the max time of deadlock, in seconds.
+//
+//	`host` - is the redis server host ip and port.
+//	`pwd`  - is the redis server authenticate password.
+//	`namespace` - is the prefix string or store key.
+//	`deadlock`  - is the max time of deadlock, in seconds.
 func OpenRedis() error {
-	host, pwd, ns, lock, err := readRedisCofnigs()
+	session := "redis"
+	if beego.BConfig.RunMode == "dev" {
+		session = session + "-dev"
+	}
+
+	host, pwd, ns, lock, err := readRedisCofnigs(session)
 	if err != nil {
 		return err
 	}
@@ -192,7 +185,7 @@ func (c *WingRedisConn) NsArrKeys(keys []string) []string {
 
 // ServerTime get redis server unix time is seconds and microsecodns.
 //
-//	see https://redis.io/commands/time
+// see command [time](https://redis.io/commands/time)
 func (c *WingRedisConn) ServerTime() (int64, int64) {
 	st, err := redis.Int64s(c.Conn.Do("TIME"))
 	if err != nil || len(st) != 2 {
@@ -204,8 +197,8 @@ func (c *WingRedisConn) ServerTime() (int64, int64) {
 
 // setWithExpire set a value and expiration of a key.
 //
-//	see https://redis.io/commands/setex
-//	see https://redis.io/commands/psetex
+// see commands [setex](https://redis.io/commands/setex),
+// [psetex](https://redis.io/commands/psetex).
 func (c *WingRedisConn) setWithExpire(key, commond string, value interface{}, expire int64) error {
 	if _, err := c.Conn.Do(commond, c.serviceNamespace+key, expire, value); err != nil {
 		return err
@@ -240,9 +233,9 @@ func (c *WingRedisConn) parseGetOptions(options ...interface{}) (string, int64) 
 
 // Get get a value of key, than set value expire time or delete by given options.
 //
-//	see https://redis.io/commands/get
-//	see https://redis.io/commands/getex
-//	see https://redis.io/commands/getdel
+// see commands [get](https://redis.io/commands/get),
+// [getex](https://redis.io/commands/getex),
+// [getdel](https://redis.io/commands/getdel)
 func (c *WingRedisConn) getWithOptions(key string, options ...interface{}) (interface{}, error) {
 	if options != nil {
 		var reply interface{}
@@ -264,8 +257,8 @@ func (c *WingRedisConn) getWithOptions(key string, options ...interface{}) (inte
 // key error if the key unexist or set expiration and now expire, or return keeplive
 // error if the exist key has no associated expire.
 //
-//	see https://redis.io/commands/ttl
-//	see https://redis.io/commands/pttl
+// see commands [ttl](https://redis.io/commands/ttl),
+// [pttl](https://redis.io/commands/pttl)
 func (c *WingRedisConn) getKeyExpire(key, commond string) (int64, error) {
 	expire, err := redis.Int64(c.Conn.Do(commond, c.serviceNamespace+key))
 	if expire == -2 {
@@ -279,8 +272,8 @@ func (c *WingRedisConn) getKeyExpire(key, commond string) (int64, error) {
 // setKeyExpire set the expiration for a key by given commond, the optional values
 // can be set as ExpNX, ExpXX, ExpGT, ExpLT since Redis 7.0 support.
 //
-//	see https://redis.io/commands/expire
-//	see https://redis.io/commands/expireat
+// see [expire](https://redis.io/commands/expire),
+// [expireat](https://redis.io/commands/expireat)
 func (c *WingRedisConn) setKeyExpire(key, commond string, expire int64, option ...string) bool {
 	set, err := false, invar.ErrInvalidRedisOptions
 	if option != nil && len(option) > 0 {

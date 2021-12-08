@@ -140,15 +140,16 @@ func HttpGet(tagurl string, params ...interface{}) ([]byte, error) {
 
 // HttpPost handle http post method, you can set content type as
 // comm.ContentTypeJson or comm.ContentTypeForm, or other you need set.
-// [CODE:]
-//     // set post data as json string
-//     data := struct {"key": "Value", "id": "123"}
-//     resp, err := comm.HttpPost(tagurl, data)
 //
-//     // set post data as form string
-//     data := "key=Value&id=123"
-//     resp, err := comm.HttpPost(tagurl, data, comm.ContentTypeForm)
-// [CODE]
+// ---
+//
+//	// set post data as json string
+//	data := struct {"key": "Value", "id": "123"}
+//	resp, err := comm.HttpPost(tagurl, data)
+//
+//	// set post data as form string
+//	data := "key=Value&id=123"
+//	resp, err := comm.HttpPost(tagurl, data, comm.ContentTypeForm)
 func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byte, error) {
 	ct := ContentTypeJson
 	if len(contentType) > 0 {
@@ -207,7 +208,8 @@ func HttpPostStruct(tagurl string, postdata, out interface{}, contentType ...str
 // HttpClientGet handle http get by http.Client, you can set request headers or
 // ignore TLS verfiy of https url by setRequstFunc middle-ware function as :
 //
-//	[CODE:]
+// ---
+//
 //	comm.HttpClientGet(tagurl, func(req *http.Request) (bool, error) {
 //			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 //			req.SetBasicAuth("username", "password") // set auther header
@@ -215,7 +217,6 @@ func HttpPostStruct(tagurl string, postdata, out interface{}, contentType ...str
 //		}, "same-params") ([]byte, error) {
 //		// TODO do samething
 //	}
-//	[:CODE]
 func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface{}) ([]byte, error) {
 	if len(params) > 0 {
 		tagurl = fmt.Sprintf(tagurl, params...)
@@ -237,7 +238,8 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 // HttpClientPost handle https post by http.Client, you can set request headers or
 // ignore TLS verfiy of https url by setRequstFunc middle-ware function as :
 //
-//	[CODE:]
+// ---
+//
 //	comm.HttpClientPost(tagurl, func(req *http.Request) (bool, error) {
 //			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 //			req.SetBasicAuth("username", "password") // set auther header
@@ -245,7 +247,6 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 //		}, "post-data") ([]byte, error) {
 //		// TODO do samething
 //	}
-//	[:CODE]
 func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interface{}) ([]byte, error) {
 	var body io.Reader
 	if len(postdata) > 0 {

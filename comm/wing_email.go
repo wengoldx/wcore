@@ -15,36 +15,34 @@ import (
 	"strings"
 )
 
-/*
- * Useage
- *
- * [CODE:]
- * mailTempleteSubject = "You hava a mail！"
- * mailTemplateFormat  = `
- *	<p>
- *		<span font-weight:bold; style="font-size:16px; color:#363636">Dear</span><br><br>
- *		<span style="font-size:14px; color:#484848">Your account %s have not activate, please click the follow link to activate it.</span><br>
- *		<span style="font-size:14px; color:#484848">%s</span><br>
- *	</p>
- *	<p align="right">
- *		<span style="font-size:12px; color:#484848">From %s</span><br>
- *		<span style="font-size:10px; color:#636363">%s</span>
- *	</p>
- *	`
- *
- * mailagent = &comm.MailAgent{
- *     Acc: account, Pwd: password, Host: smtphost, Port: smtpport,
- * }
- * subject := mailTempleteSubject
- * message := fmt.Sprintf(mailTemplateFormat, account, link, who,
- *     time.Now().Format(templateTimeFormat))
- * // send mail with attachment
- * // return ma.SendMail(to, subject, message, fileName)
- * return ma.SendMail(to, subject, message)
- * [CODE]
- */
-
-// MailAgent mail agent informations..
+// MailAgent mail agent informations
+//
+// `Useage`
+//
+// ---
+//
+//	mailTempleteSubject = "You hava a mail！"
+//	mailTemplateFormat  = `
+//		<p>
+//			<span font-weight:bold; style="font-size:16px; color:#363636">Dear</span><br><br>
+//			<span style="font-size:14px; color:#484848">Your account %s have not activate, please click the follow link to activate it.</span><br>
+//			<span style="font-size:14px; color:#484848">%s</span><br>
+//		</p>
+//		<p align="right">
+//			<span style="font-size:12px; color:#484848">From %s</span><br>
+//			<span style="font-size:10px; color:#636363">%s</span>
+//		</p>
+//		`
+//
+//	 mailagent = &comm.MailAgent{
+//	     Acc: account, Pwd: password, Host: smtphost, Port: smtpport,
+//	 }
+//	 subject := mailTempleteSubject
+//	 message := fmt.Sprintf(mailTemplateFormat, account, link, who,
+//	     time.Now().Format(templateTimeFormat))
+//	 // send mail with attachment
+//	 // return ma.SendMail(to, subject, message, fileName)
+//	 return ma.SendMail(to, subject, message)
 type MailAgent struct {
 	Acc  string `json:"acc"`  // username - mail address
 	Pwd  string `json:"pwd"`  // account password
@@ -76,23 +74,22 @@ func (a *MailAgent) SendMail(to []string, subject, body string, attach ...string
 	return nil
 }
 
-/*
- * SendCode send verify email with code
- *
- * The SMS templetes same as:
- * [CODE:]
- * TplEmailRegister = EmailContent{"Account Verify Of XXX", `
- * <html>
- *   <body>
- *     <h3> Dear NAME </h3>
- *     <p> Thank you for register XXX, the registration verification code is : <h3> TOKEN </h3>, please activate your account in time.</br>
- *         Please DO NOT forward this code to others. If not myself, please delete this email.</p>
- *     </br>
- *     <h5>XXX Technology Co., Ltd</h5>
- *  </body>
- * </html>`}
- * [CODE]
- */
+// SendCode send verify email with code
+//
+// The SMS templetes same as:
+//
+// ---
+//
+//	TplEmailRegister = EmailContent{"Account Verify Of XXX", `
+//	<html>
+//	  <body>
+//	    <h3> Dear NAME </h3>
+//	    <p> Thank you for register XXX, the registration verification code is : <h3> TOKEN </h3>, please activate your account in time.</br>
+//	        Please DO NOT forward this code to others. If not myself, please delete this email.</p>
+//	    </br>
+//	    <h5>XXX Technology Co., Ltd</h5>
+//	 </body>
+//	</html>`}
 func (a *MailAgent) SendCode(email EmailContent, mailto string, code string) error {
 	to := []string{mailto}
 	body := strings.Replace(email.Body, "NAME", mailto, 1)

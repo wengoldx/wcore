@@ -117,7 +117,9 @@ func ToNDigits(input interface{}, n int) string {
 
 // ToMap transform given struct data to map data, the transform struct
 // feilds must using json tag to mark the map key.
-//	[CODE:]
+//
+// ---
+//
 //	type struct Sample {
 //		Name string `json:"name"`
 //	}
@@ -126,7 +128,6 @@ func ToNDigits(input interface{}, n int) string {
 //	// md data format is {
 //	//     "name" : "name_value"
 //	// }
-//	[CODE]
 func ToMap(input interface{}) (map[string]interface{}, error) {
 	out := make(map[string]interface{})
 	buf, err := json.Marshal(input)
@@ -275,10 +276,11 @@ func AccessAllowOriginBy(category int, origins string) {
 
 // AccessAllowOriginByLocal allow cross domain access for localhost,
 // the port number must config in /conf/app.conf file like :
-//	~~~~~~
+//
+// ---
+//
 //	; Server port of HTTP
 //	httpport=3200
-//	~~~~~~
 func AccessAllowOriginByLocal(category int) {
 	if beego.BConfig.Listen.HTTPPort > 0 {
 		localhosturl := fmt.Sprintf("http://127.0.0.1:%v/", beego.BConfig.Listen.HTTPPort)

@@ -280,11 +280,14 @@ func CopyFileTo(src string, dir string) (bool, error) {
 	return true, nil
 }
 
-// FixPath fix path, ep:
-//    /aaa/aa\\bb\\cc/d/////     -> /aaa/aa/bb/cc/d
-//    E:/aaa/aa\\bb\\cc/d////e/  -> E:/aaa/aa/bb/cc/d/e
-//    ""                         -> .
-//    /                          -> /
+// FixPath fix path, example:
+//
+// ---
+//
+//	/aaa/aa\\bb\\cc/d/////     -> /aaa/aa/bb/cc/d
+//	E:/aaa/aa\\bb\\cc/d////e/  -> E:/aaa/aa/bb/cc/d/e
+//	""                         -> .
+//	/                          -> /
 func FixPath(input string) string {
 	input = strings.TrimSpace(input)
 	if len(input) == 0 {
