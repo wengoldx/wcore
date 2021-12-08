@@ -18,6 +18,7 @@ package wing
 // 	_ "github.com/wengoldx/wing/invar"
 // 	_ "github.com/wengoldx/wing/logger"
 // 	_ "github.com/wengoldx/wing/mvc"
+// 	_ "github.com/wengoldx/wing/order"
 // 	_ "github.com/wengoldx/wing/secure"
 // 	_ "github.com/wengoldx/wing/wechat"
 // )
