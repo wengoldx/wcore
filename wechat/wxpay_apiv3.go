@@ -63,6 +63,20 @@ const (
 	WxpPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s"
 )
 
+// 
+type PayState int
+
+// payment status
+const (
+	WXP_NOTPAY PayState = iota
+	WXP_SUCCESS
+	WXP_CLOSED
+	WXP_REFUND
+	WXP_ERROR
+	WXP_REVOKED
+	WXP_PAYING
+)
+
 // Append wechat pay APIv3 domain and params combined string
 //	@param formatpath "API path, it maybe have format keyword"
 //	@param param      "Default dynamic params to insert key value into formatpath"
@@ -73,4 +87,34 @@ func (w *WxPayAgent) Url(formatpath string, param ...string) string {
 		path = fmt.Sprintf(formatpath, param[0])
 	}
 	return WxpApisDomain + path
+}
+
+// Check the given pay state if valid defined
+//	@param state "pay state to check"
+//	@return - bool "true is defined pay state, false is undefined"
+func (w *WxPayAgent) IsValidState(state PayState) bool {
+	return state >= WXP_NOTPAY && state <= WXP_PAYING
+}
+
+// Get pay state name
+//	@param state "pay state value"
+//	@return - string "pay state name string"
+func (w *WxPayAgent) State(state PayState) string {
+	switch state {
+	case WXP_NOTPAY:
+		return "NOTPAY"
+	case WXP_SUCCESS:
+		return "SUCCESS"
+	case WXP_CLOSED:
+		return "CLOSED"
+	case WXP_REFUND:
+		return "REFUND"
+	case WXP_ERROR:
+		return "ERROR"
+	case WXP_REVOKED:
+		return "REVOKED"
+	case WXP_PAYING:
+		return "PAYING"
+	}
+	return ""
 }

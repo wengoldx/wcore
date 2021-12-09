@@ -10,6 +10,13 @@
 
 package order
 
+const (
+	PLACE_ORDER int64 = iota + 1 // place an order, status 1
+	CANCELLED                    // order was cancelled, status 2
+	UNPAID                       // order not paid or paied fail, status 3
+	PAID                         // goods to be delivered, status 4
+)
+
 // PaychainAgent agent of paychain
 type PaychainAgent struct {
 	Aid    string // agent id
