@@ -4,7 +4,10 @@ import (
 	"strings"
 )
 
-// WxIFAgent wechat interfaces agent
+// WxIFAgent interfaces agent to using Wechat Official Account AppID and AppSecret to
+// authenticate wechat user and get user profiles. it not support for wechat app, and
+// you may using UnionID to verify same wechat user if same one from multiple app on
+// wechat platforms.
 //
 // DESCRIPTION FROM [Wechat](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html) at 2019/07/05
 //
@@ -89,8 +92,8 @@ import (
 //		"errcode" : 40003, "errmsg" : "invalid openid"
 //	}
 type WxIFAgent struct {
-	AppID     string // Unique marker for official account
-	AppSecret string // Appsecret of the official account
+	AppID     string // Wechat Official Account App ID
+	AppSecret string // Wechat Official Account App Securet
 	Scope     string // 'snsapi_base' or 'snsapi_userinfo'
 }
 
@@ -122,10 +125,16 @@ type WxResult struct {
 	Message string `json:"errmsg"`
 }
 
+const (
+	wxauth2OpenUrlDomain = "https://open.weixin.qq.com"
+	wxauth2ApisUrlDomain = "https://api.weixin.qq.com/sns"
+)
+
 // ToWxCodeUrl bind redirect url and return wechat url to get request code
 // Step 1
 func (w *WxIFAgent) ToWxCodeUrl(redirecturl string, state ...string) string {
-	codeurl := "https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect"
+	codeurl := wxauth2OpenUrlDomain +
+		"/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect"
 	codeurl = strings.Replace(codeurl, "APPID", w.AppID, -1)
 	codeurl = strings.Replace(codeurl, "REDIRECT_URI", redirecturl, -1)
 	codeurl = strings.Replace(codeurl, "SCOPE", w.Scope, -1)
@@ -140,7 +149,8 @@ func (w *WxIFAgent) ToWxCodeUrl(redirecturl string, state ...string) string {
 // ToWxTokenUrl bind request code and return wechat url to get access token
 // Step 2
 func (w *WxIFAgent) ToWxTokenUrl(requestcode string) string {
-	tokenurl := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code"
+	tokenurl := wxauth2ApisUrlDomain +
+		"/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code"
 	tokenurl = strings.Replace(tokenurl, "APPID", w.AppID, -1)
 	tokenurl = strings.Replace(tokenurl, "SECRET", w.AppSecret, -1)
 	return strings.Replace(tokenurl, "CODE", requestcode, -1)
@@ -149,7 +159,8 @@ func (w *WxIFAgent) ToWxTokenUrl(requestcode string) string {
 // ToWxRefreshUrl bind expired access toke and return wechat url to refresh it
 // Step 3
 func (w *WxIFAgent) ToWxRefreshUrl(accesscode string) string {
-	refreshurl := "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN"
+	refreshurl := wxauth2ApisUrlDomain +
+		"/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN"
 	refreshurl = strings.Replace(refreshurl, "APPID", w.AppID, -1)
 	return strings.Replace(refreshurl, "REFRESH_TOKEN", accesscode, -1)
 }
@@ -157,7 +168,7 @@ func (w *WxIFAgent) ToWxRefreshUrl(accesscode string) string {
 // ToWxUserUrl bind access token and openid, than return wechat url to get user informations
 // Step 4
 func (w *WxIFAgent) ToWxUserUrl(accesstoken, openid string) string {
-	infourl := "https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN"
+	infourl := wxauth2ApisUrlDomain + "/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN"
 	infourl = strings.Replace(infourl, "ACCESS_TOKEN", accesstoken, -1)
 	return strings.Replace(infourl, "OPENID", openid, -1)
 }
@@ -165,7 +176,7 @@ func (w *WxIFAgent) ToWxUserUrl(accesstoken, openid string) string {
 // ToWxVerifyUrl bind access token and openid, than return wechat url to check access token expires
 // Step OTHERS
 func (w *WxIFAgent) ToWxVerifyUrl(accesstoken, openid string) string {
-	viaurl := "https://api.weixin.qq.com/sns/auth?access_token=ACCESS_TOKEN&openid=OPENID"
+	viaurl := wxauth2ApisUrlDomain + "/auth?access_token=ACCESS_TOKEN&openid=OPENID"
 	viaurl = strings.Replace(viaurl, "ACCESS_TOKEN", accesstoken, -1)
 	return strings.Replace(viaurl, "OPENID", openid, -1)
 }
