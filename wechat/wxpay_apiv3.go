@@ -27,14 +27,14 @@ const (
 	WxpDrRefQuery = "/pay/refundquery"
 
 	// Wechat SP, PF payments and merch account change
-	WxpApi3MchApp     = "/v3/pay/partner/transactions/app"
-	WxpApi3MchJS      = "/v3/pay/partner/transactions/jsapi"
-	WxpApi3MchH5      = "/v3/pay/partner/transactions/h5"
-	WxpApi3MchIDQuery = "/v3/pay/partner/transactions/id/%s"
-	WxpApi3MchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s"
-	WxpApi3MchClose   = "/v3/pay/partner/transactions/out-trade-no/%s/close"
-	WxpApi3MchAccMod  = "/v3/apply4sub/sub_merchants/%s/modify-settlement"
-	WxpApi3MchMQuery  = "/v3/apply4sub/sub_merchants/%s/settlement"
+	WxpMchApp     = "/v3/pay/partner/transactions/app"
+	WxpMchJS      = "/v3/pay/partner/transactions/jsapi"
+	WxpMchH5      = "/v3/pay/partner/transactions/h5"
+	WxpMchIDQuery = "/v3/pay/partner/transactions/id/%s"
+	WxpMchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s"
+	WxpMchClose   = "/v3/pay/partner/transactions/out-trade-no/%s/close"
+	WxpMchAccMod  = "/v3/apply4sub/sub_merchants/%s/modify-settlement"
+	WxpMchMQuery  = "/v3/apply4sub/sub_merchants/%s/settlement"
 
 	// Wechat Service provider
 	WxpSPMchReg     = "/v3/applyment4sub/applyment/"
