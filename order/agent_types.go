@@ -31,8 +31,8 @@ type EncryptNode struct {
 	PayBody   string `json:"paybody"`
 }
 
-// OrderBodyInfo order detail information
-type OrderBodyInfo struct {
+// TradeNode Trade ticket node
+type TradeNode struct {
 	Service    string `json:"service"               description:"service name"`
 	CUUID      string `json:"cuuid"                 description:"payer uuid"`
 	SUUID      string `json:"suuid"                 description:"payee uuid, merchant id"`
@@ -47,7 +47,8 @@ type OrderBodyInfo struct {
 	TimeExpire string `json:"time_expire,omitempty" description:"expire time"`
 }
 
-type ProfitShareInfo struct {
+// Dividing ticket node
+type DiviNode struct {
 	Service       string `json:"service"        description:"service name"`
 	SubMchID      string `json:"sub_mchid"      description:"payee sub merchant id"`
 	TransactionID string `json:"transaction_id" description:"wechat transaction order id"`
@@ -56,8 +57,8 @@ type ProfitShareInfo struct {
 	IsFinsh       bool   `json:"isfinsh"        description:"finish trade order, and unfrozen order"`
 }
 
-// RefundBodyInfo order detail information
-type RefundBodyInfo struct {
+// RefundNode refund ticket node
+type RefundNode struct {
 	Service   string `json:"service"       description:"service name"`
 	TradeNo   string `json:"tradeno"       description:"total refund price, unit one cent CNY"`
 	CUUID     string `json:"cuuid"         description:"payer uuid"`
@@ -70,23 +71,21 @@ type RefundBodyInfo struct {
 	NotifyURL string `json:"notifyurl"     description:"the notify url to tell service that payment success"`
 }
 
-// PayInfo payment information
-type PayInfo struct {
-	PayWay    string `json:"payway"    description:"payment way, such as 'wechat', 'wechatJSAPI', 'alipay'"`
-	Status    int64  `json:"status"    description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
-	WxPayInfo string `json:"wxpayinfo" description:"wechat payment app information"`
-	AlPayInfo string `json:"alpayinfo" description:"alipay payment information"`
-}
-
-// OrderDetailResp order system generate order request
-type OrderDetailResp struct {
+// TicketNode ticket node detail
+type TicketNode struct {
 	PayBody string `json:"paybody"`
 	UpTime  int64  `json:"uptime"`
 	Action  int64  `json:"action"`
 }
 
-// OrderGenReq order system generate order request
-type OrderGenReq struct {
+// InTicketNo order system get order detail request
+type InTicketNo struct {
+	AID   string `json:"aid"`
+	PayNo string `json:"payno"`
+}
+
+// InTicketData ticket node datas for generate request
+type InTicketData struct {
 	AID       string `json:"aid"`
 	Encode    bool   `json:"encode"`
 	PayBody   string `json:"paybody"`
@@ -94,17 +93,19 @@ type OrderGenReq struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-// OrderDetailReq order system get order detail request
-type OrderDetailReq struct {
-	AID   string `json:"aid"`
-	PayNo string `json:"payno"`
-}
-
-// OrderModReq order system get order detail request
-type OrderModReq struct {
+// InTicketMod ticket node datas for update request
+type InTicketMod struct {
 	AID       string `json:"aid"`
 	PayBody   string `json:"paybody"`
 	SignKey   string `json:"signkey"`
 	Timestamp int64  `json:"timestamp"`
 	PayNo     string `json:"payno"`
+}
+
+// PayInfo payment information
+type PayInfo struct {
+	PayWay    string `json:"payway"    description:"payment way, such as 'wechat', 'wechatJSAPI', 'alipay'"`
+	Status    int64  `json:"status"    description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
+	WxPayInfo string `json:"wxpayinfo" description:"wechat payment app information"`
+	AlPayInfo string `json:"alpayinfo" description:"alipay payment information"`
 }

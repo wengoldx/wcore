@@ -19,148 +19,194 @@ import (
 	"time"
 )
 
-// requestOrderDetail get the latest order detail by given trade number
-func (a *PaychainAgent) requestOrderDetail(url, tradeno string, out interface{}) error {
-	orderInfo, err := a.OrderDetail(url, tradeno)
-	if err != nil {
-		return err
-	}
-
-	length := len(orderInfo)
-	if length == 0 || orderInfo[length-1] == nil {
-		logger.E("Invalid responsed orders detail!")
-		return invar.ErrInvalidData
-	}
-
-	lastOrder := orderInfo[length-1]
-	if err := json.Unmarshal([]byte(lastOrder.PayBody), out); err != nil {
-		logger.E("Unmarshal order body err:", err)
-		return err
-	}
-	return nil
-}
-
-// TradeNoDetail get the latest trade order detail
-func (a *PaychainAgent) TradeNoDetail(url, tradeno string) (*OrderBodyInfo, error) {
-	logger.D("Get trade order detail by no:", tradeno)
-	tradeInfo := &OrderBodyInfo{}
-	if err := a.requestOrderDetail(url, tradeno, tradeInfo); err != nil {
-		return nil, err
-	}
-	return tradeInfo, nil
-}
-
-// ShareNoDetail get the latest share order detail
-func (a *PaychainAgent) ShareNoDetail(url, tradeno string) (*ProfitShareInfo, error) {
-	logger.D("Get share order detail by no:", tradeno)
-	shareInfo := &ProfitShareInfo{}
-	if err := a.requestOrderDetail(url, tradeno, shareInfo); err != nil {
-		return nil, err
-	}
-	return shareInfo, nil
-}
-
-// RefundNoDetail get the latest refund order detail
-func (a *PaychainAgent) RefundNoDetail(url, tradeno string) (*RefundBodyInfo, error) {
-	logger.D("Get refund order detail by no:", tradeno)
-	refundInfo := &RefundBodyInfo{}
-	if err := a.requestOrderDetail(url, tradeno, refundInfo); err != nil {
-		return nil, err
-	}
-	return refundInfo, nil
-}
-
-// UpdateOrderBody update trade number information by struct
-func (a *PaychainAgent) UpdateOrderBody(url, tradeno string, ps interface{}) error {
+// Generate a new trade by given payment datas, and return trade number
+//	@param url "Paychain API router"
+//	@param ps  "The first ticket node of trade"
+//	@return - string "Trade number"
+//			- error "Exception messages"
+func (a *PaychainAgent) GenTicket(url string, ps interface{}) (string, error) {
 	body, err := json.Marshal(ps)
 	if err != nil {
-		logger.E("Marshal order body struct err:", err)
-		return err
-	}
-
-	logger.D("Update order body no:", tradeno)
-	if err = a.OrderUpdate(url, tradeno, string(body)); err != nil {
-		return err
-	}
-	return nil
-}
-
-// GenerateOrderBody generate trade body by struct, and return trade number
-func (a *PaychainAgent) GenerateOrderBody(url string, ps interface{}) (string, error) {
-	body, err := json.Marshal(ps)
-	if err != nil {
-		logger.E("Marshal order body struct err:", err)
+		logger.E("Marshal ticket node err:", err)
 		return "", err
 	}
 
-	logger.D("Generate order body ", string(body))
-	tradeno, err := a.OrderGen(url, string(body))
+	logger.D("Generate trade the first ticket:", string(body))
+	tradeno, err := a.genTicketNode(url, string(body))
 	if err != nil {
 		return "", err
 	}
-
 	return tradeno, nil
 }
 
-// OrderDetail get the order detail by tardeno from paychain server
-//	@TODO this method should use rpc instead of http post.
-func (a *PaychainAgent) OrderDetail(url, tradeno string) ([]*OrderDetailResp, error) {
-	params := &OrderDetailReq{
-		AID:   a.Aid,
-		PayNo: tradeno,
-	}
-
-	respByte, err := comm.HttpPost(url, params)
-	if err != nil {
-		logger.E("Post request order detail err:", err)
+// Get the latest trade ticket node
+//	@param url "Paychain API router"
+//	@param tno "Trade number"
+//	@return - TradeNode "Trade ticket node"
+//			- error "Exception messages"
+func (a *PaychainAgent) TradeTicket(url, tno string) (*TradeNode, error) {
+	ticket := &TradeNode{}
+	logger.D("Get trade ticket by no:", tno)
+	if err := a.lastTicketNode(url, tno, ticket); err != nil {
 		return nil, err
 	}
-
-	resp := []*OrderDetailResp{}
-	if err = json.Unmarshal(respByte, &resp); err != nil {
-		logger.E("Unmarshal order detail err:", err)
-		return nil, err
-	}
-
-	logger.D("Got order:", tradeno, "detail")
-	return resp, nil
+	return ticket, nil
 }
 
-// OrderUpdate update order information to paychain server
-//	@TODO this method should use rpc instead of http post.
-func (a *PaychainAgent) OrderUpdate(url, tradeno, body string) error {
-	signkey, eb, ts, err := a.Encrypt(body)
+// Get the latest dividing ticket node
+//	@param url "Paychain API router"
+//	@param tno "Trade number"
+//	@return - ProfitShareInfo "Dividing ticket node"
+//			- error "Exception messages"
+func (a *PaychainAgent) DiviTicket(url, tno string) (*DiviNode, error) {
+	ticket := &DiviNode{}
+	logger.D("Get dividing ticket by no:", tno)
+	if err := a.lastTicketNode(url, tno, ticket); err != nil {
+		return nil, err
+	}
+	return ticket, nil
+}
+
+// Get the latest refund ticket node
+//	@param url "Paychain API router"
+//	@param tno "Trade number"
+//	@return - RefundNode "Refund ticket node"
+//			- error "Exception messages"
+func (a *PaychainAgent) RefundTicket(url, tno string) (*RefundNode, error) {
+	ticket := &RefundNode{}
+	logger.D("Get refund ticket by no:", tno)
+	if err := a.lastTicketNode(url, tno, ticket); err != nil {
+		return nil, err
+	}
+	return ticket, nil
+}
+
+// Update trade, it not modify the any exist tickt nodes but generate a new
+// ticket and append to trade nodes list.
+//	@param url "Paychain API router"
+//	@param tno "Trade number"
+//	@param ps  "The new trade ticket node"
+//	@return - error "Exception messages"
+func (a *PaychainAgent) UpdateTicket(url, tno string, ps interface{}) error {
+	node, err := json.Marshal(ps)
 	if err != nil {
-		logger.E("Encrypt order body err:", err)
+		logger.E("Marshal ticket ndoe err:", err)
 		return err
 	}
 
-	params := &OrderModReq{
+	logger.D("Update ticket node by trade no:", tno)
+	if err = a.appendTradeTicket(url, tno, string(node)); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ------------------------
+//    Internal Functions
+// ------------------------
+
+// Get the last ticket node from given trade nodes list
+//	@param url "Paychain API router"
+//	@param tno "Trade number"
+//	@return - out "Out data of TradeNode, DiviNode or RefundNode"
+//			- error "Exception messages"
+func (a *PaychainAgent) lastTicketNode(url, tno string, out interface{}) error {
+	tickets, err := a.getTradeTickets(url, tno)
+	if err != nil {
+		return err
+	}
+
+	length := len(tickets)
+	if length == 0 || tickets[length-1] == nil {
+		logger.E("Invalid responsed tickets nodes!")
+		return invar.ErrInvalidData
+	}
+
+	ticket := tickets[length-1]
+	if err := json.Unmarshal([]byte(ticket.PayBody), out); err != nil {
+		logger.E("Unmarshal last ticket node err:", err)
+		return err
+	}
+	return nil
+}
+
+// Get trade tickets list by trade number from paychain server
+//	@param url "Paychain API router"
+//	@param tno "Trade number"
+//	@return - []TicketNode "Trade tickets nodes"
+//			- error "Exception messages"
+//
+// `TODO`
+//
+// This method should use rpc instead of http post.
+func (a *PaychainAgent) getTradeTickets(url, tno string) ([]*TicketNode, error) {
+	params := &InTicketNo{AID: a.Aid, PayNo: tno}
+	respByte, err := comm.HttpPost(url, params)
+	if err != nil {
+		logger.E("Request trade tickets err:", err)
+		return nil, err
+	}
+
+	resp := []*TicketNode{}
+	if err = json.Unmarshal(respByte, &resp); err != nil {
+		logger.E("Unmarshal trade tickets err:", err)
+		return nil, err
+	}
+
+	logger.D("Got trade:", tno, "tickets")
+	return resp, nil
+}
+
+// Append a new ticket node to paychain server
+//	@param url  "Paychain API router"
+//	@param tno  "Trade number"
+//	@param node "Json string of the new ticket node"
+//	@return - error "Exception messages"
+//
+// `TODO`
+//
+// This method should use rpc instead of http post.
+func (a *PaychainAgent) appendTradeTicket(url, tno, node string) error {
+	signkey, eb, ts, err := a.Encrypt(node)
+	if err != nil {
+		logger.E("Encrypt ticket node err:", err)
+		return err
+	}
+
+	params := &InTicketMod{
 		AID:       a.Aid,
 		PayBody:   eb,
 		SignKey:   signkey,
 		Timestamp: ts,
-		PayNo:     tradeno,
+		PayNo:     tno,
 	}
 	if _, err = comm.HttpPostString(url, params); err != nil {
-		logger.E("Post request update order err:", err)
+		logger.E("Post update trade err:", err)
 		return err
 	}
 
-	logger.D("Updated order:", tradeno, "detail")
+	logger.D("Updated trade:", tno, "tickets")
 	return nil
 }
 
-// OrderGen generate the out request number
-// 	@TODO this method should use rpc instead of http post.
-func (a *PaychainAgent) OrderGen(url, body string) (string, error) {
-	signkey, eb, ts, err := a.Encrypt(body)
+// Generate a new ticket node as the first node of trade nodes list,
+// and return the trade number
+//	@param url  "Paychain API router"
+//	@param node "Json string of the new ticket node"
+//	@return - string "Trade number"
+//			- error "Exception messages"
+//
+// `TODO` :
+//
+// This method should use rpc instead of http post.
+func (a *PaychainAgent) genTicketNode(url, node string) (string, error) {
+	signkey, eb, ts, err := a.Encrypt(node)
 	if err != nil {
-		logger.E("Encrypt order body err:", err)
+		logger.E("Encrypt ticket node err:", err)
 		return "", err
 	}
 
-	params := &OrderGenReq{
+	params := &InTicketData{
 		AID:       a.Aid,
 		Encode:    true,
 		PayBody:   eb,
@@ -168,14 +214,14 @@ func (a *PaychainAgent) OrderGen(url, body string) (string, error) {
 		Timestamp: ts,
 	}
 
-	tradeno, err := comm.HttpPostString(url, params)
+	tno, err := comm.HttpPostString(url, params)
 	if err != nil {
-		logger.E("Post request generate order err:", err)
+		logger.E("Post generate ticket node err:", err)
 		return "", err
 	}
 
-	logger.D("Generate order:", tradeno)
-	return tradeno, nil
+	logger.D("Generate ticket:", tno)
+	return tno, nil
 }
 
 //	Encrypt encrypt the given body, and return sign code, timestamp and body ciphertext.
@@ -186,7 +232,7 @@ func (a *PaychainAgent) OrderGen(url, body string) (string, error) {
 //	@return int64  encrypte timestamp.
 //	@return error  invar.ErrInvalidClient or exception errors.
 //
-//	`WARNING` :
+// `WARNING` :
 //
 // The body string max lenght DO NOT lagger than 400 chars.
 func (a *PaychainAgent) Encrypt(body string) (string, string, int64, error) {
