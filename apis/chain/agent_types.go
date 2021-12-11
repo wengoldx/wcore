@@ -12,8 +12,8 @@ package chain
 
 const (
 	PLACE_ORDER int64 = iota + 1 // place an order, status 1
-	CANCELLED                    // order was cancelled, status 2
-	UNPAID                       // order not paid or paied fail, status 3
+	CANCELLED                    // trade was cancelled, status 2
+	UNPAID                       // trade not paid or paied fail, status 3
 	PAID                         // goods to be delivered, status 4
 )
 
@@ -43,7 +43,7 @@ const (
 //
 // #### generate instance
 //
-//	agentIns := &order.PaychainAgent {
+//	agentIns := &chain.PaychainAgent {
 //		Aid    : "agent-id",
 //		Devmac : "xx:xx:xx:xx:xx:xx",
 //		Pubkey : "xxxxxxxxxxxxxxxxx",
@@ -91,7 +91,7 @@ type TradeNode struct {
 	SubMchID   string `json:"sub_mchid"             description:"payee sub merchant id"`
 	Amount     int64  `json:"amount"                description:"amount price, unit one cent CNY"`
 	RedundFee  int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
-	Desc       string `json:"desc"                  description:"this order description"`
+	Desc       string `json:"desc"                  description:"this ticket description"`
 	NotifyURL  string `json:"notifyurl"             description:"the notify url to tell service that payment success"`
 	PayWay     string `json:"payway"                description:"payment way, such as 'wehcat' and 'alipay'"`
 	IsFrozen   bool   `json:"isfrozen"              description:"whether frozen amount when payment finished。it must be true, when you want to share money"`
@@ -103,10 +103,10 @@ type TradeNode struct {
 type DiviNode struct {
 	Service       string `json:"service"        description:"service name"`
 	SubMchID      string `json:"sub_mchid"      description:"payee sub merchant id"`
-	TransactionID string `json:"transaction_id" description:"wechat transaction order id"`
+	TransactionID string `json:"transaction_id" description:"wechat transaction trade id"`
 	Commission    int64  `json:"commission"     description:"share out money, unit one cent CNY"`
 	Desc          string `json:"desc"           description:"this share description"`
-	IsFinsh       bool   `json:"isfinsh"        description:"finish trade order, and unfrozen order"`
+	IsFinsh       bool   `json:"isfinsh"        description:"finish trade, and unfrozen trade"`
 }
 
 // RefundNode refund ticket node
@@ -117,9 +117,9 @@ type RefundNode struct {
 	SUUID     string `json:"suuid"         description:"payee uuid"`
 	SubMchID  string `json:"sub_mchid"     description:"payee sub merchant id"`
 	RefundID  string `json:"refund_id"     description:"refund id"`
-	Total     int64  `json:"total"         description:"Original order price, unit one cent CNY"`
+	Total     int64  `json:"total"         description:"Original trade price, unit one cent CNY"`
 	RedundFee int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
-	Desc      string `json:"desc"          description:"this order description"`
+	Desc      string `json:"desc"          description:"this trade description"`
 	NotifyURL string `json:"notifyurl"     description:"the notify url to tell service that payment success"`
 }
 
@@ -130,7 +130,7 @@ type TicketNode struct {
 	Action  int64  `json:"action"`
 }
 
-// InTicketNo order system get order detail request
+// InTicketNo agent id and trade number
 type InTicketNo struct {
 	AID   string `json:"aid"`
 	PayNo string `json:"payno"`
