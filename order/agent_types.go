@@ -18,10 +18,62 @@ const (
 )
 
 // PaychainAgent agent of paychain
+//
+// `USAGE` :
+//
+// You can generate a PaychainAgent instance to quick access paychain service APIs.
+//
+// * `Step 1` - register a agent account on paychain service by API /v2/register
+//
+// * `Step 2` - check the agent if activity, you may use API /v2/state to change it
+//
+// * `Step 3` - config paychian server domain in project config files as follow:
+//
+// #### conf/app.conf
+//
+//	[dev]
+//	; Domain url
+//	domain=https://www.sampledomein.com:xxx4
+//
+//	[prod]
+//	; Domain url
+//	domain=https://www.sampledomein.com:xxx3
+//
+// * `Step 4` - generate a PaychainAgent and use them public methods
+//
+// #### generate instance
+//
+//	agentIns := &order.PaychainAgent {
+//		Aid    : "agent-id",
+//		Devmac : "xx:xx:xx:xx:xx:xx",
+//		Pubkey : "xxxxxxxxxxxxxxxxx",
+//		Domain : beego.AppConfig.String("domain"),
+//	}
+//
+// #### public methods
+//
+//	// generate a new trade ticket
+//	tno, err := agentIns.GenTicket(ps)
+//
+//	// get the latest trade ticket node
+//	ticket, err := agentIns.TradeTicket(tno)
+//
+//	// get the latest dividing ticket node
+//	ticket, err := agentIns.DiviTicket(tno)
+//
+//	// get the latest refund ticket node
+//	ticket, err := agentIns.RefundTicket(tno)
+//
+//	// update indicated trade ticket
+//	err := agentIns.UpdateTicket(tno, ps)
 type PaychainAgent struct {
 	Aid    string // agent id
 	Devmac string // device mac bind with current agent
 	Pubkey string // public key of current agent
+
+	// Paychain service access url domain, it allways get from app.conf
+	// by beego.AppConfig.String("domain") code.
+	Domain string
 }
 
 // EncryptNode encrypt node data struct
