@@ -10,14 +10,15 @@
 
 package wing
 
-// use for all modules pass build
-import (
-	_ "github.com/wengoldx/wing/apis"
-	_ "github.com/wengoldx/wing/apis/chain"
-	_ "github.com/wengoldx/wing/comm"
-	_ "github.com/wengoldx/wing/invar"
-	_ "github.com/wengoldx/wing/logger"
-	_ "github.com/wengoldx/wing/mvc"
-	_ "github.com/wengoldx/wing/secure"
-	_ "github.com/wengoldx/wing/wechat"
-)
+// import (
+// 	_ "github.com/wengoldx/wing/apis"
+// 	_ "github.com/wengoldx/wing/apis/chain"
+// 	_ "github.com/wengoldx/wing/comm"
+// 	_ "github.com/wengoldx/wing/invar"
+// 	_ "github.com/wengoldx/wing/logger"
+// 	_ "github.com/wengoldx/wing/mvc"
+// 	_ "github.com/wengoldx/wing/secure"
+// 	_ "github.com/wengoldx/wing/wechat"
+// )
+
+// func main() {}
