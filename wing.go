@@ -10,6 +10,8 @@
 
 package wing
 
+// package main
+
 // import (
 // 	_ "github.com/wengoldx/wing/apis"
 // 	_ "github.com/wengoldx/wing/apis/chain"
