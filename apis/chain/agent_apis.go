@@ -232,7 +232,7 @@ func (a *PaychainAgent) genTicketNode(node string) (string, error) {
 		Timestamp: ts,
 	}
 
-	paychainapi := a.Domain + "/paychain/v2/agen"
+	paychainapi := a.Domain + "/paychain/v2/gen"
 	tno, err := comm.HttpPostString(paychainapi, params)
 	if err != nil {
 		logger.E("Post generate ticket node err:", err)
