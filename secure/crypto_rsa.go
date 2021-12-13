@@ -85,6 +85,37 @@ const (
 	blockRsaPublicKey  = "RSA Public key"
 )
 
+// LoadRSAKey load RSA or RSA2 private or public key content from the given
+// pem file, and if input the beffer size, the bufbits must larger than pem
+// file size by call GenRSAKeys to set bits.
+func LoadRSAKey(filepath string, buffbits ...int) ([]byte, error) {
+	if len(buffbits) > 0 && buffbits[0] > 0 {
+		pemfile, err := os.Open(filepath)
+		if err != nil {
+			return nil, err
+		}
+		defer pemfile.Close()
+
+		keybuf := make([]byte, buffbits[0])
+		num, err := pemfile.Read(keybuf)
+		if err != nil {
+			return nil, err
+		}
+		return keybuf[:num], nil
+	} else {
+		pemfile, err := ioutil.ReadFile(filepath)
+		if err != nil {
+			return nil, err
+		}
+		return pemfile, nil
+	}
+}
+
+// ------------------------------------------------------------
+// Generate a RSA key as PKCS#1, ASN.1 format and encrypt by
+// public key, than decrypt by private key.
+// ------------------------------------------------------------
+
 // GenRSAKeys generate RSA private and public keys in PKCS#1, ASN.1 DER form,
 // and limit bits length of key cert.
 func GenRSAKeys(bits int) (string, string, error) {
@@ -115,32 +146,6 @@ func GenRSAKeys(bits int) (string, string, error) {
 	}
 
 	return pribuff.String(), pubbuff.String(), nil
-}
-
-// LoadRSAKey load RSA or RSA2 private or public key content from the given
-// pem file, and if input the beffer size, the bufbits must larger than pem
-// file size by call GenRSAKeys to set bits.
-func LoadRSAKey(filepath string, buffbits ...int) ([]byte, error) {
-	if buffbits != nil && len(buffbits) > 0 && buffbits[0] > 0 {
-		pemfile, err := os.Open(filepath)
-		if err != nil {
-			return nil, err
-		}
-		defer pemfile.Close()
-
-		keybuf := make([]byte, buffbits[0])
-		num, err := pemfile.Read(keybuf)
-		if err != nil {
-			return nil, err
-		}
-		return keybuf[:num], nil
-	} else {
-		pemfile, err := ioutil.ReadFile(filepath)
-		if err != nil {
-			return nil, err
-		}
-		return pemfile, nil
-	}
 }
 
 // RSAEncrypt using RSA public key to encrypt original data.
@@ -209,6 +214,11 @@ func RSADecrypt4F(prifile string, ciphertext []byte) ([]byte, error) {
 	}
 	return RSADecrypt(prikey, ciphertext)
 }
+
+// ------------------------------------------------------------
+// Sign the given string by RSA private key as PKCS#1, ASN.1
+// format and verify by public key.
+// ------------------------------------------------------------
 
 // RSASign using RSA private key to make digital signature,
 // the private key in PKCS#1, ASN.1 DER form.
@@ -281,6 +291,11 @@ func RSAVerify4F(pubfile string, original, signature []byte) error {
 	}
 	return RSAVerify(pubkey, original, signature)
 }
+
+// ------------------------------------------------------------
+// Sign the given string by RSA private key as PKCS#8, ASN.1
+// format and verify by public key.
+// ------------------------------------------------------------
 
 // RSA2Sign using RSA2 private key to make digital signature,
 // the private key in PKCS#8, ASN.1 DER form.
