@@ -15,13 +15,13 @@ const (
 	WxpApiUpImg = "/v3/merchant/media/upload"
 
 	// Wechat Direct connected merchants
-	WxpDrApp     = "/v3/pay/transactions/app"
-	WxpDrJS      = "/v3/pay/transactions/jsapi"
-	WxpDrNative  = "/v3/pay/transactions/native"
-	WxpDrH5      = "/v3/pay/transactions/h5"
-	WxpDrIDQuery = "/v3/pay/transactions/id/%s"
-	WxpDrNoQuery = "/v3/pay/transactions/out-trade-no/%s"
-	WxpDrClose   = "/v3/pay/transactions/out-trade-no/%s/close"
+	wxpDrH5      = "/v3/pay/transactions/h5"
+	wxpDrApp     = "/v3/pay/transactions/app"
+	wxpDrJS      = "/v3/pay/transactions/jsapi"
+	wxpDrNative  = "/v3/pay/transactions/native"
+	wxpDrIDQuery = "/v3/pay/transactions/id/%s?mchid=%s"
+	wxpDrNoQuery = "/v3/pay/transactions/out-trade-no/%s?mchid=%s"
+	wxpDrClose   = "/v3/pay/transactions/out-trade-no/%s/close"
 
 	WxpDrRefund   = "/secapi/pay/refund"
 	WxpDrRefQuery = "/pay/refundquery"
@@ -63,7 +63,7 @@ const (
 	WxpPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s"
 )
 
-// 
+//
 type PayState int
 
 // payment status
@@ -78,9 +78,9 @@ const (
 )
 
 // Append wechat pay APIv3 domain and params combined string
-//	@param formatpath "API path, it maybe have format keyword"
-//	@param param      "Default dynamic params to insert key value into formatpath"
-//	@return - string "Full url link with param if have"
+//	@param formatpath API path, it maybe have format keyword
+//	@param param Default dynamic params to insert key value into formatpath
+//	@return - string Full url link with param if have
 func (w *WxPayAgent) Url(formatpath string, param ...string) string {
 	path := formatpath
 	if num := len(param); num > 0 {
@@ -90,15 +90,15 @@ func (w *WxPayAgent) Url(formatpath string, param ...string) string {
 }
 
 // Check the given pay state if valid defined
-//	@param state "pay state to check"
-//	@return - bool "true is defined pay state, false is undefined"
+//	@param state Pay state to check
+//	@return - bool True is defined pay state, false is undefined
 func (w *WxPayAgent) IsValidState(state PayState) bool {
 	return state >= WXP_NOTPAY && state <= WXP_PAYING
 }
 
 // Get pay state name
-//	@param state "pay state value"
-//	@return - string "pay state name string"
+//	@param state Pay state value
+//	@return - string Pay state name string
 func (w *WxPayAgent) State(state PayState) string {
 	switch state {
 	case WXP_NOTPAY:
