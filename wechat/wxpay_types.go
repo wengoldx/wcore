@@ -5,8 +5,9 @@ const (
 	WxpApisDomain = "https://api.mch.weixin.qq.com"
 
 	// Wechat certificate and upload medias
-	wxpApiCert  = "/v3/certificates"
-	wxpApiUpImg = "/v3/merchant/media/upload"
+	wxpApiCert    = "/v3/certificates"
+	wxpApiUpImage = "/v3/merchant/media/upload"
+	wxpApiUpVideo = "v3/merchant/media/video_upload"
 
 	// Wechat Direct connected merchants
 	wxpDrH5      = "/v3/pay/transactions/h5"
@@ -55,6 +56,15 @@ const (
 	WxpPFRefund   = "/v3/ecommerce/refunds/apply"
 	WxpPFRIDQuery = "/v3/ecommerce/refunds/id/%s"
 	WxpPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s"
+)
+
+// Custom boundary string of wxpay agent
+//
+// `WARNING` :
+//
+//	DO NOT Modify this string if YOU NOT KNOWN how to change.
+const (
+	wxpSignBoundary = "wengoldboundary"
 )
 
 // Custom payment status for service provider merchant,
@@ -172,6 +182,12 @@ type Detail struct {
 	CostPrice   int64        `json:"cost_price,omitempty"   description:"original order price"`
 	InvoiceID   string       `json:"invoice_id,omitempty"   description:"merchant trade invoice id"`
 	GoodsDetail *GoodsDetail `json:"goods_detail,omitempty" description:"goods details"`
+}
+
+// MetaData image or video media data
+type MetaData struct {
+	FileName string `json:"filename" validate:"required" description:"upload media file name with suffix that must be JPG, JPEG, BMP, PNG on ignore char case"`
+	HashCode string `json:"sha256"   validate:"required" description:"upload media hash code by sha256"`
 }
 
 // -------- For Response
@@ -318,4 +334,9 @@ type WxRetTicket struct {
 // WxRetCert wechat pay platform certificate updated response
 type WxRetCert struct {
 	Datas []Certificate `json:"data"`
+}
+
+// WxRetUpload uploaded media id of wechat pay platform
+type WxRetUpload struct {
+	MediaID string `json:"media_id" description:"uploaded media id of wechat pay platform"`
 }

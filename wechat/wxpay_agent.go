@@ -1,14 +1,19 @@
 package wechat
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 	"github.com/wengoldx/wing/secure"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -147,6 +152,47 @@ func (w *WxPayAgent) UpdateCert(resp *WxRetCert, ms *WxMerch) error {
 	return w.getWxV3Http(wxpApiCert, resp, ms)
 }
 
+// Upload image file to wechat platform by APIv3
+//	@param file Upload file content
+//	@param filename Upload file name and suffix
+//	@return - string Media ID of wechat pay platform
+//			- error Handled result
+//
+// see more
+//
+// - [Wechat Image Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml)
+func (w *WxPayAgent) UploadImage(file io.Reader, filename string, ms *WxMerch) (string, error) {
+	// Check upload file if valid suffix : jpg, png, jpeg, bmp
+	suffix := strings.TrimLeft(strings.ToLower(path.Ext(filename)), ".")
+	if len(suffix) == 0 || !(suffix == "jpg" || suffix == "png" || suffix == "jpeg" || suffix == "bmp") {
+		logger.E("Invalid upload image file type, must be in jpg, jpeg, bmp, png")
+		return "", invar.ErrInvalidParams
+	}
+
+	return w.wxpayAPIv3Upload(wxpApiUpImage, filename, suffix, file, ms)
+}
+
+// Upload video file to wechat platform by APIv3
+//	@param file Upload file content
+//	@param filename Upload file name and suffix
+//	@return - string Media ID of wechat pay platform
+//			- error Handled result
+//
+// see more
+//
+// - [Wechat Video Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
+func (w *WxPayAgent) UploadVideo(file io.Reader, filename string, ms *WxMerch) (string, error) {
+	// Check upload file if valid suffix : mp4, avi, wmv, mpeg, mov, mkv, flv, f4v, m4v, rmvb
+	suffix := strings.TrimLeft(strings.ToLower(path.Ext(filename)), ".")
+	if len(suffix) == 0 ||
+		!(suffix == "mp4" || suffix == "avi" || suffix == "wmv" || suffix == "mpeg" || suffix == "mov" || suffix == "mkv" || suffix == "flv" || suffix == "f4v" || suffix == "m4v" || suffix == "rmvb") {
+		logger.E("Invalid upload viudeo file type, must be in mp4, avi, wmv, mpeg, mov, mkv, flv, f4v, m4v, rmvb")
+		return "", invar.ErrInvalidParams
+	}
+
+	return w.wxpayAPIv3Upload(wxpApiUpVideo, filename, suffix, file, ms)
+}
+
 // -----------------------------------------------------------
 // For Direct Pay
 // -----------------------------------------------------------
@@ -199,9 +245,9 @@ func (w *WxPayAgent) DrClose(tno string, ms *WxMerch) error {
 // Notice that use agent.DrTNoQuery() will return same response datas
 //
 // - see more
-// [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml) ;
-// [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml) ;
-// [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml) ;
+// [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
+// [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
+// [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
 func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket, ms *WxMerch) error {
 	if ms == nil || len(ms.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
@@ -221,9 +267,9 @@ func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket, ms *WxMerch) erro
 // Notice that use agent.DrTIDQuery() will return same response datas
 //
 // - see more
-// [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml) ;
-// [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml) ;
-// [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml) ;
+// [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
+// [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
+// [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
 func (w *WxPayAgent) DrTNoQuery(tno string, resp *WxRetTicket, ms *WxMerch) error {
 	if ms == nil || len(ms.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
@@ -327,38 +373,103 @@ func (w *WxPayAgent) postWxV3Http(urlpath string, params, resp interface{}, ms *
 	return w.wxpayAPIv3Http("POST", urlpath, string(body), resp, ms)
 }
 
-// Http getter or poster to access wechat pay APIv3
-//	@return - error Handled result
-//
-// see more
-//
-// - [Wechat Access Rules](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml)
-// - [Wechat Authenticate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml)
-func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface{}, ms *WxMerch) error {
-	url := WxpApisDomain + urlpath
-	logger.D("Request wechat APIv3 ["+method+"]:", urlpath)
-
+// Sign request auth header to access wechat pay APIv3
+//	@param method Http method of GET, POST
+//	@param urlpath Wechat pay platform APIv3 api
+//	@param body Request data, mashaled to json string
+//	@return - string Authentication header
+//			- error Handled result
+func (w *WxPayAgent) signAuthHeader(method, urlpath, body string, ms *WxMerch) (string, error) {
 	// Step 1. generate nonce and timestamp strings
-	nonceStr := secure.GenNonce()
+	noncestr := secure.GenNonce()
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 
 	// Step 2. sign request packet datas,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-1
-	signStr := w.SignPacket(method, urlpath, timestamp, nonceStr, body)
+	signstr := w.SignPacket(method, urlpath, timestamp, noncestr, body)
 
 	// Step 3. generate the signature string by rsa256,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-2
-	signature, err := w.EncrpySign(ms.PriPem, signStr)
+	signature, err := w.EncrpySign(ms.PriPem, signstr)
 	if err != nil {
 		logger.E("Faild to encripty signture, err:", err)
-		return err
+		return "", err
 	}
 
 	// Step 4. auth string,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-3
-	authStr := w.AuthPacket(ms.MchID, nonceStr, timestamp, ms.SerialNo, signature)
+	authstr := w.AuthPacket(ms.MchID, noncestr, timestamp, ms.SerialNo, signature)
+	return authstr, nil
+}
 
-	// Step 5. generate request client and setup hearder
+// Generate request body data
+//
+// see more
+//
+// - [Wechat Upload Image](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml#part-4)
+func (w *WxPayAgent) genUploadBody(fn, suffix string, fm, buff []byte) (*bytes.Buffer, string, error) {
+	// Step 1. creter and setup body informations
+	body := &bytes.Buffer{}
+	bodywriter := multipart.NewWriter(body)
+	bodywriter.SetBoundary(wxpSignBoundary)
+
+	// Step 2. set body content type
+	header := make(textproto.MIMEHeader)
+	header.Set("Content-Disposition", "form-data;name=\"meta\";")
+	header.Set("Content-Type", "application/json;")
+	bodypart, err := bodywriter.CreatePart(header)
+	if err != nil {
+		return nil, "", err
+	}
+
+	// Step 3. set file meta information
+	if _, err = bodypart.Write(fm); err != nil {
+		return nil, "", err
+	}
+
+	// Step 4. set file content type
+	header.Set("Content-Disposition", "form-data;name=\"file\";filename=\""+fn+"\";")
+	header.Set("Content-Type", "image/"+suffix+";")
+	bodypart, err = bodywriter.CreatePart(header)
+	if err != nil {
+		return nil, "", err
+	}
+
+	// Step 5. set file content data to body
+	if _, err = bodypart.Write(buff); err != nil {
+		return nil, "", err
+	}
+
+	// Step 6. close body writer
+	if err := bodywriter.Close(); err != nil {
+		return nil, "", err
+	}
+
+	contenttype := bodywriter.FormDataContentType()
+	return body, contenttype, nil
+}
+
+// Http getter or poster to access wechat pay APIv3
+//	@param method Http method of GET, POST
+//	@param urlpath Wechat pay platform APIv3 api
+//	@param body Request data, mashaled to json string
+//	@return - error Handled result
+//
+// see more
+//
+// - [Wechat Access Rules](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml),
+// - [Wechat Authenticate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml)
+func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface{}, ms *WxMerch) error {
+	logger.D("Request wechat APIv3 ["+method+"]:", urlpath)
+	url := WxpApisDomain + urlpath
+
+	// Step 1. sign request authentication hearder
+	authstr, err := w.signAuthHeader(method, urlpath, body, ms)
+	if err != nil {
+		return err
+	}
+
+	// Step 2. generate request client and setup hearder
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		logger.E("http NewRequest error, err:", err)
@@ -376,7 +487,7 @@ func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface
 	req.Header.Set("User-Agent", "Go-http-client/1.1")
 
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_3.shtml
-	req.Header.Set("Authorization", authStr)
+	req.Header.Set("Authorization", authstr)
 
 	// Step 6. send the request
 	client := http.Client{}
@@ -415,4 +526,100 @@ func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface
 		logger.D("Unmarchsal wechat APIv3 response")
 	}
 	return nil
+}
+
+// Upload image or video file to wechat platform by APIv3
+//	@param file Upload file content
+//	@param filename Upload file name with suffix
+//	@param suffix Upload file suffix
+//	@return - string Media ID of wechat pay platform
+//			- error Handled result
+//
+// see more
+//
+// - [Wechat Upload Image](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml),
+// - [Wechat Upload Video](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
+func (w *WxPayAgent) wxpayAPIv3Upload(urlpath, filename, suffix string, file io.Reader, ms *WxMerch) (string, error) {
+	logger.D("Upload file "+filename+" to wechat by APIv3 [ POST ]:", urlpath)
+	url, method := WxpApisDomain+urlpath, "POST"
+
+	// Step 1. read file content bytes
+	filebuff, err := ioutil.ReadAll(file)
+	if err != nil {
+		logger.E("Failed read file content, err:", err)
+		return "", err
+	}
+
+	// Step 2. hash file by sha256, and meta json data
+	// https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml#part-4
+	filehash := secure.HashSHA256Hex(filebuff)
+	metadata := &MetaData{FileName: filename, HashCode: filehash}
+	filemeta, err := json.Marshal(metadata)
+	if err != nil {
+		logger.E("Marsh upload file meta data err:", err)
+		return "", err
+	}
+
+	// Step 3. sign request authentication hearder
+	authstr, err := w.signAuthHeader(method, urlpath, string(filemeta), ms)
+	if err != nil {
+		return "", err
+	}
+
+	// Step 4. generate request body data
+	body, contenttype, err := w.genUploadBody(filename, suffix, filemeta, filebuff)
+	if err != nil {
+		logger.E("Generate upload request body err:", err)
+		return "", err
+	}
+
+	// Step 5. generate request client and setup hearder
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		logger.E("http NewRequest error, err:", err)
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", contenttype)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Charset", "UTF-8")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3100.0 Safari/537.36")
+	req.Header.Set("Authorization", authstr)
+
+	// Step 6. send the request
+	client := http.Client{}
+	ret, err := client.Do(req)
+	if err != nil {
+		logger.E("Failed upload file, err:", err)
+		return "", err
+	}
+	defer ret.Body.Close()
+	logger.D("Response status code:", ret.StatusCode)
+
+	// Step 7. read the response from wechat
+	retbody, err := ioutil.ReadAll(ret.Body)
+	if err != nil {
+		logger.E("Failed read wechat response body, err:", err)
+		return "", err
+	}
+
+	// Step 8. check response status
+	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_1.shtml
+	if ret.StatusCode != 200 && ret.StatusCode != 204 {
+		errinfo := &WxRetErr{}
+		if err := json.Unmarshal(retbody, errinfo); err != nil {
+			logger.E("Unmarhsal error message err:", err)
+			return "", err
+		}
+		return "", errors.New(errinfo.Code + "-" + errinfo.Message)
+	}
+
+	// Step 9. parse return datas if have
+	resp := &WxRetUpload{}
+	if err = json.Unmarshal(retbody, resp); err != nil {
+		logger.E("Success request wechat APIv3, but unmarhsal response data err:", err)
+		return "", err
+	}
+	logger.D("Upload file and received media id:", resp.MediaID)
+	return resp.MediaID, nil
 }
