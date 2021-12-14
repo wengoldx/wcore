@@ -152,41 +152,62 @@ func (w *WxPayAgent) UpdateCert(resp *WxRetCert, ms *WxMerch) error {
 	return w.getWxV3Http(wxpApiCert, resp, ms)
 }
 
-// Upload image file to wechat platform by APIv3
+// Upload image file to wechat platform by APIv3,
+// it just support suffix in jpg, png, jpeg, bmp, and file size must be samll 2MB.
 //	@param file Upload file content
-//	@param filename Upload file name and suffix
+//	@param header Upload file header information
+//	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
 //			- error Handled result
+//
+//	// use beego controller to get file and header
+//	file, header, err := ctrl.GetFile("img")
 //
 // see more
 //
 // - [Wechat Image Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml)
-func (w *WxPayAgent) UploadImage(file io.Reader, filename string, ms *WxMerch) (string, error) {
-	// Check upload file if valid suffix : jpg, png, jpeg, bmp
+func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader, ms *WxMerch) (string, error) {
+	if header == nil || header.Size > (2*1024*1024) {
+		logger.E("Null file header or file size oversized")
+		return "", invar.ErrInvalidData
+	}
+
+	filename := header.Filename
 	suffix := strings.TrimLeft(strings.ToLower(path.Ext(filename)), ".")
 	if len(suffix) == 0 || !(suffix == "jpg" || suffix == "png" || suffix == "jpeg" || suffix == "bmp") {
-		logger.E("Invalid upload image file type, must be in jpg, jpeg, bmp, png")
+		logger.E("Invalid image file type, must be in jpg, jpeg, bmp, png")
 		return "", invar.ErrInvalidParams
 	}
 
 	return w.wxpayAPIv3Upload(wxpApiUpImage, filename, suffix, file, ms)
 }
 
-// Upload video file to wechat platform by APIv3
+// Upload video file to wechat platform by APIv3,
+// it only support suffix in mp4, avi, wmv, mpeg, mov, mkv, flv, f4v, m4v, rmvb,
+// and file size must be samll 5MB.
 //	@param file Upload file content
-//	@param filename Upload file name and suffix
+//	@param header Upload file header information
+//	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
 //			- error Handled result
+//
+//	// use beego controller to get file and header
+//	file, header, err := ctrl.GetFile("video")
 //
 // see more
 //
 // - [Wechat Video Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
-func (w *WxPayAgent) UploadVideo(file io.Reader, filename string, ms *WxMerch) (string, error) {
-	// Check upload file if valid suffix : mp4, avi, wmv, mpeg, mov, mkv, flv, f4v, m4v, rmvb
+func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader, ms *WxMerch) (string, error) {
+	if header == nil || header.Size > (5*1024*1024) {
+		logger.E("Null file header or file size oversized")
+		return "", invar.ErrInvalidData
+	}
+
+	filename := header.Filename
 	suffix := strings.TrimLeft(strings.ToLower(path.Ext(filename)), ".")
 	if len(suffix) == 0 ||
 		!(suffix == "mp4" || suffix == "avi" || suffix == "wmv" || suffix == "mpeg" || suffix == "mov" || suffix == "mkv" || suffix == "flv" || suffix == "f4v" || suffix == "m4v" || suffix == "rmvb") {
-		logger.E("Invalid upload viudeo file type, must be in mp4, avi, wmv, mpeg, mov, mkv, flv, f4v, m4v, rmvb")
+		logger.E("Invalid video file type, must be in mp4, avi, wmv, mpeg, mov, mkv, flv, f4v, m4v, rmvb")
 		return "", invar.ErrInvalidParams
 	}
 
