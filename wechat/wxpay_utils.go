@@ -208,7 +208,7 @@ type WxDrJS struct {
 
 // WxRetDrH5 Response result of JSAPI direct pay
 type WxRetDrH5 struct {
-	H5Url string `json:"h5_url" description:"redirect web url for H5 direct pay"`
+	H5URL string `json:"h5_url" description:"redirect web url for H5 direct pay"`
 }
 
 // WxRetDrApp Response result of app direct pay
@@ -345,17 +345,19 @@ func (w *WxPayAgent) DrJSPay(params *WxDrJS, resp *WxRetDrJS, ms *WxMerch) error
 }
 
 // Request close direct pay action by using wechat pay APIv3
-//	@param mchid Merchant id
 //	@param tno Merchant transaction number of service provider
 //
 // - see more
 // [Wechat APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_3.shtml)
-func (w *WxPayAgent) DrClose(mchid, tno string, ms *WxMerch) error {
-	return w.postWxV3Http(fmt.Sprintf(wxpDrClose, tno), &WxMchID{ID: mchid}, nil, ms)
+func (w *WxPayAgent) DrClose(tno string, ms *WxMerch) error {
+	if ms == nil || len(ms.MchID) == 0 {
+		logger.E("Null merch data or empty merch id!")
+		return invar.ErrInvalidParams
+	}
+	return w.postWxV3Http(fmt.Sprintf(wxpDrClose, tno), &WxMchID{ID: ms.MchID}, nil, ms)
 }
 
 // Request query direct pay ticket with wechat trade id by using wechat pay APIv3
-//	@param mchid Merchant id
 //	@param tid Transaction id of wechat pay platform
 //	@return - resp Trade tickey details
 //
@@ -369,12 +371,15 @@ func (w *WxPayAgent) DrClose(mchid, tno string, ms *WxMerch) error {
 // [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml) ;
 // [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml) ;
 // [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml) ;
-func (w *WxPayAgent) DrTIDQuery(mchid, tid string, resp *WxRetTicket, ms WxMerch) error {
-	return w.getWxV3Http(fmt.Sprintf(wxpDrIDQuery, tid, mchid), resp, &ms)
+func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket, ms *WxMerch) error {
+	if ms == nil || len(ms.MchID) == 0 {
+		logger.E("Null merch data or empty merch id!")
+		return invar.ErrInvalidParams
+	}
+	return w.getWxV3Http(fmt.Sprintf(wxpDrIDQuery, tid, ms.MchID), resp, ms)
 }
 
 // Request query direct pay ticket with merchant trade no by using wechat pay APIv3
-//	@param mchid Merchant id
 //	@param tno Merchant transaction number of service provider
 //	@return - resp Trade tickey details
 //
@@ -388,8 +393,12 @@ func (w *WxPayAgent) DrTIDQuery(mchid, tid string, resp *WxRetTicket, ms WxMerch
 // [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml) ;
 // [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml) ;
 // [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml) ;
-func (w *WxPayAgent) DrTNoQuery(mchid, tno string, resp *WxRetTicket, ms WxMerch) error {
-	return w.getWxV3Http(fmt.Sprintf(wxpDrNoQuery, tno, mchid), resp, &ms)
+func (w *WxPayAgent) DrTNoQuery(tno string, resp *WxRetTicket, ms *WxMerch) error {
+	if ms == nil || len(ms.MchID) == 0 {
+		logger.E("Null merch data or empty merch id!")
+		return invar.ErrInvalidParams
+	}
+	return w.getWxV3Http(fmt.Sprintf(wxpDrNoQuery, tno, ms.MchID), resp, ms)
 }
 
 // -----------------------------------------------------------
