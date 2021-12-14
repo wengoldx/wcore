@@ -309,8 +309,8 @@ func (w *WxPayAgent) PFRegistry(body string, resp interface{}, ms *WxMerch) erro
 }
 
 // Request change merchant bank by using wechat pay APIv3
-func (w *WxPayAgent) PFChangBank(body string, ms *WxMerch) error {
-	return w.postWxV3Http(fmt.Sprintf(WxpMchAccMod, ms.MchID), body, nil, ms)
+func (w *WxPayAgent) PFChangBank(mid, body string, ms *WxMerch) error {
+	return w.postWxV3Http(fmt.Sprintf(WxpMchAccMod, mid), body, nil, ms)
 }
 
 // Request merchant H5 pay action by using wechat pay APIv3
@@ -345,7 +345,7 @@ func (w *WxPayAgent) PFDividing(body string, resp interface{}, ms *WxMerch) erro
 
 // Request merchant dividing refund action by using wechat pay APIv3
 func (w *WxPayAgent) PFDiviRefund(body string, resp interface{}, ms *WxMerch) error {
-	return w.postWxV3Http(WxpPFDividing, body, resp, ms)
+	return w.postWxV3Http(WxpPFDiviRefund, body, resp, ms)
 }
 
 // Request merchant close dividing action by using wechat pay APIv3
@@ -364,13 +364,44 @@ func (w *WxPayAgent) PFChgQuery(smid string, resp interface{}, ms *WxMerch) erro
 }
 
 // Request merchant query trade result by using wechat pay APIv3
-func (w *WxPayAgent) PFQuery(ps string, resp interface{}, ms *WxMerch) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpMchNoQuery, ps), resp, ms)
+func (w *WxPayAgent) PFQuery(tno, spid, smid string, resp interface{}, ms *WxMerch) error {
+	return w.getWxV3Http(fmt.Sprintf(WxpMchNoQuery, tno, spid, smid), resp, ms)
 }
 
 // Request merchant query refund result by using wechat pay APIv3
-func (w *WxPayAgent) PFRefQuery(rno, ps string, resp interface{}, ms *WxMerch) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpPFRNoQuery, rno)+ps, resp, ms)
+func (w *WxPayAgent) PFRefQuery(rno, smid string, resp interface{}, ms *WxMerch) error {
+	return w.getWxV3Http(fmt.Sprintf(WxpPFRNoQuery, rno, smid), resp, ms)
+}
+
+// Request merchant query balance result by using wechat pay APIv3
+func (w *WxPayAgent) PFBalQuery(smid, acctype string, resp interface{}, ms *WxMerch) error {
+	if acctype != "" {
+		return w.getWxV3Http(fmt.Sprintf(WxpPFBalance, smid)+"?account_type="+acctype, resp, ms)
+	}
+	return w.getWxV3Http(fmt.Sprintf(WxpPFBalance, smid), resp, ms)
+}
+
+// Request merchant query balance end date by using wechat pay APIv3
+func (w *WxPayAgent) PFEndQuery(smid, enddate string, resp interface{}, ms *WxMerch) error {
+	if enddate != "" {
+		return w.getWxV3Http(fmt.Sprintf(WxpPFEndDay, smid)+"?date="+enddate, resp, ms)
+	}
+	return w.getWxV3Http(fmt.Sprintf(WxpPFEndDay, smid), resp, ms)
+}
+
+// Request merchant query withdraw result by using wechat pay APIv3
+func (w *WxPayAgent) PFWithdrawQuery(wno, smid string, resp interface{}, ms *WxMerch) error {
+	return w.getWxV3Http(fmt.Sprintf(WxpPFWNoQuery, wno, smid), resp, ms)
+}
+
+// Request merchant query deviding result by using wechat pay APIv3
+func (w *WxPayAgent) PFDiviQuery(smid, tid, dno string, resp interface{}, ms *WxMerch) error {
+	return w.getWxV3Http(fmt.Sprintf(WxpPFDiviQuery, smid, tid, dno), resp, ms)
+}
+
+// Request merchant query deviding refund by using wechat pay APIv3
+func (w *WxPayAgent) PFDRefQuery(smid, rno, tno string, resp interface{}, ms *WxMerch) error {
+	return w.getWxV3Http(fmt.Sprintf(WxpPFDRefQuery, smid, tno, rno), resp, ms)
 }
 
 // -----------------------------------------------------------

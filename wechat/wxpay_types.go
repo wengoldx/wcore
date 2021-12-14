@@ -26,7 +26,7 @@ const (
 	WxpMchJS      = "/v3/pay/partner/transactions/jsapi"
 	WxpMchH5      = "/v3/pay/partner/transactions/h5"
 	WxpMchIDQuery = "/v3/pay/partner/transactions/id/%s"
-	WxpMchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s"
+	WxpMchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s?sp_mchid=%s&sub_mchid=%s"
 	WxpMchClose   = "/v3/pay/partner/transactions/out-trade-no/%s/close"
 	WxpMchAccMod  = "/v3/apply4sub/sub_merchants/%s/modify-settlement"
 	WxpMchMQuery  = "/v3/apply4sub/sub_merchants/%s/settlement"
@@ -45,17 +45,19 @@ const (
 	WxpPFEndDay   = "/v3/ecommerce/fund/enddaybalance/%s"
 	WxpPFWithdraw = "/v3/ecommerce/fund/withdraw"
 	WxpPFWIDQuery = "/v3/ecommerce/fund/withdraw/%s"
-	WxpPFWNoQuery = "/v3/ecommerce/fund/withdraw/out-request-no/%s"
+	WxpPFWNoQuery = "/v3/ecommerce/fund/withdraw/out-request-no/%s?sub_mchid=%s"
 
 	WxpPFDividing   = "/v3/ecommerce/profitsharing/orders"
-	WxpPFDiviRefund = "/v3/ecommerce/profitsharing/returnorders"
+	WxpPFDiviRefund = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&transaction_id=%s&out_order_no=%s"
 	WxpPFDiviClose  = "/v3/ecommerce/profitsharing/finish-order"
+	WxpPFDiviQuery  = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&transaction_id=%s&out_order_no=%s"
+	WxpPFDRefQuery  = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&out_order_no=%s&out_return_no=%s"
 	WxpPFDiviRecAdd = "/v3/ecommerce/profitsharing/receivers/add"
 	WxpPFDiviRecDel = "/v3/ecommerce/profitsharing/receivers/delete"
 
 	WxpPFRefund   = "/v3/ecommerce/refunds/apply"
 	WxpPFRIDQuery = "/v3/ecommerce/refunds/id/%s"
-	WxpPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s"
+	WxpPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s?sub_mchid=%s"
 )
 
 // Custom boundary string of wxpay agent
