@@ -189,8 +189,8 @@ func (c *WingController) ErrorState(state int, err ...string) {
 	w.Write([]byte(""))
 }
 
-// E400InvalidParams response 400 invalid params error state to client
-func (c *WingController) E400InvalidParams(err ...string) {
+// E400Params response 400 invalid params error state to client
+func (c *WingController) E400Params(err ...string) {
 	c.ErrorState(invar.E400ParseParams, err...)
 }
 
