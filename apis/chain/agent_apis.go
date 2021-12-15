@@ -23,7 +23,7 @@ import (
 //	@param ps The first ticket node of trade
 //	@return - string Trade number
 //			- error Exception messages
-func (a *PaychainAgent) GenTicket(ps interface{}) (string, error) {
+func (a *PaychainAgent) GenTrade(ps interface{}) (string, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return "", invar.ErrInvalidClient
@@ -41,6 +41,30 @@ func (a *PaychainAgent) GenTicket(ps interface{}) (string, error) {
 		return "", err
 	}
 	return tradeno, nil
+}
+
+// Update trade, it not modify the any exist tickt nodes but generate a new
+// ticket and append to trade nodes list.
+//	@param tno Trade number
+//	@param ps The new trade ticket node
+//	@return - error Exception messages
+func (a *PaychainAgent) UpdateTrade(tno string, ps interface{}) error {
+	if a.Domain == "" {
+		logger.E("Not set domain, please set first!")
+		return invar.ErrInvalidClient
+	}
+
+	node, err := json.Marshal(ps)
+	if err != nil {
+		logger.E("Marshal ticket ndoe err:", err)
+		return err
+	}
+
+	logger.D("Update ticket node by trade no:", tno)
+	if err = a.appendTradeTicket(tno, string(node)); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Get the latest trade ticket node
@@ -95,30 +119,6 @@ func (a *PaychainAgent) RefundTicket(tno string) (*RefundNode, error) {
 		return nil, err
 	}
 	return ticket, nil
-}
-
-// Update trade, it not modify the any exist tickt nodes but generate a new
-// ticket and append to trade nodes list.
-//	@param tno Trade number
-//	@param ps The new trade ticket node
-//	@return - error Exception messages
-func (a *PaychainAgent) UpdateTicket(tno string, ps interface{}) error {
-	if a.Domain == "" {
-		logger.E("Not set domain, please set first!")
-		return invar.ErrInvalidClient
-	}
-
-	node, err := json.Marshal(ps)
-	if err != nil {
-		logger.E("Marshal ticket ndoe err:", err)
-		return err
-	}
-
-	logger.D("Update ticket node by trade no:", tno)
-	if err = a.appendTradeTicket(tno, string(node)); err != nil {
-		return err
-	}
-	return nil
 }
 
 // ------------------------
