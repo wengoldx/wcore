@@ -85,7 +85,7 @@ type EncryptNode struct {
 
 // TradeNode Trade ticket node
 type TradeNode struct {
-	Service    string `json:"service"               description:"service name"`
+	Service    string `json:"service"               description:"cachier who support trade service"`
 	CUUID      string `json:"cuuid"                 description:"payer uuid"`
 	SUUID      string `json:"suuid"                 description:"payee uuid, merchant id"`
 	SubMchID   string `json:"sub_mchid"             description:"payee sub merchant id"`
