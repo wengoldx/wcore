@@ -194,14 +194,6 @@ func (c *WingController) E400Unmarshal(err ...string) {
 	c.ErrorState(invar.E400ParseParams, err...)
 }
 
-// E400Params response 400 invalid params error state to client
-//	@deprecated this method will delete at the next version, use ErrorValidate
-//				instead or DoAfterValidated to auto print error log.
-func (c *WingController) E400Params(ps interface{}) {
-	logger.E("Invalid input params:", ps)
-	c.ErrorState(invar.E400ParseParams)
-}
-
 // E400Validate response 400 invalid params error state to client, then print
 // the params data and validate error
 func (c *WingController) E400Validate(ps interface{}, err ...string) {
@@ -344,21 +336,21 @@ func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, opt
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
-//	@see DoAfterValidated
+//	see DoAfterValidated
 func (c *WingController) DoAfterUnmarshal(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("json", ps, nextFunc, false, isprotect)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
-//	@see DoAfterValidated
+//	see DoAfterValidated
 func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("xml", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-//	@see DoAfterValidated, DoAfterValidatedXml
+//	see DoAfterValidated, DoAfterValidatedXml
 func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("xml", ps, nextFunc, false, isprotect)

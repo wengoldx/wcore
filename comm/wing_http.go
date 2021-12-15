@@ -27,8 +27,9 @@ import (
 
 // SetRequest use for set http request before execute http.Client.Do,
 // you can use this middle-ware to set auth as username and passord, and so on.
-// @return bool - if current request ignore TLS verify or not, false is verify by default.
-//              - set http request error
+//	@param req Http requester
+//	@return - bool If current request ignore TLS verify or not, false is verify by default.
+//			- error Exception messages
 type SetRequest func(req *http.Request) (bool, error)
 
 const (

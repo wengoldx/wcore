@@ -19,6 +19,49 @@ import (
 	"time"
 )
 
+// A agent using wechat pay APIv3 to support pay as the follow ways
+//
+// #### Direct connection merchant pay
+//
+// The methods with Dr prefix abbreviation to provider H5, App, JSAPI ways to
+// place a order, query trade informations, request refund, close trade, and
+// update trade status when a trade pay success or failed.
+//
+// - see more
+//
+// [Direct Connection Merchat](https://pay.weixin.qq.com/wiki/doc/apiv3/index.shtml)
+//
+// #### Service provider merchant pay
+//
+// The methods with PF prefix abbreviation to provider payments for both service
+// provider merchant, and sub merchant of custom shopping mall platform.
+// the support functions not just as direct connection merchant pay, but extras
+// contain dividing pay, dividing refund, dividing query, sub merchant register,
+// registry query, balance query, sub merchant withdraw, and so on.
+//
+// - see more
+//
+// [Service Provider Merchat](https://pay.weixin.qq.com/wiki/doc/apiv3_partner/index.shtml)
+//
+// `USAGE` :
+//
+// Before use the WxPayAgent, you must register a 'official account of wechat',
+// then config and download the valid account, merchant secret certificates,
+// serial number, API keys and so on.
+//
+// ---
+//
+//	agent := &wechat.WxPayAgent{}
+//	err := agent.UpdateCert(out)		// update merchant certificate
+//	mediaid, err := agent.UploadImage(file, header) // upload image to wechat platform
+//	mediaid, err := agent.UploadVideo(file, header) // upload video to wechat platform
+//	err := agent.DrH5Pay(ps, out)		// request pay for H5 way
+//	err := agent.DrAppPay(ps, out)		// request pay for App way
+//	err := agent.DrJSPay(ps, out)		// request pay for JS way
+//	err := agent.DrClose(tno)			// close trade
+//	err := agent.DrTIDQuery(tid, out)	// query trade ticket by transaction id
+//	err := agent.DrTNoQuery(tno, out)	// query trade ticket by trade number of shopping mall platform
+//	// ...
 type WxPayAgent struct {
 }
 
@@ -81,7 +124,8 @@ func (w *WxPayAgent) State(state PayState) string {
 //	`DO NOT change the order of the signature strings`
 //
 // - see more
-// [Generate Signature String](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-1)
+//
+// [Generate Signature](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-1)
 func (w *WxPayAgent) SignPacket(method, URL, timestamp, nonce, body string) string {
 	packet := ""
 	packet += method + "\n"
@@ -105,6 +149,7 @@ func (w *WxPayAgent) SignPacket(method, URL, timestamp, nonce, body string) stri
 //	`DO NOT change the order of the signature strings`
 //
 // - see more
+//
 // [Set Http Auth Header](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-3)
 func (w *WxPayAgent) AuthPacket(mchid, nonce, timestamp, serialno, signature string) string {
 	packet := ""
@@ -139,7 +184,7 @@ func (w *WxPayAgent) NotifyPacket(timestamp, nonce, body string) string {
 //	@param prifile RSA PCS#8 private pem file path
 //	@param signstr To be encript signture string
 //	@return - string Encrpty string
-//			- error Handle result
+//			- error Exception messages
 func (w *WxPayAgent) EncrpySign(prifile, signstr string) (string, error) {
 	return secure.RSA2Sign4FB64(prifile, []byte(signstr))
 }
@@ -148,6 +193,10 @@ func (w *WxPayAgent) EncrpySign(prifile, signstr string) (string, error) {
 // For Certificate Update
 // -----------------------------------------------------------
 
+// Update wechat certificates
+//	@param resp Output request result.
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 func (w *WxPayAgent) UpdateCert(resp *WxRetCert, ms *WxMerch) error {
 	return w.getWxV3Http(wxpApiCert, resp, ms)
 }
@@ -158,14 +207,14 @@ func (w *WxPayAgent) UpdateCert(resp *WxRetCert, ms *WxMerch) error {
 //	@param header Upload file header information
 //	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
-//			- error Handled result
+//			- error Exception messages
 //
 //	// use beego controller to get file and header
 //	file, header, err := ctrl.GetFile("img")
 //
-// see more
+// - see more
 //
-// - [Wechat Image Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml)
+// [Image Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml)
 func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader, ms *WxMerch) (string, error) {
 	if header == nil || header.Size > (2*1024*1024) {
 		logger.E("Null file header or file size oversized")
@@ -189,14 +238,14 @@ func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader, m
 //	@param header Upload file header information
 //	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
-//			- error Handled result
+//			- error Exception messages
 //
 //	// use beego controller to get file and header
 //	file, header, err := ctrl.GetFile("video")
 //
-// see more
+// - see more
 //
-// - [Wechat Video Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
+// [Video Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
 func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader, ms *WxMerch) (string, error) {
 	if header == nil || header.Size > (5*1024*1024) {
 		logger.E("Null file header or file size oversized")
@@ -218,35 +267,53 @@ func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader, m
 // For Direct Pay
 // -----------------------------------------------------------
 
-// Request direct H5 pay action by using wechat pay APIv3
+// Request direct H5 pay action
+//	@param params Request params for H5 pay APIv3.
+//	@param resp Output request result.
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 //
 // - see more
-// [Wechat APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_1.shtml)
+//
+// [H5 APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_1.shtml)
 func (w *WxPayAgent) DrH5Pay(params *WxDrH5, resp *WxRetDrH5, ms *WxMerch) error {
 	return w.postWxV3Http(wxpDrH5, params, resp, ms)
 }
 
-// Request direct app pay action by using wechat pay APIv3
+// Request direct app pay action
+//	@param params Request params for App pay APIv3.
+//	@param resp Output request result.
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 //
 // - see more
-// [Wechat APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_1.shtml)
+//
+// [App APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_1.shtml)
 func (w *WxPayAgent) DrAppPay(params *WxDrApp, resp *WxRetDrApp, ms *WxMerch) error {
 	return w.postWxV3Http(wxpDrApp, params, resp, ms)
 }
 
-// Request direct JSAPI pay action by using wechat pay APIv3
+// Request direct JSAPI pay action
+//	@param params Request params for JSAPI pay APIv3.
+//	@param resp Output request result.
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 //
 // - see more
-// [Wechat APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_1.shtml)
+//
+// [JSAPI APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_1.shtml)
 func (w *WxPayAgent) DrJSPay(params *WxDrJS, resp *WxRetDrJS, ms *WxMerch) error {
 	return w.postWxV3Http(wxpDrJS, params, resp, ms)
 }
 
 // Request close direct pay action by using wechat pay APIv3
 //	@param tno Merchant transaction number of service provider
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 //
 // - see more
-// [Wechat APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_3.shtml)
+//
+// [Close APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_3.shtml)
 func (w *WxPayAgent) DrClose(tno string, ms *WxMerch) error {
 	if ms == nil || len(ms.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
@@ -257,7 +324,9 @@ func (w *WxPayAgent) DrClose(tno string, ms *WxMerch) error {
 
 // Request query direct pay ticket with wechat trade id by using wechat pay APIv3
 //	@param tid Transaction id of wechat pay platform
-//	@return - resp Trade tickey details
+//	@param resp Output request result.
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 //
 // Dest URL format as:
 //
@@ -266,9 +335,10 @@ func (w *WxPayAgent) DrClose(tno string, ms *WxMerch) error {
 // Notice that use agent.DrTNoQuery() will return same response datas
 //
 // - see more
-// [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
-// [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
-// [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
+//
+// APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
+// [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
+// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
 func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket, ms *WxMerch) error {
 	if ms == nil || len(ms.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
@@ -279,7 +349,9 @@ func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket, ms *WxMerch) erro
 
 // Request query direct pay ticket with merchant trade no by using wechat pay APIv3
 //	@param tno Merchant transaction number of service provider
-//	@return - resp Trade tickey details
+//	@param resp Output request result.
+//	@param ms Merchant secret informations
+//	@return - error Exception messages
 //
 // Dest URL format as:
 //
@@ -288,9 +360,10 @@ func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket, ms *WxMerch) erro
 // Notice that use agent.DrTIDQuery() will return same response datas
 //
 // - see more
-// [Wechat APIv3 - H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
-// [Wechat APIv3 - App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
-// [Wechat APIv3 - JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
+//
+// APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
+// [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
+// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
 func (w *WxPayAgent) DrTNoQuery(tno string, resp *WxRetTicket, ms *WxMerch) error {
 	if ms == nil || len(ms.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
@@ -429,8 +502,9 @@ func (w *WxPayAgent) postWxV3Http(urlpath string, params, resp interface{}, ms *
 //	@param method Http method of GET, POST
 //	@param urlpath Wechat pay platform APIv3 api
 //	@param body Request data, mashaled to json string
+//	@param ms Merchant secret informations
 //	@return - string Authentication header
-//			- error Handled result
+//			- error Exception messages
 func (w *WxPayAgent) signAuthHeader(method, urlpath, body string, ms *WxMerch) (string, error) {
 	// Step 1. generate nonce and timestamp strings
 	noncestr := secure.GenNonce()
@@ -457,9 +531,9 @@ func (w *WxPayAgent) signAuthHeader(method, urlpath, body string, ms *WxMerch) (
 // Generate request body data for upload image and
 // video to wechat platform.
 //
-// see more
+// - see more
 //
-// - [Wechat Upload Image](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml#part-4)
+// [Upload Image](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml#part-4)
 func (w *WxPayAgent) genUploadBody(fn, suffix string, fm, buff []byte) (*bytes.Buffer, string, error) {
 	// Step 1. creter and setup body informations
 	body := &bytes.Buffer{}
@@ -506,12 +580,12 @@ func (w *WxPayAgent) genUploadBody(fn, suffix string, fm, buff []byte) (*bytes.B
 //	@param method Http method of GET, POST
 //	@param urlpath Wechat pay platform APIv3 api
 //	@param body Request data, mashaled to json string
-//	@return - error Handled result
+//	@return - error Exception messages
 //
-// see more
+// - see more
 //
-// - [Wechat Access Rules](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml),
-// - [Wechat Authenticate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml)
+// [Access Rules](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml),
+// [Authenticate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml)
 func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface{}, ms *WxMerch) error {
 	logger.D("Request wechat APIv3 ["+method+"]:", urlpath)
 	url := WxpApisDomain + urlpath
@@ -582,16 +656,18 @@ func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface
 }
 
 // Upload image or video file to wechat platform by APIv3
-//	@param file Upload file content
+//	@param urlpath Wechat APIv3 url path
 //	@param filename Upload file name with suffix
 //	@param suffix Upload file suffix
+//	@param file Upload file content
+//	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
-//			- error Handled result
+//			- error Exception messages
 //
-// see more
+// - see more
 //
-// - [Wechat Upload Image](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml),
-// - [Wechat Upload Video](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
+// Upload [Image](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml),
+// [Video](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
 func (w *WxPayAgent) wxpayAPIv3Upload(urlpath, filename, suffix string, file io.Reader, ms *WxMerch) (string, error) {
 	logger.D("Upload file "+filename+" to wechat by APIv3 [ POST ]:", urlpath)
 	url, method := WxpApisDomain+urlpath, "POST"

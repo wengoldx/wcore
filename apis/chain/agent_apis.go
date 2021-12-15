@@ -20,9 +20,9 @@ import (
 )
 
 // Generate a new trade by given payment datas, and return trade number
-//	@param ps  "The first ticket node of trade"
-//	@return - string "Trade number"
-//			- error "Exception messages"
+//	@param ps The first ticket node of trade
+//	@return - string Trade number
+//			- error Exception messages
 func (a *PaychainAgent) GenTicket(ps interface{}) (string, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
@@ -44,9 +44,9 @@ func (a *PaychainAgent) GenTicket(ps interface{}) (string, error) {
 }
 
 // Get the latest trade ticket node
-//	@param tno "Trade number"
-//	@return - TradeNode "Trade ticket node"
-//			- error "Exception messages"
+//	@param tno Trade number
+//	@return - TradeNode Trade ticket node
+//			- error Exception messages
 func (a *PaychainAgent) TradeTicket(tno string) (*TradeNode, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
@@ -62,9 +62,9 @@ func (a *PaychainAgent) TradeTicket(tno string) (*TradeNode, error) {
 }
 
 // Get the latest dividing ticket node
-//	@param tno "Trade number"
-//	@return - ProfitShareInfo "Dividing ticket node"
-//			- error "Exception messages"
+//	@param tno Trade number
+//	@return - DiviNode Dividing ticket node
+//			- error Exception messages
 func (a *PaychainAgent) DiviTicket(tno string) (*DiviNode, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
@@ -80,9 +80,9 @@ func (a *PaychainAgent) DiviTicket(tno string) (*DiviNode, error) {
 }
 
 // Get the latest refund ticket node
-//	@param tno "Trade number"
-//	@return - RefundNode "Refund ticket node"
-//			- error "Exception messages"
+//	@param tno Trade number
+//	@return - RefundNode Refund ticket node
+//			- error Exception messages
 func (a *PaychainAgent) RefundTicket(tno string) (*RefundNode, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
@@ -99,9 +99,9 @@ func (a *PaychainAgent) RefundTicket(tno string) (*RefundNode, error) {
 
 // Update trade, it not modify the any exist tickt nodes but generate a new
 // ticket and append to trade nodes list.
-//	@param tno "Trade number"
-//	@param ps  "The new trade ticket node"
-//	@return - error "Exception messages"
+//	@param tno Trade number
+//	@param ps The new trade ticket node
+//	@return - error Exception messages
 func (a *PaychainAgent) UpdateTicket(tno string, ps interface{}) error {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
@@ -126,9 +126,9 @@ func (a *PaychainAgent) UpdateTicket(tno string, ps interface{}) error {
 // ------------------------
 
 // Get the last ticket node from given trade nodes list
-//	@param tno "Trade number"
-//	@return - out "Out data of TradeNode, DiviNode or RefundNode"
-//			- error "Exception messages"
+//	@param tno Trade number
+//	@return - out Out data of TradeNode, DiviNode or RefundNode
+//			- error Exception messages
 func (a *PaychainAgent) lastTicketNode(tno string, out interface{}) error {
 	tickets, err := a.getTradeTickets(tno)
 	if err != nil {
@@ -150,9 +150,9 @@ func (a *PaychainAgent) lastTicketNode(tno string, out interface{}) error {
 }
 
 // Get trade tickets list by trade number from paychain server
-//	@param tno "Trade number"
-//	@return - []TicketNode "Trade tickets nodes"
-//			- error "Exception messages"
+//	@param tno Trade number
+//	@return - []TicketNode Trade tickets nodes
+//			- error Exception messages
 //
 // `TODO`
 //
@@ -177,9 +177,9 @@ func (a *PaychainAgent) getTradeTickets(tno string) ([]*TicketNode, error) {
 }
 
 // Append a new ticket node to paychain server
-//	@param tno  "Trade number"
-//	@param node "Json string of the new ticket node"
-//	@return - error "Exception messages"
+//	@param tno Trade number
+//	@param node Json string of the new ticket node
+//	@return - error Exception messages
 //
 // `TODO`
 //
@@ -210,9 +210,9 @@ func (a *PaychainAgent) appendTradeTicket(tno, node string) error {
 
 // Generate a new ticket node as the first node of trade nodes list,
 // and return the trade number
-//	@param node "Json string of the new ticket node"
-//	@return - string "Trade number"
-//			- error "Exception messages"
+//	@param node Json string of the new ticket node"
+//	@return - string Trade number
+//			- error Exception messages
 //
 // `TODO` :
 //
@@ -244,12 +244,11 @@ func (a *PaychainAgent) genTicketNode(node string) (string, error) {
 }
 
 //	Encrypt encrypt the given body, and return sign code, timestamp and body ciphertext.
-//
-//	@param body payment content to be encrypted.
-//	@return string sign code of hashed payment body.
-//	@return string encrypted body ciphertext.
-//	@return int64  encrypte timestamp.
-//	@return error  invar.ErrInvalidClient or exception errors.
+//	@param body payment content to be encrypted
+//	@return string Sign code of hashed payment body
+//			- string Encrypted body ciphertext
+//			- int64 Encrypte timestamp
+//			- error Exception messages
 //
 // `WARNING` :
 //

@@ -17,26 +17,22 @@ import (
 	"time"
 )
 
-/*
- * Useage as follows:
- *
- * [CODE:]
- * coder := mvc.NewSoleCoder()
- * code, _ := coder.Gen(6)
- * logger.I("6 chars code:", code)
- *
- * code, _ = coder.Gen(8)
- * logger.I("8 chars code:", code)
- *
- * code, _ := coder.Gen(6, 5)
- * logger.I("max retry 5 times, 6 chars code:", code)
- *
- * code, _ = coder.Gen(8, 5)
- * logger.I("max retry 5 times, 8 chars code:", code)
- * [CODE]
- */
-
 // SoleCoder random coder to generate unique number code
+//
+// `USEAGE` :
+//
+//	coder := mvc.NewSoleCoder()
+//	code, _ := coder.Gen(6)
+//	logger.I("6 chars code:", code)
+//
+//	code, _ = coder.Gen(8)
+//	logger.I("8 chars code:", code)
+//
+//	code, _ := coder.Gen(6, 5)
+//	logger.I("max retry 5 times, 6 chars code:", code)
+//
+//	code, _ = coder.Gen(8, 5)
+//	logger.I("max retry 5 times, 8 chars code:", code)
 type SoleCoder struct {
 	codes map[string]bool
 }
