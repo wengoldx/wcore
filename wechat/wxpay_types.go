@@ -99,19 +99,25 @@ type WxMerch struct {
 
 // Wechat pay platform secure informations
 //
+// `NOTICE`:
+//
+// Session file path and content should like as below, and the values shoud update
+// when pay platform certificates refreshed :
+//
+//	// ./conf/wechat_dr_virtual/cert_sn_expire.json
+//	{
+//		"SerialNo" : "7FF2520AB28B53F9D8F95BE48835242518106196",
+//		"Expire" : 1639642905
+//	}
+//
 // - see more
 //
 // [Pay Platform Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_1.shtml#part-2)
 type WxPPlatform struct {
-	SerialNo string `description:"wechat pay platform certificate serial number"`
+	Session  string `description:"a json content file path to cache the latest serial number and expire time"`
 	CertPem  string `description:"wechat pay platform certificate public pem file, such as wxp_cert.pem"`
-	Expire   int64  `description:"the time when need refresh certificate file, the value reade from file as unix seconds"`
-
-	// the Expire file should like:
-	// ./conf/wechat_dr_virtual/cert_expire
-	// -----------
-	// 1639642905
-	// -----------
+	SerialNo string `description:"wechat pay platform certificate serial number"`
+	Expire   int64  `description:"unix seconds time for next refresh certificate"`
 }
 
 // Wxpay casher, contain pay provider merchant, pay platform secures, APIv3 access agent
