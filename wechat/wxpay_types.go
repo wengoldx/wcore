@@ -84,14 +84,52 @@ const (
 	WXP_PAYING
 )
 
+// Merchant secure informations
+//
+// - see more
+// [Certificate Usage](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_0.shtml),
+// [APIv3 Key](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_2.shtml)
+type WxMerch struct {
+	MchID    string `description:"merchant id of wechat"`
+	SerialNo string `description:"merchant certificate serial number"`
+	PriPem   string `description:"merchant certificate private pem file, such as apiclient_key.pem"`
+	PubPem   string `description:"merchant certificate public pem file, such as apiclient_cert.pem"`
+	APIv3Key string `description:"merchant APIv3 secure key"`
+}
+
+// Wechat pay platform secure informations
+//
+// - see more
+//
+// [Pay Platform Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_1.shtml#part-2)
+type WxPPlatform struct {
+	SerialNo string `description:"wechat pay platform certificate serial number"`
+	CertPem  string `description:"wechat pay platform certificate public pem file, such as wxp_cert.pem"`
+	Expire   string `description:"the time when need refresh certificate file, the value reade from file as unix seconds"`
+
+	// the Expire file should like:
+	// ./conf/wechat_dr_virtual/cert_expire
+	// -----------
+	// 1639642905
+	// -----------
+}
+
+// Wxpay casher, contain pay provider merchant, pay platform secures, APIv3 access agent
+type WxCashier struct {
+	SKey   string      `description:"cashier custom uniqe key, use for cache or seach with map"`
+	AppID  string      `description:"which app to handle the trade transaction"`
+	RootCa string      `description:"TLS authenticate certificate file, such as Root_CA.pem"`
+	Agent  *WxPayAgent `description:"Wxpay agent to access wechat pay APIv3 apis"`
+}
+
 // -------- For Response Error
 
 // Response code and message from wechat pay
 //
-// see more such as
+// - see more
 //
-// - [Common error codes](https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/Share/error_code.shtml)
-// - [H5 Pay error codes](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_1.shtml)
+// [Common Errors](https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/Share/error_code.shtml),
+// [H5 Pay Errors](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_1.shtml)
 type WxCodeMsg struct {
 	Code    string `json:"code"    description:"response code, such as : PARAM_ERROR"`
 	Message string `json:"message" description:"response result message"`
@@ -108,18 +146,11 @@ type WxErrDetail struct {
 // Http response error informations from wechat pay
 //
 // - see more
-// [Struct Define](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml#part-7)
+//
+// [Error Struct](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml#part-7)
 type WxRetErr struct {
 	WxCodeMsg
 	Detail WxErrDetail `json:"detail" description:"response error details"`
-}
-
-// Merchant secure informations of wechat pay platform
-type WxMerch struct {
-	MchID     string `description:"merchant id of wechat"`
-	SerialNo  string `description:"merchant certificate serial number"`
-	PriPem    string `description:"merchant certificate private pem file"`
-	PayPlatSN string `description:"wechat pay platform serial number"`
 }
 
 // WxMchID wechat merchant id
