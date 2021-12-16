@@ -105,7 +105,7 @@ type WxMerch struct {
 type WxPPlatform struct {
 	SerialNo string `description:"wechat pay platform certificate serial number"`
 	CertPem  string `description:"wechat pay platform certificate public pem file, such as wxp_cert.pem"`
-	Expire   string `description:"the time when need refresh certificate file, the value reade from file as unix seconds"`
+	Expire   int64  `description:"the time when need refresh certificate file, the value reade from file as unix seconds"`
 
 	// the Expire file should like:
 	// ./conf/wechat_dr_virtual/cert_expire
