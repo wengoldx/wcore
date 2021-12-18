@@ -13,7 +13,9 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	crand "crypto/rand"
 	"github.com/wengoldx/wing/invar"
+	"io"
 	"math/rand"
 	"time"
 )
@@ -225,7 +227,62 @@ func pkcs5Unpadding(encrypt []byte) []byte {
 
 // ------- AES-256-GCM
 
-// GCMDecrypt using AES-256-GCM to decrypt the given ciphertext
+// GCMEncrypt using AES-256-GCM to encrypt the given original text,
+//	@param secretkey Secure key buffer
+//	@param original Original datas buffer to encrypt
+//	@param additional Additional datas
+//	@return - string Encrypted ciphertext formated by base64
+//			- string Nonce string
+//			- error Exception message
+//
+// `NOTICE` :
+//
+// You can use secure.GenAESKey() to generate a AES-256-GSM secret key
+// to as secretkey input param, or use hex.EncodeToString() encode any
+// secret string, but use hex.DecodeString() decode the encode hash key
+// before call this function.
+//
+//	// use secure.GenAESKey() generate a secretkey
+//	secretkey := secure.GenAESKey()
+//	ciphertex, noncestr, err := secure.GCMEncrypt(secretkey, original)
+//	ciphertex, noncestr, err := secure.GCMEncrypt(secretkey, original, additional)
+//
+//	// use hex.EncodeToString() and hex.DecodeString()
+//	hashkey := hex.EncodeToString(secretkey)
+//	// do samething with hashkey...
+//	secretkey, err := hex.DecodeString(hashkey)
+//	ciphertex, noncestr, err := secure.GCMEncrypt(secretkey, original)
+//	ciphertex, noncestr, err := secure.GCMEncrypt(secretkey, original, additional)
+func GCMEncrypt(secretkey, original []byte, additional ...[]byte) (string, string, error) {
+	block, err := aes.NewCipher(secretkey)
+	if err != nil {
+		return "", "", err
+	}
+
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", "", err
+	}
+
+	nonce := make([]byte, aesgcm.NonceSize())
+	if _, err := io.ReadFull(crand.Reader, nonce); err != nil {
+		return "", "", err
+	}
+
+	var additionalData []byte = nil
+	if len(additional) > 0 && len(additional[0]) > 0 {
+		additionalData = additional[0]
+	}
+
+	ciphertext := aesgcm.Seal(nonce, nonce, original, additionalData)
+	return ByteToBase64(ciphertext), string(nonce), nil
+}
+
+// GCMDecrypt using AES-256-GCM to decrypt ciphertext
+//	@param secretkey Secure key buffer
+//	@param ciphertextb64 Ciphertext formated by base64
+//	@param noncestr Nonce string which generated when encrypt
+//	@param additional additional datas used by encrypt, it maybe null
 //
 // ## `FIXME` :
 //
@@ -233,10 +290,9 @@ func pkcs5Unpadding(encrypt []byte) []byte {
 // not for common AES-256-GCM decrypt, and the input params as:
 //
 //	// Use AES-256-GCM decrypt response
-//	plaintext, err := GCMDecrypt(apiv3key, ciphertext, noncestr, associate)
-func GCMDecrypt(secretkey, ciphertextb64, noncestr, associate string) (string, error) {
-	hashed := []byte(secretkey)
-	block, err := aes.NewCipher(hashed)
+//	plaintext, err := GCMDecrypt(apiv3key, ciphertext, noncestr, additional)
+func GCMDecrypt(secretkey []byte, ciphertextb64, noncestr string, additional ...[]byte) (string, error) {
+	block, err := aes.NewCipher(secretkey)
 	if err != nil {
 		return "", err
 	}
@@ -252,7 +308,11 @@ func GCMDecrypt(secretkey, ciphertextb64, noncestr, associate string) (string, e
 		return "", err
 	}
 
-	additionalData := []byte(associate)
+	var additionalData []byte = nil
+	if len(additional) > 0 && len(additional[0]) > 0 {
+		additionalData = additional[0]
+	}
+
 	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, additionalData)
 	if err != nil {
 		return "", err
