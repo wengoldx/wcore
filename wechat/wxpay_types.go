@@ -113,8 +113,7 @@ type WxMerch struct {
 // - see more
 //
 // [Pay Platform Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_1.shtml#part-2)
-type WxPPlatform struct {
-	Session  string `description:"a json content file path to cache the latest serial number and expire time"`
+type WxPayPlat struct {
 	CertPem  string `description:"wechat pay platform certificate public pem file, such as wxp_cert.pem"`
 	SerialNo string `description:"wechat pay platform certificate serial number"`
 	Expire   int64  `description:"unix seconds time for next refresh certificate"`

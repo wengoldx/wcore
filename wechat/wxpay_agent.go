@@ -63,8 +63,8 @@ import (
 //	err := agent.DrTNoQuery(tno, out)	// query trade ticket by trade number of shopping mall platform
 //	// ...
 type WxPayAgent struct {
-	Merch *WxMerch     `description:"merchant secure informations"`
-	PPlat *WxPPlatform `description:"wechat pay platform secure informations"`
+	Merch *WxMerch   `description:"merchant secure informations"`
+	PPlat *WxPayPlat `description:"wechat pay platform secure informations"`
 }
 
 // Append wechat pay APIv3 domain and params combined string
@@ -218,7 +218,7 @@ func (w *WxPayAgent) UpdateCert(resp *WxRetCert) error {
 //
 // [Image Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_1.shtml)
 func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader) (string, error) {
-	if header == nil || header.Size > (2*1024*1024) {
+	if header == nil || header.Size > (2*1024*1024) /* 2MB */ {
 		logger.E("Null file header or file size oversized")
 		return "", invar.ErrInvalidParams
 	}
@@ -249,7 +249,7 @@ func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader) (
 //
 // [Video Upload](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter2_1_2.shtml)
 func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader) (string, error) {
-	if header == nil || header.Size > (5*1024*1024) {
+	if header == nil || header.Size > (5*1024*1024) /* 5MB */ {
 		logger.E("Null file header or file size oversized")
 		return "", invar.ErrInvalidParams
 	}
