@@ -166,6 +166,8 @@ func GenAESKey() string {
 	return string(secretkey)
 }
 
+// ------- AES-CBC : Cipher block chaining (CBC) mode.
+
 // AESEncrypt using secret key to encrypt original data
 func AESEncrypt(secretkey, original []byte) (string, error) {
 	if len(secretkey) != aesKeyLength {
@@ -219,4 +221,41 @@ func pkcs5Padding(ciphertext []byte, blockSize int) []byte {
 func pkcs5Unpadding(encrypt []byte) []byte {
 	padding := encrypt[len(encrypt)-1]
 	return encrypt[:len(encrypt)-int(padding)]
+}
+
+// ------- AES-256-GCM
+
+// GCMDecrypt using AES-256-GCM to decrypt the given ciphertext
+//
+// ## `FIXME` :
+//
+// This function just only for wxpay agent to decrypt response datas,
+// not for common AES-256-GCM decrypt, and the input params as:
+//
+//	// Use AES-256-GCM decrypt response
+//	plaintext, err := GCMDecrypt(apiv3key, ciphertext, noncestr, associate)
+func GCMDecrypt(secretkey, ciphertextb64, noncestr, associate string) (string, error) {
+	hashed := []byte(secretkey)
+	block, err := aes.NewCipher(hashed)
+	if err != nil {
+		return "", err
+	}
+
+	nonce := []byte(noncestr)
+	aesgcm, err := cipher.NewGCMWithNonceSize(block, len(nonce))
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext, err := Base64ToByte(ciphertextb64)
+	if err != nil {
+		return "", err
+	}
+
+	additionalData := []byte(associate)
+	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, additionalData)
+	if err != nil {
+		return "", err
+	}
+	return string(plaintext), err
 }

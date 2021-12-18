@@ -87,28 +87,19 @@ const (
 // Merchant secure informations
 //
 // - see more
+//
 // [Certificate Usage](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_0.shtml),
-// [APIv3 Key](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_2.shtml)
+// [APIv3 Key](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay3_2.shtml),
+// [APIv3 Key Usecase](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay5_1.shtml)
 type WxMerch struct {
 	MchID    string `description:"merchant id of wechat"`
 	SerialNo string `description:"merchant certificate serial number"`
 	PriPem   string `description:"merchant certificate private pem file, such as apiclient_key.pem"`
 	PubPem   string `description:"merchant certificate public pem file, such as apiclient_cert.pem"`
-	APIv3Key string `description:"merchant APIv3 secure key"`
+	APIv3Key string `description:"merchant APIv3 secure key, use for decrypt response signtrue data from wechat"`
 }
 
-// Wechat pay platform secure informations
-//
-// `NOTICE`:
-//
-// Session file path and content should like as below, and the values shoud update
-// when pay platform certificates refreshed :
-//
-//	// ./conf/wechat_dr_virtual/cert_sn_expire.json
-//	{
-//		"SerialNo" : "7FF2520AB28B53F9D8F95BE48835242518106196",
-//		"Expire" : 1639642905
-//	}
+// Wechat merchant pay platform certificates datas
 //
 // - see more
 //
@@ -369,8 +360,8 @@ type WxRetTicket struct {
 	Promotion   []*PromotionDetail `json:"promotion_detail" description:"promotion details"`
 }
 
-// WxRetCert wechat pay platform certificate updated response
-type WxRetCert struct {
+// WxMchCerts wechat merchant certificates
+type WxMchCerts struct {
 	Datas []Certificate `json:"data"`
 }
 

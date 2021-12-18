@@ -128,7 +128,7 @@ func (w *WxPayAgent) State(state PayState) string {
 // - see more
 //
 // [Generate Signature](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-1)
-func (w *WxPayAgent) SignPacket(method, URL, timestamp, nonce, body string) string {
+func SignPacket(method, URL, timestamp, nonce, body string) string {
 	packet := ""
 	packet += method + "\n"
 	packet += URL + "\n"
@@ -153,7 +153,7 @@ func (w *WxPayAgent) SignPacket(method, URL, timestamp, nonce, body string) stri
 // - see more
 //
 // [Set Http Auth Header](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-3)
-func (w *WxPayAgent) AuthPacket(mchid, nonce, timestamp, serialno, signature string) string {
+func AuthPacket(mchid, nonce, timestamp, serialno, signature string) string {
 	packet := ""
 	packet += "WECHATPAY2-SHA256-RSA2048 "
 	packet += "mchid=\"" + mchid + "\","
@@ -173,7 +173,7 @@ func (w *WxPayAgent) AuthPacket(mchid, nonce, timestamp, serialno, signature str
 // `WARNING` :
 //
 //	`DO NOT change the order of the signature strings`
-func (w *WxPayAgent) NotifyPacket(timestamp, nonce, body string) string {
+func NotifyPacket(timestamp, nonce, body string) string {
 	packet := ""
 	packet += timestamp + "\n"
 	packet += nonce + "\n"
@@ -187,7 +187,7 @@ func (w *WxPayAgent) NotifyPacket(timestamp, nonce, body string) string {
 //	@param signstr To be encript signture string
 //	@return - string Encrpty string
 //			- error Exception messages
-func (w *WxPayAgent) EncrpySign(prifile, signstr string) (string, error) {
+func EncrpySign(prifile, signstr string) (string, error) {
 	return secure.RSA2Sign4FB64(prifile, []byte(signstr))
 }
 
@@ -195,11 +195,15 @@ func (w *WxPayAgent) EncrpySign(prifile, signstr string) (string, error) {
 // For Certificate Update
 // -----------------------------------------------------------
 
-// Update wechat certificates
-//	@param resp Output request result.
-//	@param ms Merchant secret informations
+// Update and return the wechat merchant (who set as agent merch) all certificates
+//	@param resp Wechat Merchant all certificates.
 //	@return - error Exception messages
-func (w *WxPayAgent) UpdateCert(resp *WxRetCert) error {
+//
+// - see more
+//
+// [Get Merchant Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay5_1.shtml),
+// [Decrypt Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_2.shtml)
+func (w *WxPayAgent) UpdateCerts(resp *WxMchCerts) error {
 	return w.getWxV3Http(wxpApiCert, resp)
 }
 
@@ -207,7 +211,6 @@ func (w *WxPayAgent) UpdateCert(resp *WxRetCert) error {
 // it just support suffix in jpg, png, jpeg, bmp, and file size must be samll 2MB.
 //	@param file Upload file content
 //	@param header Upload file header information
-//	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
 //			- error Exception messages
 //
@@ -238,7 +241,6 @@ func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader) (
 // and file size must be samll 5MB.
 //	@param file Upload file content
 //	@param header Upload file header information
-//	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
 //			- error Exception messages
 //
@@ -272,7 +274,6 @@ func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader) (
 // Request direct H5 pay action
 //	@param params Request params for H5 pay APIv3.
 //	@param resp Output request result.
-//	@param ms Merchant secret informations
 //	@return - error Exception messages
 //
 // - see more
@@ -285,7 +286,6 @@ func (w *WxPayAgent) DrH5Pay(params *WxDrH5, resp *WxRetDrH5) error {
 // Request direct app pay action
 //	@param params Request params for App pay APIv3.
 //	@param resp Output request result.
-//	@param ms Merchant secret informations
 //	@return - error Exception messages
 //
 // - see more
@@ -298,7 +298,6 @@ func (w *WxPayAgent) DrAppPay(params *WxDrApp, resp *WxRetDrApp) error {
 // Request direct JSAPI pay action
 //	@param params Request params for JSAPI pay APIv3.
 //	@param resp Output request result.
-//	@param ms Merchant secret informations
 //	@return - error Exception messages
 //
 // - see more
@@ -310,7 +309,6 @@ func (w *WxPayAgent) DrJSPay(params *WxDrJS, resp *WxRetDrJS) error {
 
 // Request close direct pay action by using wechat pay APIv3
 //	@param tno Merchant transaction number of service provider
-//	@param ms Merchant secret informations
 //	@return - error Exception messages
 //
 // - see more
@@ -327,7 +325,6 @@ func (w *WxPayAgent) DrClose(tno string) error {
 // Request query direct pay ticket with wechat trade id by using wechat pay APIv3
 //	@param tid Transaction id of wechat pay platform
 //	@param resp Output request result.
-//	@param ms Merchant secret informations
 //	@return - error Exception messages
 //
 // Dest URL format as:
@@ -352,7 +349,6 @@ func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket) error {
 // Request query direct pay ticket with merchant trade no by using wechat pay APIv3
 //	@param tno Merchant transaction number of service provider
 //	@param resp Output request result.
-//	@param ms Merchant secret informations
 //	@return - error Exception messages
 //
 // Dest URL format as:
@@ -504,7 +500,6 @@ func (w *WxPayAgent) postWxV3Http(urlpath string, params, resp interface{}) erro
 //	@param method Http method of GET, POST
 //	@param urlpath Wechat pay platform APIv3 api
 //	@param body Request data, mashaled to json string
-//	@param ms Merchant secret informations
 //	@return - string Authentication header
 //			- error Exception messages
 func (w *WxPayAgent) signAuthHeader(method, urlpath, body string) (string, error) {
@@ -514,11 +509,11 @@ func (w *WxPayAgent) signAuthHeader(method, urlpath, body string) (string, error
 
 	// Step 2. sign request packet datas,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-1
-	signstr := w.SignPacket(method, urlpath, timestamp, noncestr, body)
+	signstr := SignPacket(method, urlpath, timestamp, noncestr, body)
 
 	// Step 3. generate the signature string by rsa256,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-2
-	signature, err := w.EncrpySign(w.Merch.PriPem, signstr)
+	signature, err := EncrpySign(w.Merch.PriPem, signstr)
 	if err != nil {
 		logger.E("Faild to encripty signture, err:", err)
 		return "", err
@@ -526,7 +521,7 @@ func (w *WxPayAgent) signAuthHeader(method, urlpath, body string) (string, error
 
 	// Step 4. auth string,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-3
-	authstr := w.AuthPacket(w.Merch.MchID, noncestr, timestamp, w.Merch.SerialNo, signature)
+	authstr := AuthPacket(w.Merch.MchID, noncestr, timestamp, w.Merch.SerialNo, signature)
 	return authstr, nil
 }
 
@@ -678,7 +673,6 @@ func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface
 //	@param filename Upload file name with suffix
 //	@param suffix Upload file suffix
 //	@param file Upload file content
-//	@param ms Merchant secret informations
 //	@return - string Media ID of wechat pay platform
 //			- error Exception messages
 //

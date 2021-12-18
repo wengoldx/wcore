@@ -265,11 +265,7 @@ func SignSHA256(securekey string, src string) string {
 
 // ByteToBase64 decode base64 string to byte array
 func Base64ToByte(ciphertext string) ([]byte, error) {
-	original, err := base64.StdEncoding.DecodeString(ciphertext)
-	if err != nil {
-		return nil, err
-	}
-	return original, nil
+	return base64.StdEncoding.DecodeString(ciphertext)
 }
 
 // ByteToBase64 encode byte array to base64 string
@@ -279,7 +275,7 @@ func ByteToBase64(original []byte) string {
 
 // DecodeBase64 decode from base64 string
 func DecodeBase64(ciphertext string) (string, error) {
-	original, err := base64.StdEncoding.DecodeString(ciphertext)
+	original, err := Base64ToByte(ciphertext)
 	if err != nil {
 		return "", err
 	}
