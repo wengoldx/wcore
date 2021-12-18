@@ -191,6 +191,18 @@ func EncrpySign(prifile, signstr string) (string, error) {
 	return secure.RSA2Sign4FB64(prifile, []byte(signstr))
 }
 
+// DecryptPacket decrypt response data from wechat by AES-256-GCM
+//	@param ciphertext Certificate ciphertext
+//	@param noncestr Nonce string
+//	@param additional Addiional data
+//	@param apiv3key Merchant pay platform APIv3 key
+//	@return - string Decrypted response datas
+//			- error Exception messages
+func DecryptPacket(ciphertext, noncestr, additional, apiv3key string) (string, error) {
+	secretkey, additionalData := []byte(apiv3key), []byte(additional)
+	return secure.GCMDecrypt(secretkey, ciphertext, noncestr, additionalData)
+}
+
 // -----------------------------------------------------------
 // For Certificate Update
 // -----------------------------------------------------------

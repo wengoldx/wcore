@@ -233,7 +233,7 @@ func pkcs5Unpadding(encrypt []byte) []byte {
 //	@param additional Additional datas
 //	@return - string Encrypted ciphertext formated by base64
 //			- string Nonce string
-//			- error Exception message
+//			- error Exception messages
 //
 // `NOTICE` :
 //
@@ -274,7 +274,7 @@ func GCMEncrypt(secretkey, original []byte, additional ...[]byte) (string, strin
 		additionalData = additional[0]
 	}
 
-	ciphertext := aesgcm.Seal(nonce, nonce, original, additionalData)
+	ciphertext := aesgcm.Seal(nil, nonce, original, additionalData)
 	return ByteToBase64(ciphertext), string(nonce), nil
 }
 
@@ -283,14 +283,8 @@ func GCMEncrypt(secretkey, original []byte, additional ...[]byte) (string, strin
 //	@param ciphertextb64 Ciphertext formated by base64
 //	@param noncestr Nonce string which generated when encrypt
 //	@param additional additional datas used by encrypt, it maybe null
-//
-// ## `FIXME` :
-//
-// This function just only for wxpay agent to decrypt response datas,
-// not for common AES-256-GCM decrypt, and the input params as:
-//
-//	// Use AES-256-GCM decrypt response
-//	plaintext, err := GCMDecrypt(apiv3key, ciphertext, noncestr, additional)
+//	@return - string Decrypted plaintext string
+//			- error Exception messages
 func GCMDecrypt(secretkey []byte, ciphertextb64, noncestr string, additional ...[]byte) (string, error) {
 	block, err := aes.NewCipher(secretkey)
 	if err != nil {
