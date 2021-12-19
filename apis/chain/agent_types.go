@@ -86,9 +86,9 @@ type EncryptNode struct {
 // TradeNode Trade ticket node
 type TradeNode struct {
 	Cashier   string `json:"service"               description:"cashier name who provide transaction by wgpay server"`
-	CUUID     string `json:"cuuid"                 description:"payer uuid"`
-	SUUID     string `json:"suuid"                 description:"payee uuid, merchant id"`
-	SMchID    string `json:"sub_mchid"             description:"payee sub merchant id"`
+	Payer     string `json:"cuuid"                 description:"payer uuid"`
+	Payee     string `json:"suuid"                 description:"payee uuid, merchant id"`
+	SMchID    string `json:"sub_mchid"             description:"sub merchant id of payee"`
 	Amount    int64  `json:"amount"                description:"total amount price, unit one cent CNY"`
 	Refund    int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
 	Desc      string `json:"desc"                  description:"this ticket description"`
@@ -113,12 +113,12 @@ type DiviNode struct {
 type RefundNode struct {
 	Cashier   string `json:"service"       description:"cashier name who provide transaction by wgpay server"`
 	TradeNo   string `json:"tradeno"       description:"transaction number of mall pay platform"`
-	CUUID     string `json:"cuuid"         description:"payer uuid"`
-	SUUID     string `json:"suuid"         description:"payee uuid"`
-	SMchID    string `json:"sub_mchid"     description:"payee sub merchant id"`
+	Payer     string `json:"cuuid"         description:"payer uuid"`
+	Payee     string `json:"suuid"         description:"payee uuid"`
+	SMchID    string `json:"sub_mchid"     description:"sub merchant id of payee"`
 	RefundID  string `json:"refund_id"     description:"refund id"`
 	Amount    int64  `json:"total"         description:"total amount price, unit one cent CNY"`
-	Redund    int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
+	Refund    int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
 	Desc      string `json:"desc"          description:"refund transacte description"`
 	NotifyURL string `json:"notifyurl"     description:"ansync notifier url from wechat to notify refund status changed, success, failed or others"`
 }
