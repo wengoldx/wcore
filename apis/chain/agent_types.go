@@ -85,42 +85,42 @@ type EncryptNode struct {
 
 // TradeNode Trade ticket node
 type TradeNode struct {
-	Service    string `json:"service"               description:"cachier who support trade service"`
-	CUUID      string `json:"cuuid"                 description:"payer uuid"`
-	SUUID      string `json:"suuid"                 description:"payee uuid, merchant id"`
-	SubMchID   string `json:"sub_mchid"             description:"payee sub merchant id"`
-	Amount     int64  `json:"amount"                description:"amount price, unit one cent CNY"`
-	RedundFee  int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
-	Desc       string `json:"desc"                  description:"this ticket description"`
-	NotifyURL  string `json:"notifyurl"             description:"the notify url to tell service that payment success"`
-	PayWay     string `json:"payway"                description:"payment way, such as 'wehcat' and 'alipay'"`
-	IsFrozen   bool   `json:"isfrozen"              description:"whether frozen amount when payment finished。it must be true, when you want to share money"`
-	Status     int64  `json:"status"                description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
-	TimeExpire string `json:"time_expire,omitempty" description:"expire time"`
+	Cashier   string `json:"service"               description:"cashier name who provide transaction by wgpay server"`
+	CUUID     string `json:"cuuid"                 description:"payer uuid"`
+	SUUID     string `json:"suuid"                 description:"payee uuid, merchant id"`
+	SMchID    string `json:"sub_mchid"             description:"payee sub merchant id"`
+	Amount    int64  `json:"amount"                description:"total amount price, unit one cent CNY"`
+	Refund    int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
+	Desc      string `json:"desc"                  description:"this ticket description"`
+	NotifyURL string `json:"notifyurl"             description:"ansync notifier url from wechat to notify pay status changed, success, failed or others"`
+	PayWay    string `json:"payway"                description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
+	IsFrozen  bool   `json:"isfrozen"              description:"whether frozen amount when payment finished, it must be true for dividing payment"`
+	Status    int64  `json:"status"                description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
+	Expire    string `json:"time_expire,omitempty" description:"expire time for virture products such as coupon, courtesy card, and so on"`
 }
 
 // Dividing ticket node
 type DiviNode struct {
-	Service       string `json:"service"        description:"service name"`
-	SubMchID      string `json:"sub_mchid"      description:"payee sub merchant id"`
-	TransactionID string `json:"transaction_id" description:"wechat transaction trade id"`
-	Commission    int64  `json:"commission"     description:"share out money, unit one cent CNY"`
-	Desc          string `json:"desc"           description:"this share description"`
-	IsFinsh       bool   `json:"isfinsh"        description:"finish trade, and unfrozen trade"`
+	Cashier    string `json:"service"        description:"cashier name who provide transaction by wgpay server"`
+	SMchID     string `json:"sub_mchid"      description:"sub merchant id of payee"`
+	TradeID    string `json:"transaction_id" description:"transaction id of wechat pay platform"`
+	Commission int64  `json:"commission"     description:"commission of dividing transaction, unit one cent CNY"`
+	Desc       string `json:"desc"           description:"dividing transacte description"`
+	IsFinsh    bool   `json:"isfinsh"        description:"finish transation, and unfrozen transation"`
 }
 
 // RefundNode refund ticket node
 type RefundNode struct {
-	Service   string `json:"service"       description:"service name"`
-	TradeNo   string `json:"tradeno"       description:"total refund price, unit one cent CNY"`
+	Cashier   string `json:"service"       description:"cashier name who provide transaction by wgpay server"`
+	TradeNo   string `json:"tradeno"       description:"transaction number of mall pay platform"`
 	CUUID     string `json:"cuuid"         description:"payer uuid"`
 	SUUID     string `json:"suuid"         description:"payee uuid"`
-	SubMchID  string `json:"sub_mchid"     description:"payee sub merchant id"`
+	SMchID    string `json:"sub_mchid"     description:"payee sub merchant id"`
 	RefundID  string `json:"refund_id"     description:"refund id"`
-	Total     int64  `json:"total"         description:"Original trade price, unit one cent CNY"`
-	RedundFee int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
-	Desc      string `json:"desc"          description:"this trade description"`
-	NotifyURL string `json:"notifyurl"     description:"the notify url to tell service that payment success"`
+	Amount    int64  `json:"total"         description:"total amount price, unit one cent CNY"`
+	Redund    int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
+	Desc      string `json:"desc"          description:"refund transacte description"`
+	NotifyURL string `json:"notifyurl"     description:"ansync notifier url from wechat to notify refund status changed, success, failed or others"`
 }
 
 // TicketNode ticket node detail
