@@ -52,7 +52,7 @@ import (
 // ---
 //
 //	agent := &wechat.WxPayAgent{}
-//	err := agent.UpdateCert(out)		// update merchant certificate
+//	err := agent.DownCerts(out)			// download merchant certificates
 //	mediaid, err := agent.UploadImage(file, header) // upload image to wechat platform
 //	mediaid, err := agent.UploadVideo(file, header) // upload video to wechat platform
 //	err := agent.DrH5Pay(ps, out)		// request pay for H5 way
@@ -204,10 +204,10 @@ func DecryptPacket(ciphertext, noncestr, additional, apiv3key string) (string, e
 }
 
 // -----------------------------------------------------------
-// For Certificate Update
+// For Certificate Download
 // -----------------------------------------------------------
 
-// Update and return the wechat merchant (who set as agent merch) all certificates
+// Download the wechat merchant (who set as agent merch) all certificates
 //	@param resp Wechat Merchant all certificates.
 //	@return - error Exception messages
 //
@@ -215,7 +215,7 @@ func DecryptPacket(ciphertext, noncestr, additional, apiv3key string) (string, e
 //
 // [Get Merchant Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay5_1.shtml),
 // [Decrypt Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_2.shtml)
-func (w *WxPayAgent) UpdateCerts(resp *WxMchCerts) error {
+func (w *WxPayAgent) DownCerts(resp *WxMchCerts) error {
 	return w.getWxV3Http(wxpApiCert, resp)
 }
 
