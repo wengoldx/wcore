@@ -120,17 +120,6 @@ type WxCashier struct {
 
 // -------- For Response Error
 
-// Response code and message from wechat pay
-//
-// - see more
-//
-// [Common Errors](https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/Share/error_code.shtml),
-// [H5 Pay Errors](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_1.shtml)
-type WxCodeMsg struct {
-	Code    string `json:"code"    description:"response code, such as : PARAM_ERROR"`
-	Message string `json:"message" description:"response result message"`
-}
-
 // Response error detail from wechat pay
 type WxErrDetail struct {
 	Field    string `json:"field"    description:"error field, such as : /amount/currency"`
@@ -143,10 +132,13 @@ type WxErrDetail struct {
 //
 // - see more
 //
+// [Common Errors](https://pay.weixin.qq.com/wiki/doc/apiv3/wxpay/Share/error_code.shtml),
+// [H5 Pay Errors](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_1.shtml),
 // [Error Struct](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay2_0.shtml#part-7)
 type WxRetErr struct {
-	WxCodeMsg
-	Detail WxErrDetail `json:"detail" description:"response error details"`
+	Code    string      `json:"code"    description:"response code, such as : PARAM_ERROR"`
+	Message string      `json:"message" description:"response result message"`
+	Detail  WxErrDetail `json:"detail"  description:"response error details"`
 }
 
 // WxMchID wechat merchant id
@@ -219,7 +211,7 @@ type MetaData struct {
 	HashCode string `json:"sha256"   validate:"required" description:"upload media hash code by sha256"`
 }
 
-// -------- For Response
+// -------- For Response, * is required
 
 // PayAmount amount settle information
 type PayAmount struct {

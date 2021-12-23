@@ -186,9 +186,18 @@ func NotifyPacket(timestamp, nonce, body string) string {
 //	@param prifile RSA PCS#8 private pem file path
 //	@param signstr To be encript signture string
 //	@return - string Encrpty string
-//			- error Exception messages
+//			- error Exception message
 func EncrpySign(prifile, signstr string) (string, error) {
 	return secure.RSA2Sign4FB64(prifile, []byte(signstr))
+}
+
+// Verify response data from wechat when received result notification
+//	@param pubfile Pay platform certificate (public pem file path)
+//	@param signstr Need to verify content
+//	@oaram signture Secure string use to verify given content
+//	@return - error Exception message
+func VerifySign(pubfile, signstr string, signture []byte) error {
+	return secure.RSAVerify4F(pubfile, []byte(signstr), signture)
 }
 
 // DecryptPacket decrypt response data from wechat by AES-256-GCM
@@ -197,7 +206,7 @@ func EncrpySign(prifile, signstr string) (string, error) {
 //	@param additional Addiional data
 //	@param apiv3key Merchant pay platform APIv3 key
 //	@return - string Decrypted response datas
-//			- error Exception messages
+//			- error Exception message
 func DecryptPacket(ciphertext, noncestr, additional, apiv3key string) (string, error) {
 	secretkey, additionalData := []byte(apiv3key), []byte(additional)
 	return secure.GCMDecrypt(secretkey, ciphertext, noncestr, additionalData)
@@ -209,7 +218,7 @@ func DecryptPacket(ciphertext, noncestr, additional, apiv3key string) (string, e
 
 // Download the wechat merchant (who set as agent merch) all certificates
 //	@param resp Wechat Merchant all certificates.
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // - see more
 //
@@ -224,7 +233,7 @@ func (w *WxPayAgent) DownCerts(resp *WxMchCerts) error {
 //	@param file Upload file content
 //	@param header Upload file header information
 //	@return - string Media ID of wechat pay platform
-//			- error Exception messages
+//			- error Exception message
 //
 //	// use beego controller to get file and header
 //	file, header, err := ctrl.GetFile("img")
@@ -254,7 +263,7 @@ func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader) (
 //	@param file Upload file content
 //	@param header Upload file header information
 //	@return - string Media ID of wechat pay platform
-//			- error Exception messages
+//			- error Exception message
 //
 //	// use beego controller to get file and header
 //	file, header, err := ctrl.GetFile("video")
@@ -286,7 +295,7 @@ func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader) (
 // Request direct H5 pay action
 //	@param params Request params for H5 pay APIv3.
 //	@param resp Output request result.
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // - see more
 //
@@ -298,7 +307,7 @@ func (w *WxPayAgent) DrH5Pay(params *WxDrH5, resp *WxRetDrH5) error {
 // Request direct app pay action
 //	@param params Request params for App pay APIv3.
 //	@param resp Output request result.
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // - see more
 //
@@ -310,7 +319,7 @@ func (w *WxPayAgent) DrAppPay(params *WxDrApp, resp *WxRetDrApp) error {
 // Request direct JSAPI pay action
 //	@param params Request params for JSAPI pay APIv3.
 //	@param resp Output request result.
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // - see more
 //
@@ -321,7 +330,7 @@ func (w *WxPayAgent) DrJSPay(params *WxDrJS, resp *WxRetDrJS) error {
 
 // Request close direct pay action by using wechat pay APIv3
 //	@param tno Merchant transaction number of service provider
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // - see more
 //
@@ -337,7 +346,7 @@ func (w *WxPayAgent) DrClose(tno string) error {
 // Request query direct pay ticket with wechat trade id by using wechat pay APIv3
 //	@param tid Transaction id of wechat pay platform
 //	@param resp Output request result.
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // Dest URL format as:
 //
@@ -361,7 +370,7 @@ func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket) error {
 // Request query direct pay ticket with merchant trade no by using wechat pay APIv3
 //	@param tno Merchant transaction number of service provider
 //	@param resp Output request result.
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // Dest URL format as:
 //
@@ -513,7 +522,7 @@ func (w *WxPayAgent) postWxV3Http(urlpath string, params, resp interface{}) erro
 //	@param urlpath Wechat pay platform APIv3 api
 //	@param body Request data, mashaled to json string
 //	@return - string Authentication header
-//			- error Exception messages
+//			- error Exception message
 func (w *WxPayAgent) signAuthHeader(method, urlpath, body string) (string, error) {
 	// Step 1. generate nonce and timestamp strings
 	noncestr := secure.GenNonce()
@@ -537,8 +546,24 @@ func (w *WxPayAgent) signAuthHeader(method, urlpath, body string) (string, error
 	return authstr, nil
 }
 
-// Generate request body data for upload image and
-// video to wechat platform.
+// Generate request body data for upload image and video to wechat platform,
+// the data formated example like below :
+//
+// ------------------------------------------------------------
+//
+//	--boundary
+//	Content-Disposition: form-data; name="meta";
+//	Content-Type: application/json
+//
+//	{ "filename": "filea.jpg", "sha256": "hjkahkjsjkfsjk78687dhjahdajhk" }
+//	--boundary
+//	Content-Disposition: form-data; name="file"; filename="filea.jpg";
+//	Content-Type: image/jpg
+//
+//	pic1xxxbuffersxxx
+//	--boundary--
+//
+// ------------------------------------------------------------
 //
 // - see more
 //
@@ -589,7 +614,7 @@ func (w *WxPayAgent) genUploadBody(fn, suffix string, fm, buff []byte) (*bytes.B
 //	@param method Http method of GET, POST
 //	@param urlpath Wechat pay platform APIv3 api
 //	@param body Request data, mashaled to json string
-//	@return - error Exception messages
+//	@return - error Exception message
 //
 // `WARNING` :
 //
@@ -686,7 +711,7 @@ func (w *WxPayAgent) wxpayAPIv3Http(method, urlpath, body string, resp interface
 //	@param suffix Upload file suffix
 //	@param file Upload file content
 //	@return - string Media ID of wechat pay platform
-//			- error Exception messages
+//			- error Exception message
 //
 // - see more
 //

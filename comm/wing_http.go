@@ -29,7 +29,7 @@ import (
 // you can use this middle-ware to set auth as username and passord, and so on.
 //	@param req Http requester
 //	@return - bool If current request ignore TLS verify or not, false is verify by default.
-//			- error Exception messages
+//			- error Exception message
 type SetRequest func(req *http.Request) (bool, error)
 
 const (

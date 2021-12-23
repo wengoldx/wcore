@@ -233,7 +233,7 @@ func pkcs5Unpadding(encrypt []byte) []byte {
 //	@param additional Additional datas
 //	@return - string Encrypted ciphertext formated by base64
 //			- string Nonce string
-//			- error Exception messages
+//			- error Exception message
 //
 // `NOTICE` :
 //
@@ -284,7 +284,7 @@ func GCMEncrypt(secretkey, original []byte, additional ...[]byte) (string, strin
 //	@param noncestr Nonce string which generated when encrypt
 //	@param additional additional datas used by encrypt, it maybe null
 //	@return - string Decrypted plaintext string
-//			- error Exception messages
+//			- error Exception message
 func GCMDecrypt(secretkey []byte, ciphertextb64, noncestr string, additional ...[]byte) (string, error) {
 	block, err := aes.NewCipher(secretkey)
 	if err != nil {
