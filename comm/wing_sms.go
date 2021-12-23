@@ -124,8 +124,8 @@ func (s *SmsSender) Send(phones, signname, tplcode, content string) error {
 	querystr := s.getQueryString(phones, signname, tplcode, content)
 	signstr := fmt.Sprintf("GET&%%2F&%s", s.encodeURL(querystr))
 
-	signture := s.encodeURL(secure.SignSHA1(s.accessSecret, signstr))
-	requesturl := fmt.Sprintf(s.requestURLFormat, signture, querystr)
+	signkey := s.encodeURL(secure.SignSHA1(s.accessSecret, signstr))
+	requesturl := fmt.Sprintf(s.requestURLFormat, signkey, querystr)
 	logger.I("Send sms, request url:", requesturl)
 
 	resp, err := s.requestRemoteSend(requesturl)

@@ -143,7 +143,7 @@ func SignPacket(method, URL, timestamp, nonce, body string) string {
 //	@param nonce Nonce string
 //	@param timesstemp Signature timestamp string as unix int format
 //	@param serialno Certificate serial number
-//	@param signture Signature secure datas
+//	@param signkey Secure signature string
 //	@return - string Auth packet string
 //
 // `WARNING` :
@@ -153,14 +153,14 @@ func SignPacket(method, URL, timestamp, nonce, body string) string {
 // - see more
 //
 // [Set Http Auth Header](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-3)
-func AuthPacket(mchid, nonce, timestamp, serialno, signature string) string {
+func AuthPacket(mchid, nonce, timestamp, serialno, signkey string) string {
 	packet := ""
 	packet += "WECHATPAY2-SHA256-RSA2048 "
 	packet += "mchid=\"" + mchid + "\","
 	packet += "nonce_str=\"" + nonce + "\","
 	packet += "timestamp=\"" + timestamp + "\","
 	packet += "serial_no=\"" + serialno + "\","
-	packet += "signature=\"" + signature + "\""
+	packet += "signature=\"" + signkey + "\""
 	return packet
 }
 
@@ -181,10 +181,10 @@ func NotifyPacket(timestamp, nonce, body string) string {
 	return packet
 }
 
-// Encrpty request signture string by given private pem key file
+// Encrpty request signature string by given private pem key file
 // as RSA PCS#8 format.
 //	@param prifile RSA PCS#8 private pem file path
-//	@param signstr To be encript signture string
+//	@param signstr To be encript sign content string
 //	@return - string Encrpty string
 //			- error Exception message
 func EncrpySign(prifile, signstr string) (string, error) {
@@ -194,10 +194,10 @@ func EncrpySign(prifile, signstr string) (string, error) {
 // Verify response data from wechat when received result notification
 //	@param pubfile Pay platform certificate (public pem file path)
 //	@param signstr Need to verify content
-//	@oaram signture Secure string use to verify given content
+//	@oaram signkey Secure signature string
 //	@return - error Exception message
-func VerifySign(pubfile, signstr string, signture []byte) error {
-	return secure.RSAVerify4F(pubfile, []byte(signstr), signture)
+func VerifySign(pubfile, signstr string, signkey []byte) error {
+	return secure.RSAVerify4F(pubfile, []byte(signstr), signkey)
 }
 
 // DecryptPacket decrypt response data from wechat by AES-256-GCM
@@ -286,6 +286,26 @@ func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader) (
 	}
 
 	return w.wxpayAPIv3Upload(wxpApiUpVideo, filename, suffix, file)
+}
+
+// Verify the request body if valid from wechat
+func (w *WxPayAgent) VerifyRequest(req *http.Request, body string) error {
+	timestamp := req.Header.Get("Wechatpay-Timestamp")
+	noncestr := req.Header.Get("Wechatpay-Nonce")
+	signb64key := req.Header.Get("Wechatpay-Signature")
+
+	signkey, err := secure.Base64ToByte(signb64key)
+	if err != nil {
+		logger.E("Decode sinature by base64, err:", err)
+		return err
+	}
+
+	signstr := NotifyPacket(timestamp, noncestr, body)
+	if err = VerifySign(w.PPlat.CertPem, signstr, signkey); err != nil {
+		logger.E("Verify request body err:", err)
+		return err
+	}
+	return nil
 }
 
 // -----------------------------------------------------------
@@ -534,15 +554,15 @@ func (w *WxPayAgent) signAuthHeader(method, urlpath, body string) (string, error
 
 	// Step 3. generate the signature string by rsa256,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-2
-	signature, err := EncrpySign(w.Merch.PriPem, signstr)
+	signkey, err := EncrpySign(w.Merch.PriPem, signstr)
 	if err != nil {
-		logger.E("Faild to encripty signture, err:", err)
+		logger.E("Faild to encripty signature, err:", err)
 		return "", err
 	}
 
 	// Step 4. auth string,
 	// https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_0.shtml#part-3
-	authstr := AuthPacket(w.Merch.MchID, noncestr, timestamp, w.Merch.SerialNo, signature)
+	authstr := AuthPacket(w.Merch.MchID, noncestr, timestamp, w.Merch.SerialNo, signkey)
 	return authstr, nil
 }
 

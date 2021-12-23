@@ -191,10 +191,10 @@ type DTMsgFeedCard struct {
 type DTalkSender struct {
 	WebHook string // custom group chat robot access webhook
 	Keyword string // message content keyword filter
-	Secure  string // robot secure signture
+	Secure  string // robot secure signature
 }
 
-// SetSecure set DingTalk sender secure signture, it may remove
+// SetSecure set DingTalk sender secure signature, it may remove
 // all leading and trailing white space.
 func (s *DTalkSender) SetSecure(secure string) {
 	s.Secure = strings.TrimSpace(secure)
@@ -206,7 +206,7 @@ func (s *DTalkSender) UsingKey(keyword string) {
 	s.Keyword = strings.TrimSpace(keyword)
 }
 
-// signURL sign timestamp and signture datas with send webhook
+// signURL sign timestamp and signature datas with send webhook
 func (s *DTalkSender) signURL() string {
 	timestamp := time.Now().UnixNano() / int64(time.Millisecond)
 	signstr := fmt.Sprintf("%d\n%s", timestamp, s.Secure)
