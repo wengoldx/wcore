@@ -92,7 +92,7 @@ type TradeNode struct {
 	Amount    int64  `json:"amount"                description:"total amount price, unit one cent CNY"`
 	Refund    int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
 	Desc      string `json:"desc"                  description:"this ticket description"`
-	NotifyURL string `json:"notifyurl"             description:"ansync notifier url from wechat to notify pay status changed, success, failed or others"`
+	NotifyURL string `json:"notifyurl"             description:"ansync notifier url from wgpay to notify pay status changed, must returen OK if success"`
 	PayWay    string `json:"payway"                description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
 	IsFrozen  bool   `json:"isfrozen"              description:"whether frozen amount when payment finished, it must be true for dividing payment"`
 	Status    int64  `json:"status"                description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
@@ -120,7 +120,7 @@ type RefundNode struct {
 	Amount    int64  `json:"total"         description:"total amount price, unit one cent CNY"`
 	Refund    int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
 	Desc      string `json:"desc"          description:"refund transacte description"`
-	NotifyURL string `json:"notifyurl"     description:"ansync notifier url from wechat to notify refund status changed, success, failed or others"`
+	NotifyURL string `json:"notifyurl"     description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
 }
 
 // TicketNode ticket node detail

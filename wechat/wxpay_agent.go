@@ -225,7 +225,7 @@ func DecryptPacket(ciphertext, noncestr, additional, apiv3key string) (string, e
 // [Get Merchant Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay5_1.shtml),
 // [Decrypt Certificate](https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_2.shtml)
 func (w *WxPayAgent) DownCerts(resp *WxMchCerts) error {
-	return w.getWxV3Http(wxpApiCert, resp)
+	return w.getWxV3Http(wxpApiDownCert, resp)
 }
 
 // Upload image file to wechat platform by APIv3,
@@ -254,7 +254,7 @@ func (w *WxPayAgent) UploadImage(file io.Reader, header *multipart.FileHeader) (
 		return "", invar.ErrInvalidParams
 	}
 
-	return w.wxpayAPIv3Upload(wxpApiUpImage, filename, suffix, file)
+	return w.wxpayAPIv3Upload(wxpApiUploadImage, filename, suffix, file)
 }
 
 // Upload video file to wechat platform by APIv3,
@@ -285,7 +285,7 @@ func (w *WxPayAgent) UploadVideo(file io.Reader, header *multipart.FileHeader) (
 		return "", invar.ErrInvalidParams
 	}
 
-	return w.wxpayAPIv3Upload(wxpApiUpVideo, filename, suffix, file)
+	return w.wxpayAPIv3Upload(wxpApiUploadVideo, filename, suffix, file)
 }
 
 // Verify the request body if valid from wechat
@@ -319,9 +319,9 @@ func (w *WxPayAgent) VerifyRequest(req *http.Request, body string) error {
 //
 // - see more
 //
-// [H5 APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_1.shtml)
+// APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_1.shtml)
 func (w *WxPayAgent) DrH5Pay(params *WxDrH5, resp *WxRetDrH5) error {
-	return w.postWxV3Http(wxpDrH5, params, resp)
+	return w.postWxV3Http(wxpApiDrH5, params, resp)
 }
 
 // Request direct app pay action
@@ -331,9 +331,9 @@ func (w *WxPayAgent) DrH5Pay(params *WxDrH5, resp *WxRetDrH5) error {
 //
 // - see more
 //
-// [App APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_1.shtml)
+// APIv3 [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_1.shtml)
 func (w *WxPayAgent) DrAppPay(params *WxDrApp, resp *WxRetDrApp) error {
-	return w.postWxV3Http(wxpDrApp, params, resp)
+	return w.postWxV3Http(wxpApiDrApp, params, resp)
 }
 
 // Request direct JSAPI pay action
@@ -343,24 +343,9 @@ func (w *WxPayAgent) DrAppPay(params *WxDrApp, resp *WxRetDrApp) error {
 //
 // - see more
 //
-// [JSAPI APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_1.shtml)
+// APIv3 [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_1.shtml)
 func (w *WxPayAgent) DrJSPay(params *WxDrJS, resp *WxRetDrJS) error {
-	return w.postWxV3Http(wxpDrJS, params, resp)
-}
-
-// Request close direct pay action by using wechat pay APIv3
-//	@param tno Merchant transaction number of service provider
-//	@return - error Exception message
-//
-// - see more
-//
-// [Close APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_3.shtml)
-func (w *WxPayAgent) DrClose(tno string) error {
-	if w.Merch == nil || len(w.Merch.MchID) == 0 {
-		logger.E("Null merch data or empty merch id!")
-		return invar.ErrInvalidParams
-	}
-	return w.postWxV3Http(fmt.Sprintf(wxpDrClose, tno), &WxMchID{ID: w.Merch.MchID}, nil)
+	return w.postWxV3Http(wxpApiDrJS, params, resp)
 }
 
 // Request query direct pay ticket with wechat trade id by using wechat pay APIv3
@@ -377,14 +362,15 @@ func (w *WxPayAgent) DrClose(tno string) error {
 // - see more
 //
 // APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
+// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml),
 // [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
-// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
+// [Wechat App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
 func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket) error {
 	if w.Merch == nil || len(w.Merch.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
 		return invar.ErrInvalidParams
 	}
-	return w.getWxV3Http(fmt.Sprintf(wxpDrIDQuery, tid, w.Merch.MchID), resp)
+	return w.getWxV3Http(fmt.Sprintf(wxpApiDrIDQuery, tid, w.Merch.MchID), resp)
 }
 
 // Request query direct pay ticket with merchant trade no by using wechat pay APIv3
@@ -401,14 +387,64 @@ func (w *WxPayAgent) DrTIDQuery(tid string, resp *WxRetTicket) error {
 // - see more
 //
 // APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_2.shtml),
+// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_2.shtml),
 // [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_2.shtml),
-// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
+// [Wechat App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_2.shtml)
 func (w *WxPayAgent) DrTNoQuery(tno string, resp *WxRetTicket) error {
 	if w.Merch == nil || len(w.Merch.MchID) == 0 {
 		logger.E("Null merch data or empty merch id!")
 		return invar.ErrInvalidParams
 	}
-	return w.getWxV3Http(fmt.Sprintf(wxpDrNoQuery, tno, w.Merch.MchID), resp)
+	return w.getWxV3Http(fmt.Sprintf(wxpApiDrNoQuery, tno, w.Merch.MchID), resp)
+}
+
+// Request refund action by given trade number
+//	@param param Request params for refund of APIv3.
+//	@param resp Output request result.
+//	@return - error Exception message
+//
+// - see more
+//
+// APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_9.shtml),
+// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_9.shtml),
+// [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_9.shtml),
+// [Wechat App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_9.shtml)
+func (w *WxPayAgent) DrRefund(params *WxDrRefund, resp *WxRetRefund) error {
+	return w.postWxV3Http(wxpApiDrRefund, params, resp)
+}
+
+// Request query refund ticket with merchant trade no by using wechat pay APIv3
+//	@param tno Merchant transaction number of service provider
+//	@param resp Output request result.
+//	@return - error Exception message
+//
+// Dest URL format as:
+//
+//	https://api.mch.weixin.qq.com/v3/refund/domestic/refunds/1217752501201407033233368018
+//
+// - see more
+//
+// APIv3 [H5](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_10.shtml),
+// [JSAPI](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_1_10.shtml)，
+// [App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_2_10.shtml),
+// [Wechat App](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_10.shtml)
+func (w *WxPayAgent) DrRefundQuery(tno string, resp *WxRetRefund) error {
+	return w.getWxV3Http(fmt.Sprintf(wxpApiDrRefQuery, tno), resp)
+}
+
+// Request close direct pay action by using wechat pay APIv3
+//	@param tno Merchant transaction number of service provider
+//	@return - error Exception message
+//
+// - see more
+//
+// [Close APIv3](https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_3_3.shtml)
+func (w *WxPayAgent) DrClose(tno string) error {
+	if w.Merch == nil || len(w.Merch.MchID) == 0 {
+		logger.E("Null merch data or empty merch id!")
+		return invar.ErrInvalidParams
+	}
+	return w.postWxV3Http(fmt.Sprintf(wxpApiDrClose, tno), &WxMchID{ID: w.Merch.MchID}, nil)
 }
 
 // -----------------------------------------------------------
@@ -417,103 +453,103 @@ func (w *WxPayAgent) DrTNoQuery(tno string, resp *WxRetTicket) error {
 
 // Request register a new merchant by using wechat pay APIv3
 func (w *WxPayAgent) PFRegistry(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpPFMchReg, body, resp)
+	return w.postWxV3Http(WxpApiPFMchReg, body, resp)
 }
 
 // Request change merchant bank by using wechat pay APIv3
 func (w *WxPayAgent) PFChangBank(mid, body string) error {
-	return w.postWxV3Http(fmt.Sprintf(WxpMchAccMod, mid), body, nil)
+	return w.postWxV3Http(fmt.Sprintf(WxpApiMchAccMod, mid), body, nil)
 }
 
 // Request merchant H5 pay action by using wechat pay APIv3
 func (w *WxPayAgent) PFH5Pay(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpMchH5, body, resp)
+	return w.postWxV3Http(WxpApiMchH5, body, resp)
 }
 
 // Request merchant app pay action by using wechat pay APIv3
 func (w *WxPayAgent) PFAppPay(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpMchApp, body, resp)
+	return w.postWxV3Http(WxpApiMchApp, body, resp)
 }
 
 // Request merchant JSAPI pay action by using wechat pay APIv3
 func (w *WxPayAgent) PFJSPay(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpMchJS, body, resp)
+	return w.postWxV3Http(WxpApiMchJS, body, resp)
 }
 
 // Request merchant pay refund action by using wechat pay APIv3
 func (w *WxPayAgent) PFPayRefund(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpPFRefund, body, resp)
+	return w.postWxV3Http(WxpApiPFRefund, body, resp)
 }
 
 // Request merchant withdraw action by using wechat pay APIv3
 func (w *WxPayAgent) PFWithdraw(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpPFWithdraw, body, resp)
+	return w.postWxV3Http(WxpApiPFWithdraw, body, resp)
 }
 
 // Request merchant dividing action by using wechat pay APIv3
 func (w *WxPayAgent) PFDividing(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpPFDividing, body, resp)
+	return w.postWxV3Http(WxpApiPFDividing, body, resp)
 }
 
 // Request merchant dividing refund action by using wechat pay APIv3
 func (w *WxPayAgent) PFDiviRefund(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpPFDiviRefund, body, resp)
+	return w.postWxV3Http(WxpApiPFDiviRefund, body, resp)
 }
 
 // Request merchant close dividing action by using wechat pay APIv3
 func (w *WxPayAgent) PFDiviClose(body string, resp interface{}) error {
-	return w.postWxV3Http(WxpPFDiviClose, body, resp)
+	return w.postWxV3Http(WxpApiPFDiviClose, body, resp)
 }
 
 // Request merchant registry result by using wechat pay APIv3
 func (w *WxPayAgent) PFRegQuery(regno string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpPFMchRNoQuery, regno), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFMchRNoQuery, regno), resp)
 }
 
 // Request merchant change bank result by using wechat pay APIv3
 func (w *WxPayAgent) PFChgQuery(smid string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpMchMQuery, smid), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiMchMQuery, smid), resp)
 }
 
 // Request merchant query trade result by using wechat pay APIv3
 func (w *WxPayAgent) PFQuery(tno, spid, smid string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpMchNoQuery, tno, spid, smid), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiMchNoQuery, tno, spid, smid), resp)
 }
 
 // Request merchant query refund result by using wechat pay APIv3
 func (w *WxPayAgent) PFRefQuery(rno, smid string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpPFRNoQuery, rno, smid), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFRNoQuery, rno, smid), resp)
 }
 
 // Request merchant query balance result by using wechat pay APIv3
 func (w *WxPayAgent) PFBalQuery(smid, acctype string, resp interface{}) error {
 	if acctype != "" {
-		return w.getWxV3Http(fmt.Sprintf(WxpPFBalance, smid)+"?account_type="+acctype, resp)
+		return w.getWxV3Http(fmt.Sprintf(WxpApiPFBalance, smid)+"?account_type="+acctype, resp)
 	}
-	return w.getWxV3Http(fmt.Sprintf(WxpPFBalance, smid), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFBalance, smid), resp)
 }
 
 // Request merchant query balance end date by using wechat pay APIv3
 func (w *WxPayAgent) PFEndQuery(smid, enddate string, resp interface{}) error {
 	if enddate != "" {
-		return w.getWxV3Http(fmt.Sprintf(WxpPFEndDay, smid)+"?date="+enddate, resp)
+		return w.getWxV3Http(fmt.Sprintf(WxpApiPFEndDay, smid)+"?date="+enddate, resp)
 	}
-	return w.getWxV3Http(fmt.Sprintf(WxpPFEndDay, smid), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFEndDay, smid), resp)
 }
 
 // Request merchant query withdraw result by using wechat pay APIv3
 func (w *WxPayAgent) PFWithdrawQuery(wno, smid string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpPFWNoQuery, wno, smid), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFWNoQuery, wno, smid), resp)
 }
 
 // Request merchant query deviding result by using wechat pay APIv3
 func (w *WxPayAgent) PFDiviQuery(smid, tid, dno string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpPFDiviQuery, smid, tid, dno), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFDiviQuery, smid, tid, dno), resp)
 }
 
 // Request merchant query deviding refund by using wechat pay APIv3
 func (w *WxPayAgent) PFDRefQuery(smid, rno, tno string, resp interface{}) error {
-	return w.getWxV3Http(fmt.Sprintf(WxpPFDRefQuery, smid, tno, rno), resp)
+	return w.getWxV3Http(fmt.Sprintf(WxpApiPFDRefQuery, smid, tno, rno), resp)
 }
 
 // -----------------------------------------------------------

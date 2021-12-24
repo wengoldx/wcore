@@ -4,60 +4,62 @@ package wechat
 const (
 	WxpApisDomain = "https://api.mch.weixin.qq.com"
 
-	// Wechat certificate and upload medias
-	wxpApiCert    = "/v3/certificates"
-	wxpApiUpImage = "/v3/merchant/media/upload"
-	wxpApiUpVideo = "v3/merchant/media/video_upload"
+	// Wechat certificate download and upload medias
+	wxpApiDownCert    = "/v3/certificates"
+	wxpApiUploadImage = "/v3/merchant/media/upload"
+	wxpApiUploadVideo = "v3/merchant/media/video_upload"
 
 	// Wechat Direct connected merchants
-	wxpDrH5      = "/v3/pay/transactions/h5"
-	wxpDrApp     = "/v3/pay/transactions/app"
-	wxpDrJS      = "/v3/pay/transactions/jsapi"
-	wxpDrNative  = "/v3/pay/transactions/native" // not suppport yet of agent
-	wxpDrIDQuery = "/v3/pay/transactions/id/%s?mchid=%s"
-	wxpDrNoQuery = "/v3/pay/transactions/out-trade-no/%s?mchid=%s"
-	wxpDrClose   = "/v3/pay/transactions/out-trade-no/%s/close"
+	wxpApiDrH5       = "/v3/pay/transactions/h5"
+	wxpApiDrApp      = "/v3/pay/transactions/app"
+	wxpApiDrJS       = "/v3/pay/transactions/jsapi"
+	wxpApiDrIDQuery  = "/v3/pay/transactions/id/%s?mchid=%s"
+	wxpApiDrNoQuery  = "/v3/pay/transactions/out-trade-no/%s?mchid=%s"
+	wxpApiDrClose    = "/v3/pay/transactions/out-trade-no/%s/close"
+	wxpApiDrRefund   = "/v3/refund/domestic/refunds"
+	wxpApiDrRefQuery = "/v3/refund/domestic/refunds/%s"
 
+	// For wechat pay APIv2 refund
 	WxpDrRefund   = "/secapi/pay/refund"
 	WxpDrRefQuery = "/pay/refundquery"
 
 	// Wechat SP, PF payments and merch account change
-	WxpMchApp     = "/v3/pay/partner/transactions/app"
-	WxpMchJS      = "/v3/pay/partner/transactions/jsapi"
-	WxpMchH5      = "/v3/pay/partner/transactions/h5"
-	WxpMchIDQuery = "/v3/pay/partner/transactions/id/%s"
-	WxpMchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s?sp_mchid=%s&sub_mchid=%s"
-	WxpMchClose   = "/v3/pay/partner/transactions/out-trade-no/%s/close"
-	WxpMchAccMod  = "/v3/apply4sub/sub_merchants/%s/modify-settlement"
-	WxpMchMQuery  = "/v3/apply4sub/sub_merchants/%s/settlement"
+	WxpApiMchApp     = "/v3/pay/partner/transactions/app"
+	WxpApiMchJS      = "/v3/pay/partner/transactions/jsapi"
+	WxpApiMchH5      = "/v3/pay/partner/transactions/h5"
+	WxpApiMchIDQuery = "/v3/pay/partner/transactions/id/%s"
+	WxpApiMchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s?sp_mchid=%s&sub_mchid=%s"
+	WxpApiMchClose   = "/v3/pay/partner/transactions/out-trade-no/%s/close"
+	WxpApiMchAccMod  = "/v3/apply4sub/sub_merchants/%s/modify-settlement"
+	WxpApiMchMQuery  = "/v3/apply4sub/sub_merchants/%s/settlement"
 
 	// Wechat Service provider
-	WxpSPMchReg     = "/v3/applyment4sub/applyment/"
-	WxpSPMchRegCode = "/v3/applyment4sub/applyment/business_code/%s"
-	WxpSPMchRegID   = "/v3/applyment4sub/applyment/applyment_id/%s"
+	WxpApiSPMchReg     = "/v3/applyment4sub/applyment/"
+	WxpApiSPMchRegCode = "/v3/applyment4sub/applyment/business_code/%s"
+	WxpApiSPMchRegID   = "/v3/applyment4sub/applyment/applyment_id/%s"
 
 	// Wechat E-commerce platform URL
-	WxpPFMchReg      = "/v3/ecommerce/applyments/"
-	WxpPFMchRIDQuery = "/v3/ecommerce/applyments/%s"
-	WxpPFMchRNoQuery = "/v3/ecommerce/applyments/out-request-no/%s"
+	WxpApiPFMchReg      = "/v3/ecommerce/applyments/"
+	WxpApiPFMchRIDQuery = "/v3/ecommerce/applyments/%s"
+	WxpApiPFMchRNoQuery = "/v3/ecommerce/applyments/out-request-no/%s"
 
-	WxpPFBalance  = "/v3/ecommerce/fund/balance/%s"
-	WxpPFEndDay   = "/v3/ecommerce/fund/enddaybalance/%s"
-	WxpPFWithdraw = "/v3/ecommerce/fund/withdraw"
-	WxpPFWIDQuery = "/v3/ecommerce/fund/withdraw/%s"
-	WxpPFWNoQuery = "/v3/ecommerce/fund/withdraw/out-request-no/%s?sub_mchid=%s"
+	WxpApiPFBalance  = "/v3/ecommerce/fund/balance/%s"
+	WxpApiPFEndDay   = "/v3/ecommerce/fund/enddaybalance/%s"
+	WxpApiPFWithdraw = "/v3/ecommerce/fund/withdraw"
+	WxpApiPFWIDQuery = "/v3/ecommerce/fund/withdraw/%s"
+	WxpApiPFWNoQuery = "/v3/ecommerce/fund/withdraw/out-request-no/%s?sub_mchid=%s"
 
-	WxpPFDividing   = "/v3/ecommerce/profitsharing/orders"
-	WxpPFDiviRefund = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&transaction_id=%s&out_order_no=%s"
-	WxpPFDiviClose  = "/v3/ecommerce/profitsharing/finish-order"
-	WxpPFDiviQuery  = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&transaction_id=%s&out_order_no=%s"
-	WxpPFDRefQuery  = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&out_order_no=%s&out_return_no=%s"
-	WxpPFDiviRecAdd = "/v3/ecommerce/profitsharing/receivers/add"
-	WxpPFDiviRecDel = "/v3/ecommerce/profitsharing/receivers/delete"
+	WxpApiPFDividing   = "/v3/ecommerce/profitsharing/orders"
+	WxpApiPFDiviRefund = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&transaction_id=%s&out_order_no=%s"
+	WxpApiPFDiviClose  = "/v3/ecommerce/profitsharing/finish-order"
+	WxpApiPFDiviQuery  = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&transaction_id=%s&out_order_no=%s"
+	WxpApiPFDRefQuery  = "/v3/ecommerce/profitsharing/returnorders?sub_mchid=%s&out_order_no=%s&out_return_no=%s"
+	WxpApiPFDiviRecAdd = "/v3/ecommerce/profitsharing/receivers/add"
+	WxpApiPFDiviRecDel = "/v3/ecommerce/profitsharing/receivers/delete"
 
-	WxpPFRefund   = "/v3/ecommerce/refunds/apply"
-	WxpPFRIDQuery = "/v3/ecommerce/refunds/id/%s"
-	WxpPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s?sub_mchid=%s"
+	WxpApiPFRefund   = "/v3/ecommerce/refunds/apply"
+	WxpApiPFRIDQuery = "/v3/ecommerce/refunds/id/%s"
+	WxpApiPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s?sub_mchid=%s"
 )
 
 // Custom boundary string of wxpay agent
@@ -198,8 +200,8 @@ type GoodsDetail struct {
 	UnitPrice int64  `json:"unit_price"        validate:"gt=0"     description:"unit price, from Fen or cent"`
 }
 
-// Detail discount information
-type Detail struct {
+// DiscountDetail discount detail for request pay
+type DiscountDetail struct {
 	CostPrice   int64        `json:"cost_price,omitempty"   description:"original order price"`
 	InvoiceID   string       `json:"invoice_id,omitempty"   description:"merchant trade invoice id"`
 	GoodsDetail *GoodsDetail `json:"goods_detail,omitempty" description:"goods details"`
@@ -209,6 +211,30 @@ type Detail struct {
 type MetaData struct {
 	FileName string `json:"filename" validate:"required" description:"upload media file name with suffix that must be JPG, JPEG, BMP, PNG on ignore char case"`
 	HashCode string `json:"sha256"   validate:"required" description:"upload media hash code by sha256"`
+}
+
+// RefundAmount amount settle information
+type RefundFrom struct {
+	Account string `json:"account" validate:"required" description:"contribution account type"`
+	Amount  int64  `json:"amount"  validate:"gt=0"     description:"contribution amount from this account"`
+}
+
+// RefundAmount amount settle information
+type RefundAmount struct {
+	RefundTotal int64         `json:"refund"   validate:"gt=0"     description:"refund amount of request"`
+	Froms       []*RefundFrom `json:"from,omitempty"               description:"refund contribution account and amount"`
+	Total       int64         `json:"total"    validate:"gt=0"     description:"total amount of original trade ticket"`
+	Currency    string        `json:"currency" validate:"required" description:"currentcy type"`
+}
+
+// RefundGoods goods detail of refund
+type RefundGoods struct {
+	MerchGID  string `json:"merchant_goods_id" validate:"required" description:"goods id of merchant"`
+	WxpayGID  string `json:"wechatpay_goods_id,omitempty"          description:"goods id of wechat pay platform"`
+	GoodsName string `json:"goods_name,omitempty"                  description:"goods name"`
+	UnitPrice int64  `json:"unit_price"        validate:"gt=0"     description:"unit price, from Fen or cent"`
+	Amount    int64  `json:"refund_amount"     validate:"gt=0"     description:"refund amount of goods price"`
+	Quantity  int64  `json:"refund_quantity"   validate:"gt=0"     description:"goods quantify of refund action"`
 }
 
 // -------- For Response, * is required
@@ -266,55 +292,90 @@ type Certificate struct {
 	EncryptCert   EncryptCert `json:"encrypt_certificate" description:"encrypt certificate"`
 }
 
+// RefRetAmount amount settle information for refund response
+type RefRetAmount struct {
+	Total        int64         `json:"total"             description:"* total amount"`
+	RefundTotal  int64         `json:"refund"            description:"* refund amount"`
+	Froms        []*RefundFrom `json:"from"              description:"refund contribution account and amount"`
+	PayerTotal   int64         `json:"payer_total"       description:"* pay amount from player"`
+	PayerRefund  int64         `json:"payer_refund"      description:"* refund amount to player"`
+	SettleRefund int64         `json:"settlement_refund" description:"* settlement refund amount"`
+	SettleTotal  int64         `json:"settlement_total"  description:"* settlement total"`
+	Discount     int64         `json:"discount_refund"   description:"* discount refund amount"`
+	Currency     string        `json:"currency"          description:"* currentcy type"`
+}
+
+// RefRetPromot refund promotion details
+type RefRetPromot struct {
+	PromotID     string         `json:"promotion_id"   description:"* promotion unique id"`
+	Scope        string         `json:"scope"          description:"* promotion scope"`
+	Type         string         `json:"type"           description:"* promotion type"`
+	Amount       int64          `json:"amount"         description:"* promotion amount"`
+	RefundAmount int64          `json:"refund_amount"  description:"* refund amount of promotion"`
+	CouponDetail []*RefundGoods `json:"goods_detail"   description:"goods coupon detail list"`
+}
+
 // -------- For Agent Input
 
 // WxDrH5 Request input data of H5 direct pay
 type WxDrH5 struct {
-	AppID      string      `json:"appid"        validate:"required" description:"official account of wechat"`
-	MchID      string      `json:"mchid"        validate:"required" description:"merchant id of wechat"`
-	Desc       string      `json:"description"  validate:"required" description:"goods description"`
-	TradeNo    string      `json:"out_trade_no" validate:"required" description:"trade number of service provider system"`
-	TimeExpire string      `json:"time_expire,omitempty"            description:"ticket expire time as unix seconds string"`
-	Attach     string      `json:"attach,omitempty"                 description:"attach information"`
-	NotifyURL  string      `json:"notify_url"   validate:"required" description:"result notify url send from wechat pay platform"`
-	GoodsTag   string      `json:"goods_tag,omitempty"              description:"goods order discount mark"`
-	Amount     *Amount     `json:"amount"       validate:"required" description:"trade amount information"`
-	Detail     *Detail     `json:"detail,omitempty"                 description:"promotion detail"`
-	Scene      *SceneInfo  `json:"scene_info"   validate:"required" description:"trade scene"`
-	Settle     *SettleInfo `json:"settle_info,omitempty"            description:"settlement information"`
+	AppID      string          `json:"appid"        validate:"required" description:"official account of wechat"`
+	MchID      string          `json:"mchid"        validate:"required" description:"merchant id of wechat"`
+	Desc       string          `json:"description"  validate:"required" description:"goods description"`
+	TradeNo    string          `json:"out_trade_no" validate:"required" description:"trade number of service provider system"`
+	TimeExpire string          `json:"time_expire,omitempty"            description:"ticket expire time as unix seconds string"`
+	Attach     string          `json:"attach,omitempty"                 description:"attach information"`
+	NotifyURL  string          `json:"notify_url"   validate:"required" description:"result notify url send from wechat pay platform"`
+	GoodsTag   string          `json:"goods_tag,omitempty"              description:"goods order discount mark"`
+	Amount     *Amount         `json:"amount"       validate:"required" description:"trade amount information"`
+	Detail     *DiscountDetail `json:"detail,omitempty"                 description:"promotion detail"`
+	Scene      *SceneInfo      `json:"scene_info"   validate:"required" description:"trade scene"`
+	Settle     *SettleInfo     `json:"settle_info,omitempty"            description:"settlement information"`
 }
 
 // WxDrApp Request input data of app direct pay
 type WxDrApp struct {
-	AppID      string      `json:"appid"        validate:"required" description:"official account of wechat"`
-	MchID      string      `json:"mchid"        validate:"required" description:"merchant id of wechat"`
-	Desc       string      `json:"description"  validate:"required" description:"goods description"`
-	TradeNo    string      `json:"out_trade_no" validate:"required" description:"trade number of service provider system"`
-	TimeExpire string      `json:"time_expire,omitempty"            description:"ticket expire time as unix seconds string"`
-	Attach     string      `json:"attach,omitempty"                 description:"attach information"`
-	NotifyURL  string      `json:"notify_url"   validate:"required" description:"result notify url send from wechat pay platform"`
-	GoodsTag   string      `json:"goods_tag,omitempty"              description:"goods order discount mark"`
-	Amount     *Amount     `json:"amount"       validate:"required" description:"trade amount information"`
-	Detail     *Detail     `json:"detail,omitempty"                 description:"promotion detail"`
-	Scene      *SceneInfo  `json:"scene_info,omitempty"             description:"trade scene"`
-	Settle     *SettleInfo `json:"settle_info,omitempty"            description:"settlement information"`
+	AppID      string          `json:"appid"        validate:"required" description:"official account of wechat"`
+	MchID      string          `json:"mchid"        validate:"required" description:"merchant id of wechat"`
+	Desc       string          `json:"description"  validate:"required" description:"goods description"`
+	TradeNo    string          `json:"out_trade_no" validate:"required" description:"trade number of service provider system"`
+	TimeExpire string          `json:"time_expire,omitempty"            description:"ticket expire time as unix seconds string"`
+	Attach     string          `json:"attach,omitempty"                 description:"attach information"`
+	NotifyURL  string          `json:"notify_url"   validate:"required" description:"result notify url send from wechat pay platform"`
+	GoodsTag   string          `json:"goods_tag,omitempty"              description:"goods order discount mark"`
+	Amount     *Amount         `json:"amount"       validate:"required" description:"trade amount information"`
+	Detail     *DiscountDetail `json:"detail,omitempty"                 description:"promotion detail"`
+	Scene      *SceneInfo      `json:"scene_info,omitempty"             description:"trade scene"`
+	Settle     *SettleInfo     `json:"settle_info,omitempty"            description:"settlement information"`
 }
 
 // WxDrJS Request input data of JSAPI direct pay
 type WxDrJS struct {
-	AppID      string      `json:"appid"        validate:"required" description:"official account of wechat"`
-	MchID      string      `json:"mchid"        validate:"required" description:"merchant id of wechat"`
-	Desc       string      `json:"description"  validate:"required" description:"goods description"`
-	TradeNo    string      `json:"out_trade_no" validate:"required" description:"trade number of service provider system"`
-	TimeExpire string      `json:"time_expire,omitempty"            description:"ticket expire time as unix seconds string"`
-	Attach     string      `json:"attach,omitempty"                 description:"attach information"`
-	NotifyURL  string      `json:"notify_url"   validate:"required" description:"result notify url send from wechat pay platform"`
-	GoodsTag   string      `json:"goods_tag,omitempty"              description:"goods order discount mark"`
-	Amount     *Amount     `json:"amount"       validate:"required" description:"trade amount information"`
-	Payer      *Payer      `json:"payer"        validate:"required" description:"trade payer"`
-	Detail     *Detail     `json:"detail,omitempty"                 description:"promotion detail"`
-	Scene      *SceneInfo  `json:"scene_info,omitempty"             description:"trade scene"`
-	Settle     *SettleInfo `json:"settle_info,omitempty"            description:"settlement information"`
+	AppID      string          `json:"appid"        validate:"required" description:"official account of wechat"`
+	MchID      string          `json:"mchid"        validate:"required" description:"merchant id of wechat"`
+	Desc       string          `json:"description"  validate:"required" description:"goods description"`
+	TradeNo    string          `json:"out_trade_no" validate:"required" description:"trade number of service provider system"`
+	TimeExpire string          `json:"time_expire,omitempty"            description:"ticket expire time as unix seconds string"`
+	Attach     string          `json:"attach,omitempty"                 description:"attach information"`
+	NotifyURL  string          `json:"notify_url"   validate:"required" description:"result notify url send from wechat pay platform"`
+	GoodsTag   string          `json:"goods_tag,omitempty"              description:"goods order discount mark"`
+	Amount     *Amount         `json:"amount"       validate:"required" description:"trade amount information"`
+	Payer      *Payer          `json:"payer"        validate:"required" description:"trade payer"`
+	Detail     *DiscountDetail `json:"detail,omitempty"                 description:"promotion detail"`
+	Scene      *SceneInfo      `json:"scene_info,omitempty"             description:"trade scene"`
+	Settle     *SettleInfo     `json:"settle_info,omitempty"            description:"settlement information"`
+}
+
+// WxDrRefund Request input data of direct refund
+type WxDrRefund struct {
+	TranID    string         `json:"transaction_id"                    description:"transaction id of wechat pay platform"`
+	TradeNo   string         `json:"out_trade_no"  validate:"required" description:"trade number of service provider system"`
+	RefundNo  string         `json:"out_refund_no" validate:"required" description:"refund transaction number of service provider system"`
+	Reason    string         `json:"reason,omitempty"                  description:"refund action reason"`
+	NotifyURL string         `json:"notify_url,omitempty"              description:"refund notify url send from wechat pay platform"`
+	FundsAcc  string         `json:"funds_account,omitempty"           description:"refund funds account, such as : AVAILABLE"`
+	Amount    *RefundAmount  `json:"amount"        validate:"required" description:"amount settle information"`
+	Goods     []*RefundGoods `json:"goods_detail,omitempty"            description:"goods details of refund"`
 }
 
 // -------- For Agent Response
@@ -360,4 +421,20 @@ type WxMchCerts struct {
 // WxRetUpload uploaded media id of wechat pay platform
 type WxRetUpload struct {
 	MediaID string `json:"media_id" description:"uploaded media id of wechat pay platform"`
+}
+
+// WxRetRefund refund result of trade informations
+type WxRetRefund struct {
+	RefundID    string          `json:"refund_id"             description:"* refund transaction id of wechat pay platform"`
+	RefundNo    string          `json:"out_refund_no"         description:"* refund transaction number of service provider system"`
+	TranID      string          `json:"transaction_id"        description:"* original transaction id of wechat pay platform"`
+	TradeNo     string          `json:"out_trade_no"          description:"* orifinal transaction number of service provider system"`
+	Channel     string          `json:"channel"               description:"* refund channel, such as : ORIGINAL, BALANCE, OTHER_BALANCE, OTHER_BANKCARD"`
+	PayerAcc    string          `json:"user_received_account" description:"* payer received money account"`
+	SuccessTime string          `json:"success_time"          description:"success refund time, format as YYYY-MM-DDTHH:mm:ss+TIMEZONE"`
+	CreateTime  string          `json:"create_time"           description:"* create refund time, format as YYYY-MM-DDTHH:mm:ss+TIMEZONE"`
+	Status      string          `json:"status"                description:"* refund status, such as : SUCCESS, CLOSED, PROCESSING, ABNORMAL"`
+	FundsAcc    string          `json:"funds_account"         description:"refund funds account, such as : AVAILABLE"`
+	Amount      *RefRetAmount   `json:"amount"                description:"* amount settle information of refund"`
+	Promotions  []*RefRetPromot `json:"promotion_detail"      description:"promotion details of refund"`
 }
