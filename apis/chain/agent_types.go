@@ -120,6 +120,7 @@ type RefundNode struct {
 	Amount    int64  `json:"total"         description:"total amount price, unit one cent CNY"`
 	Refund    int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
 	Desc      string `json:"desc"          description:"refund transacte description"`
+	Status    int64  `json:"status"        description:"refund status, such as 'cancle', 'unpaid', 'paid'"`
 	NotifyURL string `json:"notifyurl"     description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
 }
 

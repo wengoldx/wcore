@@ -433,7 +433,7 @@ type WxRetRefund struct {
 	PayerAcc    string          `json:"user_received_account" description:"* payer received money account"`
 	SuccessTime string          `json:"success_time"          description:"success refund time, format as YYYY-MM-DDTHH:mm:ss+TIMEZONE"`
 	CreateTime  string          `json:"create_time"           description:"* create refund time, format as YYYY-MM-DDTHH:mm:ss+TIMEZONE"`
-	Status      string          `json:"status"                description:"* refund status, such as : SUCCESS, CLOSED, PROCESSING, ABNORMAL"`
+	RefundState string          `json:"status"                description:"* refund status, such as : SUCCESS, CLOSED, PROCESSING, ABNORMAL"`
 	FundsAcc    string          `json:"funds_account"         description:"refund funds account, such as : AVAILABLE"`
 	Amount      *RefRetAmount   `json:"amount"                description:"* amount settle information of refund"`
 	Promotions  []*RefRetPromot `json:"promotion_detail"      description:"promotion details of refund"`
