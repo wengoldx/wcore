@@ -11,22 +11,18 @@ const (
 
 	// Wechat Direct connected merchants
 	wxpApiDrH5       = "/v3/pay/transactions/h5"
-	wxpApiDrApp      = "/v3/pay/transactions/app"
 	wxpApiDrJS       = "/v3/pay/transactions/jsapi"
+	wxpApiDrApp      = "/v3/pay/transactions/app"
 	wxpApiDrIDQuery  = "/v3/pay/transactions/id/%s?mchid=%s"
 	wxpApiDrNoQuery  = "/v3/pay/transactions/out-trade-no/%s?mchid=%s"
 	wxpApiDrClose    = "/v3/pay/transactions/out-trade-no/%s/close"
 	wxpApiDrRefund   = "/v3/refund/domestic/refunds"
 	wxpApiDrRefQuery = "/v3/refund/domestic/refunds/%s"
 
-	// For wechat pay APIv2 refund
-	WxpDrRefund   = "/secapi/pay/refund"
-	WxpDrRefQuery = "/pay/refundquery"
-
 	// Wechat SP, PF payments and merch account change
-	WxpApiMchApp     = "/v3/pay/partner/transactions/app"
-	WxpApiMchJS      = "/v3/pay/partner/transactions/jsapi"
-	WxpApiMchH5      = "/v3/pay/partner/transactions/h5"
+	wxpApiMchH5      = "/v3/pay/partner/transactions/h5"
+	wxpApiMchJS      = "/v3/pay/partner/transactions/jsapi"
+	wxpApiMchApp     = "/v3/pay/partner/transactions/app"
 	WxpApiMchIDQuery = "/v3/pay/partner/transactions/id/%s"
 	WxpApiMchNoQuery = "/v3/pay/partner/transactions/out-trade-no/%s?sp_mchid=%s&sub_mchid=%s"
 	WxpApiMchClose   = "/v3/pay/partner/transactions/out-trade-no/%s/close"
@@ -60,6 +56,10 @@ const (
 	WxpApiPFRefund   = "/v3/ecommerce/refunds/apply"
 	WxpApiPFRIDQuery = "/v3/ecommerce/refunds/id/%s"
 	WxpApiPFRNoQuery = "/v3/ecommerce/refunds/out-refund-no/%s?sub_mchid=%s"
+
+	// For wechat pay APIv2 refund
+	WxpDrRefund   = "/secapi/pay/refund"
+	WxpDrRefQuery = "/pay/refundquery"
 )
 
 // Custom boundary string of wxpay agent
