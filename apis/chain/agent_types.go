@@ -111,17 +111,17 @@ type DiviNode struct {
 
 // RefundNode refund ticket node
 type RefundNode struct {
-	Cashier   string `json:"service"       description:"cashier name who provide transaction by wgpay server"`
-	TradeNo   string `json:"tradeno"       description:"transaction number of mall pay platform"`
-	Payer     string `json:"cuuid"         description:"payer uuid"`
-	Payee     string `json:"suuid"         description:"payee uuid"`
-	SMchID    string `json:"sub_mchid"     description:"sub merchant id of payee"`
-	RefundID  string `json:"refund_id"     description:"refund id"`
-	Amount    int64  `json:"total"         description:"total amount price, unit one cent CNY"`
-	Refund    int64  `json:"refundfee"     description:"total refund price, unit one cent CNY"`
-	Desc      string `json:"desc"          description:"refund transacte description"`
-	Status    int64  `json:"status"        description:"refund status, such as 'cancle', 'unpaid', 'paid'"`
-	NotifyURL string `json:"notifyurl"     description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
+	Cashier   string `json:"service"   description:"cashier name who provide transaction by wgpay server"`
+	TradeNo   string `json:"tradeno"   description:"transaction number of mall pay platform"`
+	Payer     string `json:"cuuid"     description:"payer uuid"`
+	Payee     string `json:"suuid"     description:"payee uuid"`
+	SMchID    string `json:"sub_mchid" description:"sub merchant id of payee"`
+	RefundID  string `json:"refund_id" description:"refund id"`
+	Amount    int64  `json:"total"     description:"total amount price, unit one cent CNY"`
+	Refund    int64  `json:"refundfee" description:"total refund price, unit one cent CNY"`
+	Desc      string `json:"desc"      description:"refund transacte description"`
+	Status    int64  `json:"status"    description:"refund status, such as 'cancle', 'unpaid', 'paid'"`
+	NotifyURL string `json:"notifyurl" description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
 }
 
 // TicketNode ticket node detail

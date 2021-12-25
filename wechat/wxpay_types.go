@@ -315,6 +315,27 @@ type RefRetPromot struct {
 	CouponDetail []*RefundGoods `json:"goods_detail"   description:"goods coupon detail list"`
 }
 
+// RefNftAmount amount settle information for refund notificaton
+type RefNftAmount struct {
+	Total       int64 `json:"total"        description:"* total amount"`
+	RefundTotal int64 `json:"refund"       description:"* refund amount"`
+	PayerTotal  int64 `json:"payer_total"  description:"* pay amount from player"`
+	PayerRefund int64 `json:"payer_refund" description:"* refund amount to player"`
+}
+
+// WxNftRefund refund notifycation datas
+type WxNftRefund struct {
+	MchID       string        `json:"mchid"                 description:"* merchant id of wechat"`
+	RefundID    string        `json:"refund_id"             description:"* refund transaction id of wechat pay platform"`
+	RefundNo    string        `json:"out_refund_no"         description:"* refund transaction number of service provider system"`
+	TranID      string        `json:"transaction_id"        description:"* original transaction id of wechat pay platform"`
+	TradeNo     string        `json:"out_trade_no"          description:"* orifinal transaction number of service provider system"`
+	PayerAcc    string        `json:"user_received_account" description:"* payer received money account"`
+	SuccessTime string        `json:"success_time"          description:"* success refund time, format as YYYY-MM-DDTHH:mm:ss+TIMEZONE"`
+	RefundState string        `json:"refund_status"         description:"* refund status, such as : SUCCESS, CLOSED, PROCESSING, ABNORMAL"`
+	Amount      *RefNftAmount `json:"amount"                description:"* amount settle information of refund"`
+}
+
 // -------- For Agent Input
 
 // WxDrH5 Request input data of H5 direct pay
