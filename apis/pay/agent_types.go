@@ -56,3 +56,11 @@ type RefundNode struct {
 	Status    int64  `json:"status"    description:"refund status, such as 'cancle', 'unpaid', 'paid'"`
 	NotifyURL string `json:"notifyurl" description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
 }
+
+// PayInfo payment information
+type PayInfo struct {
+	PayWay  string `json:"payway"    description:"payment way, such as 'wechat', 'wechatJSAPI', 'alipay'"`
+	Status  int64  `json:"status"    description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
+	WxInfo  string `json:"wxpayinfo" description:"wechat payment app information"`
+	AliInfo string `json:"alpayinfo" description:"alipay payment information"`
+}

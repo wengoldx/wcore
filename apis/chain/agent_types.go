@@ -154,11 +154,3 @@ type ChainMod struct {
 	Timestamp int64  `json:"timestamp"`
 	PayNo     string `json:"payno"`
 }
-
-// PayInfo payment information
-type PayInfo struct {
-	PayWay    string `json:"payway"    description:"payment way, such as 'wechat', 'wechatJSAPI', 'alipay'"`
-	Status    int64  `json:"status"    description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
-	WxPayInfo string `json:"wxpayinfo" description:"wechat payment app information"`
-	AlPayInfo string `json:"alpayinfo" description:"alipay payment information"`
-}
