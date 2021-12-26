@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 WING All Rights Reserved.
+// Copyright (c) 2019-2029 DY All Rights Reserved.
 //
 // Author : yangping
 // Email  : youhei_yp@163.com
@@ -15,6 +15,7 @@ package wing
 // import (
 // 	_ "github.com/wengoldx/wing/apis"
 // 	_ "github.com/wengoldx/wing/apis/chain"
+// 	_ "github.com/wengoldx/wing/apis/pay"
 // 	_ "github.com/wengoldx/wing/comm"
 // 	_ "github.com/wengoldx/wing/invar"
 // 	_ "github.com/wengoldx/wing/logger"
