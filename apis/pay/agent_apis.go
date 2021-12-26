@@ -46,7 +46,7 @@ func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
 //	@param rno Refund transaction number
 //	@param ticket The changed refund ticket node
 //	@return - error Exception message
-func (a *PayAgent) UpdateRefund(rno string, ticket *TradeNode) error {
+func (a *PayAgent) UpdateRefund(rno string, ticket *RefundNode) error {
 	return a.postReqParams("/v2/chain/update/refund", "rno", rno, ticket)
 }
 
