@@ -23,7 +23,7 @@ import (
 //	@param ps The first ticket node of trade
 //	@return - string Trade number
 //			- error Exception message
-func (a *PaychainAgent) GenTrade(ps interface{}) (string, error) {
+func (a *ChainAgent) GenTrade(ps interface{}) (string, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return "", invar.ErrInvalidClient
@@ -48,7 +48,7 @@ func (a *PaychainAgent) GenTrade(ps interface{}) (string, error) {
 //	@param tno Trade number
 //	@param ps The new trade ticket node
 //	@return - error Exception message
-func (a *PaychainAgent) UpdateTrade(tno string, ps interface{}) error {
+func (a *ChainAgent) UpdateTrade(tno string, ps interface{}) error {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return invar.ErrInvalidClient
@@ -71,7 +71,7 @@ func (a *PaychainAgent) UpdateTrade(tno string, ps interface{}) error {
 //	@param tno Trade number
 //	@return - TradeNode Trade ticket node
 //			- error Exception message
-func (a *PaychainAgent) TradeTicket(tno string) (*TradeNode, error) {
+func (a *ChainAgent) TradeTicket(tno string) (*TradeNode, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return nil, invar.ErrInvalidClient
@@ -89,7 +89,7 @@ func (a *PaychainAgent) TradeTicket(tno string) (*TradeNode, error) {
 //	@param tno Trade number
 //	@return - DiviNode Dividing ticket node
 //			- error Exception message
-func (a *PaychainAgent) DiviTicket(tno string) (*DiviNode, error) {
+func (a *ChainAgent) DiviTicket(tno string) (*DiviNode, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return nil, invar.ErrInvalidClient
@@ -107,7 +107,7 @@ func (a *PaychainAgent) DiviTicket(tno string) (*DiviNode, error) {
 //	@param tno Trade number
 //	@return - RefundNode Refund ticket node
 //			- error Exception message
-func (a *PaychainAgent) RefundTicket(tno string) (*RefundNode, error) {
+func (a *ChainAgent) RefundTicket(tno string) (*RefundNode, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return nil, invar.ErrInvalidClient
@@ -129,7 +129,7 @@ func (a *PaychainAgent) RefundTicket(tno string) (*RefundNode, error) {
 //	@param tno Trade number
 //	@return - out Out data of TradeNode, DiviNode or RefundNode
 //			- error Exception message
-func (a *PaychainAgent) lastTicketNode(tno string, out interface{}) error {
+func (a *ChainAgent) lastTicketNode(tno string, out interface{}) error {
 	tickets, err := a.getTradeTickets(tno)
 	if err != nil {
 		return err
@@ -157,8 +157,8 @@ func (a *PaychainAgent) lastTicketNode(tno string, out interface{}) error {
 // `TODO`
 //
 // This method should use rpc instead of http post.
-func (a *PaychainAgent) getTradeTickets(tno string) ([]*TicketNode, error) {
-	params := &InTicketNo{AID: a.Aid, PayNo: tno}
+func (a *ChainAgent) getTradeTickets(tno string) ([]*TicketNode, error) {
+	params := &ChainNo{AID: a.Aid, TNo: tno}
 	paychainapi := a.Domain + "/paychain/v2/detail"
 	respByte, err := comm.HttpPost(paychainapi, params)
 	if err != nil {
@@ -184,14 +184,14 @@ func (a *PaychainAgent) getTradeTickets(tno string) ([]*TicketNode, error) {
 // `TODO`
 //
 // This method should use rpc instead of http post.
-func (a *PaychainAgent) appendTradeTicket(tno, node string) error {
-	signkey, eb, ts, err := a.Encrypt(node)
+func (a *ChainAgent) appendTradeTicket(tno, node string) error {
+	signkey, eb, ts, err := a.encrypt(node)
 	if err != nil {
 		logger.E("Encrypt ticket node err:", err)
 		return err
 	}
 
-	params := &InTicketMod{
+	params := &ChainMod{
 		AID:       a.Aid,
 		PayBody:   eb,
 		SignKey:   signkey,
@@ -217,14 +217,14 @@ func (a *PaychainAgent) appendTradeTicket(tno, node string) error {
 // `TODO` :
 //
 // This method should use rpc instead of http post.
-func (a *PaychainAgent) genTicketNode(node string) (string, error) {
-	signkey, eb, ts, err := a.Encrypt(node)
+func (a *ChainAgent) genTicketNode(node string) (string, error) {
+	signkey, eb, ts, err := a.encrypt(node)
 	if err != nil {
 		logger.E("Encrypt ticket node err:", err)
 		return "", err
 	}
 
-	params := &InTicketData{
+	params := &ChainData{
 		AID:       a.Aid,
 		Encode:    true,
 		PayBody:   eb,
@@ -253,7 +253,7 @@ func (a *PaychainAgent) genTicketNode(node string) (string, error) {
 // `WARNING` :
 //
 // The body string max lenght DO NOT lagger than 400 chars.
-func (a *PaychainAgent) Encrypt(body string) (string, string, int64, error) {
+func (a *ChainAgent) encrypt(body string) (string, string, int64, error) {
 	hashcode := secure.EncodeMD5(body)
 	timestamp := time.Now().UnixNano()
 	bodybytes, err := json.Marshal(&EncryptNode{

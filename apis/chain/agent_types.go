@@ -17,7 +17,7 @@ const (
 	PAID                         // goods to be delivered, status 4
 )
 
-// PaychainAgent agent of paychain
+// Agent of paychain to simple access server RESTful APIs
 //
 // `USAGE` :
 //
@@ -66,7 +66,7 @@ const (
 //
 //	// update indicated trade ticket
 //	err := agentIns.UpdateTicket(tno, ps)
-type PaychainAgent struct {
+type ChainAgent struct {
 	Aid    string // agent id
 	Devmac string // device mac bind with current agent
 	Pubkey string // public key of current agent
@@ -76,43 +76,43 @@ type PaychainAgent struct {
 	Domain string
 }
 
-// EncryptNode encrypt node data struct
+// Encrypt node data struct
 type EncryptNode struct {
 	SecureKey string `json:"securekey"`
 	Timestamp int64  `json:"timestamp"`
 	PayBody   string `json:"paybody"`
 }
 
-// TradeNode Trade ticket node
+// Trade ticket node
 type TradeNode struct {
-	Cashier   string `json:"service"               description:"cashier name who provide transaction by wgpay server"`
-	Payer     string `json:"cuuid"                 description:"payer uuid"`
-	Payee     string `json:"suuid"                 description:"payee uuid, merchant id"`
-	SMchID    string `json:"sub_mchid"             description:"sub merchant id of payee"`
-	Amount    int64  `json:"amount"                description:"total amount price, unit one cent CNY"`
-	Refund    int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
-	Desc      string `json:"desc"                  description:"this ticket description"`
-	NotifyURL string `json:"notifyurl"             description:"ansync notifier url from wgpay to notify pay status changed, must returen OK if success"`
-	PayWay    string `json:"payway"                description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
-	IsFrozen  bool   `json:"isfrozen"              description:"whether frozen amount when payment finished, it must be true for dividing payment"`
-	Status    int64  `json:"status"                description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
-	Expire    string `json:"time_expire,omitempty" description:"expire time for virture products such as coupon, courtesy card, and so on"`
+	Cashier    string `json:"service"               description:"cashier name who provide transaction by wgpay server"`
+	Payer      string `json:"cuuid"                 description:"payer uuid"`
+	Payee      string `json:"suuid"                 description:"payee uuid, merchant id"`
+	SMchID     string `json:"sub_mchid"             description:"sub merchant id of payee"`
+	Amount     int64  `json:"amount"                description:"total amount price, unit one cent CNY"`
+	Refund     int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
+	Desc       string `json:"desc"                  description:"this ticket description"`
+	NotifyURL  string `json:"notifyurl"             description:"ansync notifier url from wgpay to notify pay status changed, must returen OK if success"`
+	PayWay     string `json:"payway"                description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
+	IsFrozen   bool   `json:"isfrozen"              description:"whether frozen amount when payment finished, it must be true for dividing payment"`
+	Status     int64  `json:"status"                description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
+	TimeExpire string `json:"time_expire,omitempty" description:"expire time for virture products such as coupon, courtesy card, and so on"`
 }
 
 // Dividing ticket node
 type DiviNode struct {
 	Cashier    string `json:"service"        description:"cashier name who provide transaction by wgpay server"`
 	SMchID     string `json:"sub_mchid"      description:"sub merchant id of payee"`
-	TradeID    string `json:"transaction_id" description:"transaction id of wechat pay platform"`
+	TranID     string `json:"transaction_id" description:"transaction id of wechat pay platform"`
 	Commission int64  `json:"commission"     description:"commission of dividing transaction, unit one cent CNY"`
 	Desc       string `json:"desc"           description:"dividing transacte description"`
 	IsFinsh    bool   `json:"isfinsh"        description:"finish transation, and unfrozen transation"`
 }
 
-// RefundNode refund ticket node
+// Refund ticket node
 type RefundNode struct {
 	Cashier   string `json:"service"   description:"cashier name who provide transaction by wgpay server"`
-	TradeNo   string `json:"tradeno"   description:"transaction number of mall pay platform"`
+	TranNo    string `json:"tradeno"   description:"transaction number of mall pay platform"`
 	Payer     string `json:"cuuid"     description:"payer uuid"`
 	Payee     string `json:"suuid"     description:"payee uuid"`
 	SMchID    string `json:"sub_mchid" description:"sub merchant id of payee"`
@@ -124,21 +124,21 @@ type RefundNode struct {
 	NotifyURL string `json:"notifyurl" description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
 }
 
-// TicketNode ticket node detail
+// Base ticket node to save into paychain database
 type TicketNode struct {
 	PayBody string `json:"paybody"`
 	UpTime  int64  `json:"uptime"`
 	Action  int64  `json:"action"`
 }
 
-// InTicketNo agent id and trade number
-type InTicketNo struct {
-	AID   string `json:"aid"`
-	PayNo string `json:"payno"`
+// Request params contain agent id and transaction number
+type ChainNo struct {
+	AID string `json:"aid"`
+	TNo string `json:"payno"`
 }
 
-// InTicketData ticket node datas for generate request
-type InTicketData struct {
+// Request params to save trade ticket as packet into paychain database when start a trade
+type ChainData struct {
 	AID       string `json:"aid"`
 	Encode    bool   `json:"encode"`
 	PayBody   string `json:"paybody"`
@@ -146,8 +146,8 @@ type InTicketData struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-// InTicketMod ticket node datas for update request
-type InTicketMod struct {
+// Request params to save transaction tickt as packet into paychain database when update a trade both chande or refund
+type ChainMod struct {
 	AID       string `json:"aid"`
 	PayBody   string `json:"paybody"`
 	SignKey   string `json:"signkey"`
