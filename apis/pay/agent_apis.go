@@ -11,6 +11,7 @@
 package pay
 
 import (
+	"fmt"
 	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
@@ -21,7 +22,7 @@ import (
 //	@return - string Trade transaction number
 //			- error Exception message
 func (a *PayAgent) GenTrade(ticket *TradeNode) (string, error) {
-	return a.postReqString("/wgpay/v2/chain/trade", ticket)
+	return a.postReqString("trade", ticket)
 }
 
 // Generate a new refund by given payment datas, and return trade number
@@ -29,7 +30,7 @@ func (a *PayAgent) GenTrade(ticket *TradeNode) (string, error) {
 //	@return - string Refund transaction number
 //			- error Exception message
 func (a *PayAgent) GenRefund(ticket *RefundNode) (string, error) {
-	return a.postReqString("/wgpay/v2/chain/refund", ticket)
+	return a.postReqString("refund", ticket)
 }
 
 // Update trade, it not modify the any exist tickt nodes but generate a new
@@ -38,7 +39,7 @@ func (a *PayAgent) GenRefund(ticket *RefundNode) (string, error) {
 //	@param ticket The changed trade ticket node
 //	@return - error Exception message
 func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
-	return a.postReqParams("/wgpay/v2/chain/update/trade", "tno", tno, ticket)
+	return a.postReqParams("trade", "tno", tno, ticket)
 }
 
 // Update refund, it not modify the any exist tickt nodes but generate a new
@@ -47,7 +48,7 @@ func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
 //	@param ticket The changed refund ticket node
 //	@return - error Exception message
 func (a *PayAgent) UpdateRefund(rno string, ticket *RefundNode) error {
-	return a.postReqParams("/wgpay/v2/chain/update/refund", "rno", rno, ticket)
+	return a.postReqParams("refund", "rno", rno, ticket)
 }
 
 // Get the latest trade ticket node
@@ -55,8 +56,8 @@ func (a *PayAgent) UpdateRefund(rno string, ticket *RefundNode) error {
 //	@return - TradeNode Trade ticket node
 //			- error Exception message
 func (a *PayAgent) TradeTicket(tno string) (*TradeNode, error) {
-	resp, apiurl := &TradeNode{}, "/wgpay/v2/chain/ticket/trade"
-	if err := a.getReqStruct(apiurl, "tno", tno, resp); err != nil {
+	resp := &TradeNode{}
+	if err := a.getReqStruct("trade", "tno", tno, resp); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -67,8 +68,8 @@ func (a *PayAgent) TradeTicket(tno string) (*TradeNode, error) {
 //	@return - DiviNode Dividing ticket node
 //			- error Exception message
 func (a *PayAgent) DiviTicket(tno string) (*DiviNode, error) {
-	resp, apiurl := &DiviNode{}, "/wgpay/v2/chain/ticket/dividing"
-	if err := a.getReqStruct(apiurl, "tno", tno, resp); err != nil {
+	resp := &DiviNode{}
+	if err := a.getReqStruct("dividing", "tno", tno, resp); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -79,8 +80,8 @@ func (a *PayAgent) DiviTicket(tno string) (*DiviNode, error) {
 //	@return - RefundNode Refund ticket node
 //			- error Exception message
 func (a *PayAgent) RefundTicket(rno string) (*RefundNode, error) {
-	resp, apiurl := &RefundNode{}, "/wgpay/v2/chain/ticket/refund"
-	if err := a.getReqStruct(apiurl, "rno", rno, resp); err != nil {
+	resp := &RefundNode{}
+	if err := a.getReqStruct("refund", "rno", rno, resp); err != nil {
 		return nil, err
 	}
 	return resp, nil
@@ -91,13 +92,13 @@ func (a *PayAgent) RefundTicket(rno string) (*RefundNode, error) {
 // ------------------------
 
 // Post http request with input params, then return transaction number as string
-func (a *PayAgent) postReqString(apiurl string, params interface{}) (string, error) {
+func (a *PayAgent) postReqString(api string, params interface{}) (string, error) {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return "", invar.ErrInvalidClient
 	}
 
-	payapi := a.Domain + apiurl
+	payapi := fmt.Sprintf("%s/wgpay/v2/chain/%s", a.Domain, api)
 	ret, err := comm.HttpPostString(payapi, params)
 	if err != nil {
 		return "", err
@@ -106,7 +107,7 @@ func (a *PayAgent) postReqString(apiurl string, params interface{}) (string, err
 }
 
 // Post http request with input params, it will append key and value into request url
-func (a *PayAgent) postReqParams(apiurl, key, val string, params interface{}) error {
+func (a *PayAgent) postReqParams(api, key, val string, params interface{}) error {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return invar.ErrInvalidClient
@@ -114,10 +115,10 @@ func (a *PayAgent) postReqParams(apiurl, key, val string, params interface{}) er
 
 	if key == "" || val == "" {
 		logger.E("Invalid key:", key, "or value:", val)
-		return invar.ErrInvalidClient
+		return invar.ErrInvalidParams
 	}
 
-	payapi := a.Domain + apiurl + "?" + key + "=" + val
+	payapi := fmt.Sprintf("%s/wgpay/v2/chain/update/%s?%s=%s", a.Domain, api, key, val)
 	if _, err := comm.HttpPost(payapi, params); err != nil {
 		return err
 	}
@@ -126,7 +127,7 @@ func (a *PayAgent) postReqParams(apiurl, key, val string, params interface{}) er
 
 // Post http get request after append key and value into request url,
 // then return  struct data from response
-func (a *PayAgent) getReqStruct(apiurl, key, val string, resp interface{}) error {
+func (a *PayAgent) getReqStruct(api, key, val string, resp interface{}) error {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
 		return invar.ErrInvalidClient
@@ -134,10 +135,10 @@ func (a *PayAgent) getReqStruct(apiurl, key, val string, resp interface{}) error
 
 	if key == "" || val == "" {
 		logger.E("Invalid key:", key, "or value:", val)
-		return invar.ErrInvalidClient
+		return invar.ErrInvalidParams
 	}
 
-	payapi := a.Domain + apiurl + "?" + key + "=" + val
+	payapi := fmt.Sprintf("%s/wgpay/v2/chain/ticket/%s?%s=%s", a.Domain, api, key, val)
 	if err := comm.HttpGetStruct(payapi, resp); err != nil {
 		return err
 	}
