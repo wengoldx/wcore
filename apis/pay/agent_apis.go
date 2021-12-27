@@ -21,7 +21,7 @@ import (
 //	@return - string Trade transaction number
 //			- error Exception message
 func (a *PayAgent) GenTrade(ticket *TradeNode) (string, error) {
-	return a.postReqString("/v2/chain/trade", ticket)
+	return a.postReqString("/wgpay/v2/chain/trade", ticket)
 }
 
 // Generate a new refund by given payment datas, and return trade number
@@ -29,7 +29,7 @@ func (a *PayAgent) GenTrade(ticket *TradeNode) (string, error) {
 //	@return - string Refund transaction number
 //			- error Exception message
 func (a *PayAgent) GenRefund(ticket *RefundNode) (string, error) {
-	return a.postReqString("/v2/chain/refund", ticket)
+	return a.postReqString("/wgpay/v2/chain/refund", ticket)
 }
 
 // Update trade, it not modify the any exist tickt nodes but generate a new
@@ -38,7 +38,7 @@ func (a *PayAgent) GenRefund(ticket *RefundNode) (string, error) {
 //	@param ticket The changed trade ticket node
 //	@return - error Exception message
 func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
-	return a.postReqParams("/v2/chain/update/trade", "tno", tno, ticket)
+	return a.postReqParams("/wgpay/v2/chain/update/trade", "tno", tno, ticket)
 }
 
 // Update refund, it not modify the any exist tickt nodes but generate a new
@@ -47,7 +47,7 @@ func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
 //	@param ticket The changed refund ticket node
 //	@return - error Exception message
 func (a *PayAgent) UpdateRefund(rno string, ticket *RefundNode) error {
-	return a.postReqParams("/v2/chain/update/refund", "rno", rno, ticket)
+	return a.postReqParams("/wgpay/v2/chain/update/refund", "rno", rno, ticket)
 }
 
 // Get the latest trade ticket node
@@ -55,7 +55,7 @@ func (a *PayAgent) UpdateRefund(rno string, ticket *RefundNode) error {
 //	@return - TradeNode Trade ticket node
 //			- error Exception message
 func (a *PayAgent) TradeTicket(tno string) (*TradeNode, error) {
-	resp, apiurl := &TradeNode{}, "/v2/chain/ticket/trade"
+	resp, apiurl := &TradeNode{}, "/wgpay/v2/chain/ticket/trade"
 	if err := a.getReqStruct(apiurl, "tno", tno, resp); err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (a *PayAgent) TradeTicket(tno string) (*TradeNode, error) {
 //	@return - DiviNode Dividing ticket node
 //			- error Exception message
 func (a *PayAgent) DiviTicket(tno string) (*DiviNode, error) {
-	resp, apiurl := &DiviNode{}, "/v2/chain/ticket/dividing"
+	resp, apiurl := &DiviNode{}, "/wgpay/v2/chain/ticket/dividing"
 	if err := a.getReqStruct(apiurl, "tno", tno, resp); err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (a *PayAgent) DiviTicket(tno string) (*DiviNode, error) {
 //	@return - RefundNode Refund ticket node
 //			- error Exception message
 func (a *PayAgent) RefundTicket(rno string) (*RefundNode, error) {
-	resp, apiurl := &RefundNode{}, "/v2/chain/ticket/refund"
+	resp, apiurl := &RefundNode{}, "/wgpay/v2/chain/ticket/refund"
 	if err := a.getReqStruct(apiurl, "rno", rno, resp); err != nil {
 		return nil, err
 	}
