@@ -267,6 +267,10 @@ func RSASign4FB64(prifile string, original []byte) (string, error) {
 	return ByteToBase64(buf), nil
 }
 
+// ------------------------------------------------------------
+// Verify PKIX signature data
+// ------------------------------------------------------------
+
 // RSAVerify using RSA public key to verify signatured data.
 func RSAVerify(pubkey, original, signature []byte) error {
 	block, _ := pem.Decode(pubkey)
@@ -290,6 +294,35 @@ func RSAVerify4F(pubfile string, original, signature []byte) error {
 		return err
 	}
 	return RSAVerify(pubkey, original, signature)
+}
+
+// ------------------------------------------------------------
+// Verify ANS.1 signature data
+// ------------------------------------------------------------
+
+// RSAVerifyANS1 using RSA public key to verify ANS1 signatured data.
+func RSAVerifyANS(pubkey, original, signature []byte) error {
+	block, _ := pem.Decode(pubkey)
+	if block == nil {
+		return invar.ErrBadPublicKey
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return err
+	}
+	pub := cert.PublicKey.(*rsa.PublicKey)
+	hashed := HashSHA256(original)
+	return rsa.VerifyPKCS1v15(pub, crypto.SHA256, hashed[:], signature)
+}
+
+// RSAVerifyANS4F using RSA public key file to verify ANS1 signatured data.
+func RSAVerifyANS4F(pubfile string, original, signature []byte) error {
+	pubkey, err := LoadRSAKey(pubfile)
+	if err != nil {
+		return err
+	}
+	return RSAVerifyANS(pubkey, original, signature)
 }
 
 // ------------------------------------------------------------
