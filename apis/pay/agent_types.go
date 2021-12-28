@@ -28,7 +28,8 @@ type TradeNode struct {
 	NotifyURL  string `json:"notifyurl"             description:"ansync notifier url from wgpay to notify pay status changed, must returen OK if success"`
 	PayWay     string `json:"payway"                description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
 	IsFrozen   bool   `json:"isfrozen"              description:"whether frozen amount when payment finished, it must be true for dividing payment"`
-	Status     int64  `json:"status"                description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
+	Status     string `json:"status"                description:"payment status, such as 'PLACE_ORDER', 'UNPAID', 'PAY_ERROR', 'REVOKED', 'PAID', 'COMPLETED', 'CLOSED'"`
+	ErrCounts  int    `json:"errcounts"             description:"pay failed counts, the trade transaction will close when try counts over max limit 5"`
 	TimeExpire string `json:"time_expire,omitempty" description:"expire time for virture products such as coupon, courtesy card, and so on"`
 }
 
@@ -53,14 +54,14 @@ type RefundNode struct {
 	Amount    int64  `json:"total"     description:"total amount price, unit one cent CNY"`
 	Refund    int64  `json:"refundfee" description:"total refund price, unit one cent CNY"`
 	Desc      string `json:"desc"      description:"refund transacte description"`
-	Status    int64  `json:"status"    description:"refund status, such as 'cancle', 'unpaid', 'paid'"`
+	Status    string `json:"status"    description:"refund status, such as 'REFUND_IN_PROGRESS', 'REFUND_ERROR', 'REFUND', 'CLOSED'"`
 	NotifyURL string `json:"notifyurl" description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
 }
 
 // PayInfo payment information
 type PayInfo struct {
 	PayWay  string `json:"payway"    description:"payment way, such as 'wechat', 'wechatJSAPI', 'alipay'"`
-	Status  int64  `json:"status"    description:"payment status, such as 'cancle', 'unpaid', 'paid'"`
+	Status  string `json:"status"    description:"payment status, such as 'PLACE_ORDER', 'UNPAID', 'PAY_ERROR', 'REVOKED', 'PAID', 'COMPLETED', 'REFUND_IN_PROGRESS', 'REFUND_ERROR', 'REFUND', 'CLOSED'"`
 	WxInfo  string `json:"wxpayinfo" description:"wechat payment app information"`
 	AliInfo string `json:"alpayinfo" description:"alipay payment information"`
 }

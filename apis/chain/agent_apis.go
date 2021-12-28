@@ -130,19 +130,19 @@ func (a *ChainAgent) RefundTicket(tno string) (*RefundNode, error) {
 //	@return - out Out data of TradeNode, DiviNode or RefundNode
 //			- error Exception message
 func (a *ChainAgent) lastTicketNode(tno string, out interface{}) error {
-	tickets, err := a.getTradeTickets(tno)
+	nodes, err := a.getTradeTickets(tno)
 	if err != nil {
 		return err
 	}
 
-	length := len(tickets)
-	if length == 0 || tickets[length-1] == nil {
+	length := len(nodes)
+	if length == 0 || nodes[length-1] == nil {
 		logger.E("Invalid responsed tickets nodes!")
 		return invar.ErrInvalidData
 	}
 
-	ticket := tickets[length-1]
-	if err := json.Unmarshal([]byte(ticket.PayBody), out); err != nil {
+	last := nodes[length-1]
+	if err := json.Unmarshal([]byte(last.PayBody), out); err != nil {
 		logger.E("Unmarshal last ticket node err:", err)
 		return err
 	}
@@ -151,13 +151,13 @@ func (a *ChainAgent) lastTicketNode(tno string, out interface{}) error {
 
 // Get trade tickets list by trade number from paychain server
 //	@param tno Trade number
-//	@return - []TicketNode Trade tickets nodes
+//	@return - []ChainNode Trade tickets nodes
 //			- error Exception message
 //
 // `TODO`
 //
 // This method should use rpc instead of http post.
-func (a *ChainAgent) getTradeTickets(tno string) ([]*TicketNode, error) {
+func (a *ChainAgent) getTradeTickets(tno string) ([]*ChainNode, error) {
 	params := &ChainNo{AID: a.Aid, TNo: tno}
 	paychainapi := a.Domain + "/paychain/v2/detail"
 	respByte, err := comm.HttpPost(paychainapi, params)
@@ -166,7 +166,7 @@ func (a *ChainAgent) getTradeTickets(tno string) ([]*TicketNode, error) {
 		return nil, err
 	}
 
-	resp := []*TicketNode{}
+	resp := []*ChainNode{}
 	if err = json.Unmarshal(respByte, &resp); err != nil {
 		logger.E("Unmarshal trade tickets err:", err)
 		return nil, err
