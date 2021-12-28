@@ -14,13 +14,12 @@ package invar
 // Trade status machine:
 // ===================================================================
 //
-// TRADE :  TSPlaceOrder +
-//          TSUnpaid     | -> TSRevoked --------------------> TSClosed
+// TRADE :  TSUnpaid --- + -> TSRevoked --------------------> TSClosed
 //                       |      ^                                 ^
 //                       |      |                                 |
 //                       + -> TSPayError <- + (max counts 5)      |
 //                       |      |        |                        |
-//                       |      |------- +                        |
+//                       |      + ------ +                        |
 //                       |      v                                 |
 //                       + -> TSPaid -------- + ----------------- +
 //                       |                    ^                   |
@@ -35,15 +34,6 @@ package invar
 //                             + ----------- +
 //
 // ===================================================================
-
-// Place order, a normal or default trade state when generate
-// a trade ticket, as status machine it can change to :
-//
-//	TSPlaceOrder -> TSRevoked   : canceld parment
-//				 -> TSPayError  : pay error
-//				 -> TSPaid      : success paid
-//				 -> TSCompleted : only for dividing payment, to mark dividing completed
-const TSPlaceOrder = "PLACE_ORDER"
 
 // Unpid state, can be use as default trade state for generate
 // a trade ticket, as status machine it can change to :
