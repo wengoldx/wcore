@@ -27,7 +27,7 @@ type TradeNode struct {
 	NotifyURL  string `json:"ntfurl,omitempty"            description:"ansync notifier url from wgpay to notify trade status changed, must returen OK if success to stop wgpay notify event looper"`
 	PayWay     string `json:"payway,omitempty"            description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
 	IsFrozen   bool   `json:"isfrozen,omitempty"          description:"whether frozen amount when payment completed, it must be true for dividing payment"`
-	Status     string `json:"status"  validate:"required" description:"payment status, such as 'UNPAID', 'PAY_ERROR', 'REVOKED', 'PAID', 'COMPLETED', 'CLOSED'"`
+	Status     string `json:"status"                      description:"payment status, such as 'UNPAID', 'PAY_ERROR', 'REVOKED', 'PAID', 'COMPLETED', 'CLOSED'"`
 	TimeExpire string `json:"expire,omitempty"            description:"expire time for virture products such as coupon, courtesy card, and so on"`
 }
 
@@ -49,10 +49,9 @@ type RefundNode struct {
 	Payee     string `json:"payee,omitempty"              description:"payee unique id, such as merchant id"`
 	SMchID    string `json:"smid,omitempty"               description:"sub merchant id of payee"`
 	RefundID  string `json:"refund_id,omitempty"          description:"refund transaction id of wechat pay"`
-	Amount    int64  `json:"amount"   validate:"required" description:"total amount price completed transaction, unit one cent CNY"`
-	Refund    int64  `json:"refund"   validate:"required" description:"total refund price should return back to payer, unit one cent CNY"`
-	Desc      string `json:"desc"     validate:"required" description:"current refund transacte description"`
-	Status    string `json:"status"   validate:"required" description:"refund status, such as 'REFUND_IN_PROGRESS', 'REFUND_ERROR', 'REFUND', 'CLOSED'"`
+	Amount    int64  `json:"amount"   validate:"required" description:"total amount price to refund, unit one cent CNY"`
+	Desc      string `json:"desc,omitempty"               description:"current refund transacte description"`
+	Status    string `json:"status,omitempty"             description:"refund status, such as 'REFUND_IN_PROGRESS', 'REFUND_ERROR', 'REFUND', 'CLOSED'"`
 	NotifyURL string `json:"ntfurl,omitempty"             description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success to stop wgpay notify event looper"`
 }
 
