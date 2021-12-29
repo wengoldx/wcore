@@ -14,7 +14,6 @@ package wing
 
 // import (
 // 	_ "github.com/wengoldx/wing/apis"
-// 	_ "github.com/wengoldx/wing/apis/chain"
 // 	_ "github.com/wengoldx/wing/apis/pay"
 // 	_ "github.com/wengoldx/wing/comm"
 // 	_ "github.com/wengoldx/wing/invar"

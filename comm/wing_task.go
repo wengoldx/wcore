@@ -30,8 +30,8 @@ type Task struct {
 
 }
 
-// Notice that all generated tasks will using this chain
-var chexe = make(chan string) // tasks chain
+// Notice that all generated tasks will using this chan
+var chexe = make(chan string) // tasks chan
 
 // TaskCallback task callback
 type TaskCallback func(data interface{}) error

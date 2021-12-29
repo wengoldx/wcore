@@ -17,6 +17,14 @@ import (
 	"github.com/wengoldx/wing/logger"
 )
 
+// Generate a new virtual card ticket, and return card number
+//	@param ticket The first ticket node of trade
+//	@return - string Trade transaction number
+//			- error Exception message
+func (a *PayAgent) GenCard(ticket *TradeNode) (string, error) {
+	return a.postReqString("card", ticket)
+}
+
 // Generate a new trade by given payment datas, and return trade number
 //	@param ticket The first ticket node of trade
 //	@return - string Trade transaction number
