@@ -57,6 +57,20 @@ func (a *PayAgent) ChangeRAmount(rno string, amount int64) error {
 	return a.reqChangeAmount("ra", rno, amount)
 }
 
+// Revoke trade transaction by user
+//	@param rno Refund transaction number
+//	@return - error Exception message
+func (a *PayAgent) RevokeTrade(tno string) error {
+	return a.reqRevokeTicket("trade", tno)
+}
+
+// Revoke trade transaction by user
+//	@param rno Refund transaction number
+//	@return - error Exception message
+func (a *PayAgent) RevokeRefund(rno string) error {
+	return a.reqRevokeTicket("refund", rno)
+}
+
 // Update trade, it not modify the any exist tickt nodes but generate a new
 // ticket and append to trade nodes list.
 //	@param tno Trade transaction number
@@ -179,7 +193,7 @@ func (a *PayAgent) getReqStruct(api, key, val string, resp interface{}) error {
 	return nil
 }
 
-// Post http get request after append key and value into request url
+// Post http get request to change ticket amount
 func (a *PayAgent) reqChangeAmount(api, tid string, amount int64) error {
 	if a.Domain == "" {
 		logger.E("Not set domain, please set first!")
@@ -191,7 +205,26 @@ func (a *PayAgent) reqChangeAmount(api, tid string, amount int64) error {
 		return invar.ErrInvalidParams
 	}
 
-	payapi := fmt.Sprintf("%s/wgpay/v2/chain/up/%s?tid=%s&amount=%v", a.Domain, api, tid, amount)
+	payapi := fmt.Sprintf("%s/wgpay/v2/chain/update/%s?tid=%s&amount=%v", a.Domain, api, tid, amount)
+	if _, err := comm.HttpGet(payapi); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Post http get request to revoke ticket
+func (a *PayAgent) reqRevokeTicket(api, tid string) error {
+	if a.Domain == "" {
+		logger.E("Not set domain, please set first!")
+		return invar.ErrInvalidClient
+	}
+
+	if tid == "" {
+		logger.E("Invalid ticket id:", tid, "to revoke")
+		return invar.ErrInvalidParams
+	}
+
+	payapi := fmt.Sprintf("%s/wgpay/v2/chain/revoke/%s?tid=%s", a.Domain, api, tid)
 	if _, err := comm.HttpGet(payapi); err != nil {
 		return err
 	}
