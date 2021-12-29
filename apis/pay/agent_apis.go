@@ -41,11 +41,32 @@ func (a *PayAgent) GenRefund(ticket *RefundNode) (string, error) {
 	return a.postReqString("refund", ticket)
 }
 
+// Change trade ticket amount which on TSUnpaid or TSPayError stauts
+//	@param tno Trade transaction number
+//	@param amount Dest trade amount to change
+//	@return - error Exception message
+func (a *PayAgent) ChangeTAmount(tno string, amount int64) error {
+	return a.reqChangeAmount("ta", tno, amount)
+}
+
+// Change refund ticket amount which on TSInProgress or TSRefundError stauts
+//	@param rno Refund transaction number
+//	@param amount Dest refund amount to change
+//	@return - error Exception message
+func (a *PayAgent) ChangeRAmount(rno string, amount int64) error {
+	return a.reqChangeAmount("ra", rno, amount)
+}
+
 // Update trade, it not modify the any exist tickt nodes but generate a new
 // ticket and append to trade nodes list.
 //	@param tno Trade transaction number
 //	@param ticket The changed trade ticket node
 //	@return - error Exception message
+//
+// `DEPRECATED`:
+//
+// This function is deprecate, use agent.ChangeTAmount() instead it to change
+// ticket trade amount.
 func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
 	return a.postReqParams("trade", "tno", tno, ticket)
 }
@@ -55,6 +76,11 @@ func (a *PayAgent) UpdateTrade(tno string, ticket *TradeNode) error {
 //	@param rno Refund transaction number
 //	@param ticket The changed refund ticket node
 //	@return - error Exception message
+//
+// `DEPRECATED`:
+//
+// This function is deprecate, use agent.ChangeRAmount() instead it to change
+// ticket refund amount.
 func (a *PayAgent) UpdateRefund(rno string, ticket *RefundNode) error {
 	return a.postReqParams("refund", "rno", rno, ticket)
 }
@@ -148,6 +174,25 @@ func (a *PayAgent) getReqStruct(api, key, val string, resp interface{}) error {
 
 	payapi := fmt.Sprintf("%s/wgpay/v2/chain/ticket/%s?%s=%s", a.Domain, api, key, val)
 	if err := comm.HttpGetStruct(payapi, resp); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Post http get request after append key and value into request url
+func (a *PayAgent) reqChangeAmount(api, tid string, amount int64) error {
+	if a.Domain == "" {
+		logger.E("Not set domain, please set first!")
+		return invar.ErrInvalidClient
+	}
+
+	if tid == "" || amount <= 0 {
+		logger.E("Invalid ticket id:", tid, "or amount:", amount)
+		return invar.ErrInvalidParams
+	}
+
+	payapi := fmt.Sprintf("%s/wgpay/v2/chain/up/%s?tid=%s&amount=%v", a.Domain, api, tid, amount)
+	if _, err := comm.HttpGet(payapi); err != nil {
 		return err
 	}
 	return nil
