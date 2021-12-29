@@ -18,44 +18,42 @@ type PayAgent struct {
 
 // Trade ticket node
 type TradeNode struct {
-	Cashier    string `json:"service"               description:"cashier name who provide transaction by wgpay server"`
-	Payer      string `json:"cuuid"                 description:"payer uuid"`
-	Payee      string `json:"suuid"                 description:"payee uuid, merchant id"`
-	SMchID     string `json:"sub_mchid"             description:"sub merchant id of payee"`
-	Amount     int64  `json:"amount"                description:"total amount price, unit one cent CNY"`
-	Refund     int64  `json:"refundfee"             description:"total refund price, unit one cent CNY"`
-	Desc       string `json:"desc"                  description:"this ticket description"`
-	NotifyURL  string `json:"notifyurl"             description:"ansync notifier url from wgpay to notify pay status changed, must returen OK if success"`
-	PayWay     string `json:"payway"                description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
-	IsFrozen   bool   `json:"isfrozen"              description:"whether frozen amount when payment finished, it must be true for dividing payment"`
-	Status     string `json:"status"                description:"payment status, such as 'PLACE_ORDER', 'UNPAID', 'PAY_ERROR', 'REVOKED', 'PAID', 'COMPLETED', 'CLOSED'"`
-	ErrCounts  int    `json:"errcounts"             description:"pay failed counts, the trade transaction will close when try counts over max limit 5"`
-	TimeExpire string `json:"time_expire,omitempty" description:"expire time for virture products such as coupon, courtesy card, and so on"`
+	Cashier    string `json:"cashier" validate:"required" description:"cashier name who provide transaction by wgpay server"`
+	Payer      string `json:"parer"   validate:"required" description:"payer unique id, such as user uuid"`
+	Payee      string `json:"payee,omitempty"             description:"payee unique id, such as merchant id"`
+	SMchID     string `json:"smid,omitempty"              description:"sub merchant id of payee"`
+	Amount     int64  `json:"amount"  validate:"required" description:"total amount price, unit one cent CNY"`
+	Desc       string `json:"desc"    validate:"required" description:"current trade ticket descriptions"`
+	NotifyURL  string `json:"ntfurl,omitempty"            description:"ansync notifier url from wgpay to notify trade status changed, must returen OK if success to stop wgpay notify event looper"`
+	PayWay     string `json:"payway,omitempty"            description:"payment way, such as 'wehcat', 'wechatJSAPI' and 'alipay'"`
+	IsFrozen   bool   `json:"isfrozen,omitempty"          description:"whether frozen amount when payment completed, it must be true for dividing payment"`
+	Status     string `json:"status"  validate:"required" description:"payment status, such as 'UNPAID', 'PAY_ERROR', 'REVOKED', 'PAID', 'COMPLETED', 'CLOSED'"`
+	TimeExpire string `json:"expire,omitempty"            description:"expire time for virture products such as coupon, courtesy card, and so on"`
 }
 
 // Dividing ticket node
 type DiviNode struct {
-	Cashier    string `json:"service"        description:"cashier name who provide transaction by wgpay server"`
-	SMchID     string `json:"sub_mchid"      description:"sub merchant id of payee"`
-	TranID     string `json:"transaction_id" description:"transaction id of wechat pay platform"`
-	Commission int64  `json:"commission"     description:"commission of dividing transaction, unit one cent CNY"`
-	Desc       string `json:"desc"           description:"dividing transacte description"`
-	IsFinsh    bool   `json:"isfinsh"        description:"finish transation, and unfrozen transation"`
+	Cashier    string `json:"cashier" validate:"required" description:"cashier name who provide transaction by wgpay server"`
+	SMchID     string `json:"smid"                        description:"sub merchant id of payee"`
+	TranID     string `json:"transaction_id"              description:"transaction id of wechat pay platform"`
+	Commission int64  `json:"commission"                  description:"commission of dividing transaction, unit one cent CNY"`
+	Desc       string `json:"desc"    validate:"required" description:"dividing transacte description"`
+	IsFinsh    bool   `json:"isfinsh"                     description:"finish transation, and unfrozen transation"`
 }
 
 // Refund ticket node
 type RefundNode struct {
-	Cashier   string `json:"service"   description:"cashier name who provide transaction by wgpay server"`
-	TranNo    string `json:"tradeno"   description:"transaction number of mall pay platform"`
-	Payer     string `json:"cuuid"     description:"payer uuid"`
-	Payee     string `json:"suuid"     description:"payee uuid"`
-	SMchID    string `json:"sub_mchid" description:"sub merchant id of payee"`
-	RefundID  string `json:"refund_id" description:"refund id"`
-	Amount    int64  `json:"total"     description:"total amount price, unit one cent CNY"`
-	Refund    int64  `json:"refundfee" description:"total refund price, unit one cent CNY"`
-	Desc      string `json:"desc"      description:"refund transacte description"`
-	Status    string `json:"status"    description:"refund status, such as 'REFUND_IN_PROGRESS', 'REFUND_ERROR', 'REFUND', 'CLOSED'"`
-	NotifyURL string `json:"notifyurl" description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success"`
+	Cashier   string `json:"cashier"  validate:"required" description:"cashier name who provider refund by wgpay server"`
+	TranNo    string `json:"trade_no" validate:"required" description:"the original trade transaction number"`
+	Payer     string `json:"payer"    validate:"required" description:"payer unique id, such as user uuid"`
+	Payee     string `json:"payee,omitempty"              description:"payee unique id, such as merchant id"`
+	SMchID    string `json:"smid,omitempty"               description:"sub merchant id of payee"`
+	RefundID  string `json:"refund_id,omitempty"          description:"refund transaction id of wechat pay"`
+	Amount    int64  `json:"amount"   validate:"required" description:"total amount price completed transaction, unit one cent CNY"`
+	Refund    int64  `json:"refund"   validate:"required" description:"total refund price should return back to payer, unit one cent CNY"`
+	Desc      string `json:"desc"     validate:"required" description:"current refund transacte description"`
+	Status    string `json:"status"   validate:"required" description:"refund status, such as 'REFUND_IN_PROGRESS', 'REFUND_ERROR', 'REFUND', 'CLOSED'"`
+	NotifyURL string `json:"ntfurl,omitempty"             description:"ansync notifier url from wgpay to notify refund status changed, must return OK if success to stop wgpay notify event looper"`
 }
 
 // PayInfo payment information
