@@ -14,25 +14,35 @@ package invar
 // Trade status machine:
 // ===================================================================
 //
-// TRADE :  TSUnpaid --- + -> TSRevoked --------------------> TSClosed
-//                       |      ^                                 ^
-//                       |      |                                 |
-//                       + -> TSPayError <- + (max counts 5)      |
-//                       |      |        |                        |
-//                       |      + ------ +                        |
-//                       |      v                                 |
-//                       + -> TSPaid -------- + ----------------- +
-//                       |                    ^                   |
-//                       |                    |                   |
-//                       + -> TSCompleted --- +                   |
-//                                                                |
-// REFUND : TSInProgress -> TSRefund ---------------------------- +
-//              |              ^
-//              |              |
-//              + ------- > TSRefundError <- + (max counts 5)
-//                             |             |
-//                             + ----------- +
+//                      + --------------------------------------- +
+//    + ---------------/------- +                                 |
+//    |               /         |                      [ END ]    |
+//    |              /          v                            \    v
+//    |     TSUnpaid --- + -> TSRevoked --------------------> TSClosed
+//    |     [ TRADE ]    |      ^                                 ^
+//    |                  |      |                                 |
+//    |                  + -> TSPayError <- + (max counts 5) ---- +
+//    |                  |      |           |                     |
+//    |                  |      + --------- +                     |
+//    |                  |      v                                 |
+//    |                  + -> TSPaid -------- + ----------------- +
+//    |                  |    [ SUCCESS ]     ^                   |
+//    |                  |                    |                   |
+//    |                  + -> TSCompleted --- +                   |
+//    |                                                           |
+//    |     [ REFUND ]      [ SUCCESS ]                           |
+//    + --- TSInProgress -> TSRefund ---------------------------- +
+//              |              ^                                  |
+//              |              |                                  |
+//              + ------- > TSRefundError <- + (max counts 5) --- +
+//              |              |             |                    |
+//              |              + ----------- +                    |
+//              + ----------------------------------------------- +
 //
+// [ TRADE   ] : Trade  transaction start and default state
+// [ REFUND  ] : Refund transaction start and default state
+// [ SUCCESS ] : Success paid or refund status
+// [ END     ] : Closed ticket state
 // ===================================================================
 
 // Unpid state, can be use as default trade state for generate
