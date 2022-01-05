@@ -264,10 +264,10 @@ func IgnoreSysSignalPIPE() {
 }
 
 // AccessAllowOriginBy allow cross domain access for the given origins
-func AccessAllowOriginBy(category int, origins string) {
+func AccessAllowOriginBy(category int, origins string, allowCredentials bool) {
 	beego.InsertFilter("*", category, cors.Allow(&cors.Options{
-		AllowAllOrigins:  true,
-		AllowCredentials: true,
+		AllowAllOrigins:  !allowCredentials,
+		AllowCredentials: allowCredentials,
 		AllowOrigins:     []string{origins}, // use to set allow Origins
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
@@ -282,18 +282,23 @@ func AccessAllowOriginBy(category int, origins string) {
 //
 //	; Server port of HTTP
 //	httpport=3200
-func AccessAllowOriginByLocal(category int) {
+func AccessAllowOriginByLocal(category int, allowCredentials bool) {
 	if beego.BConfig.Listen.HTTPPort > 0 {
 		localhosturl := fmt.Sprintf("http://127.0.0.1:%v/", beego.BConfig.Listen.HTTPPort)
-		AccessAllowOriginBy(category, localhosturl)
+		AccessAllowOriginBy(category, localhosturl, allowCredentials)
 	}
 }
 
 // ExecuteServer start and excute backend server
-func ExecuteServer() {
+func ExecuteServer(allowCredentials ...bool) {
 	IgnoreSysSignalPIPE()
-	AccessAllowOriginBy(beego.BeforeRouter, "*")
-	AccessAllowOriginBy(beego.BeforeStatic, "*")
+	if len(allowCredentials) > 0 {
+		AccessAllowOriginBy(beego.BeforeRouter, "*", allowCredentials[0])
+		AccessAllowOriginBy(beego.BeforeStatic, "*", allowCredentials[0])
+	} else {
+		AccessAllowOriginBy(beego.BeforeRouter, "*", false)
+		AccessAllowOriginBy(beego.BeforeStatic, "*", false)
+	}
 
 	// just output log to file on prod mode
 	if beego.BConfig.RunMode != "dev" &&
