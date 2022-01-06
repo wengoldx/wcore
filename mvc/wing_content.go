@@ -476,28 +476,31 @@ func (w *WingProvider) FormatSets(updates interface{}) string {
 	return strings.Join(sets, ", ")
 }
 
-// Atomicity call sql.Begin() , tx.Rollback() and tx.Commit() to start one transaction
-// All operations in a transaction are either completed or not completed. They will not end in an intermediate link.
-// If an error occurs during the execution of the transaction, it will be rolled back to the state before the transaction starts
+// Execute a sql transaction, this method can provide high-performance
+// multi datas insert or update operation by using combined query string.
 //
 // ---
 //
-//	args := make(map[string][]interface{})
-//	args[query] = []interface{}{...arg}
-func (w *WingProvider) Atomicity(args map[string][]interface{}) error {
-	atomic, err := w.Conn.Begin()
+//	query := "INSERT sametable (field1, field2, fieldn) VALUES %s"
+//	for _, d := range params {
+//		query += fmt.Sprintf("(%s, %s, %s),", d.v1, d.v2, d.v3)
+//	}
+//	query = strings.Trim(query, ",")
+//	err := mvc.Transaction(query)
+func (w *WingProvider) Transaction(query string, args ...interface{}) error {
+	tx, err := w.Conn.Begin()
 	if err != nil {
 		return err
 	}
-	defer atomic.Rollback()
-	for query, arg := range args {
-		result, err := atomic.Exec(query, arg...)
-		if err != nil {
-			return err
-		}
-		if _, err = w.Affected(result); err != nil {
-			return err
-		}
+
+	if _, err := tx.Exec(query, args...); err != nil {
+		tx.Rollback()
+		return err
 	}
-	return atomic.Commit()
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
 }
