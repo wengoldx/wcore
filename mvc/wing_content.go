@@ -311,11 +311,6 @@ func (w *WingProvider) Query(query string, args ...interface{}) (*sql.Rows, erro
 	return w.Conn.Query(query, args...)
 }
 
-// Prepare call sql.Prepare()
-func (w *WingProvider) Prepare(query string) (*sql.Stmt, error) {
-	return w.Conn.Prepare(query)
-}
-
 // IsEmpty call sql.Query() to check target data if exist
 func (w *WingProvider) IsEmpty(query string, args ...interface{}) (bool, error) {
 	rows, err := w.Conn.Query(query, args...)
@@ -375,12 +370,20 @@ func (w *WingProvider) Insert(query string, args ...interface{}) (int64, error) 
 
 // Execute call sql.Prepare() and stmt.Exec() to update or delete records
 func (w *WingProvider) Execute(query string, args ...interface{}) error {
-	_, err := w.ExecuteWithResult(query, args...)
-	return err
+	stmt, err := w.Conn.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+	if _, err := stmt.Exec(args...); err != nil {
+		return err
+	}
+	return nil
 }
 
-// Execute call sql.Prepare() and stmt.Exec() to update or delete records
-func (w *WingProvider) ExecuteWithResult(query string, args ...interface{}) (int64, error) {
+// ExeAffected call sql.Prepare() and stmt.Exec() to update or delete records
+func (w *WingProvider) ExeAffected(query string, args ...interface{}) (int64, error) {
 	stmt, err := w.Conn.Prepare(query)
 	if err != nil {
 		return 0, err
