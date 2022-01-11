@@ -291,22 +291,29 @@ func DurDays(start, end time.Time, format ...string) string {
 	return fmt.Sprintf("%dd %dh %dm %ds", d, h, m, s)
 }
 
+// FormatTime format unix time to TimeLayout or MSLayout layout
+func FormatTime(sec int64, nsec ...int64) string {
+	if len(nsec) > 0 && nsec[0] > 0 {
+		return time.Unix(sec, nsec[0]).Format(MSLayout)
+	}
+	return time.Unix(sec, 0).Format(TimeLayout)
+}
+
 // FormatUnix format unix time to given time layout with location timezoom
-func FormatUnix(layout string, unixsec int64, unixnsec ...int64) string {
+func FormatUnix(layout string, sec int64, nsec ...int64) string {
 	switch layout {
 	case DateLayout, TimeLayout, HourLayout, DateNoneHyphen, TimeNoneHyphen, HourNoneHyphen:
-		return time.Unix(unixsec, 0).Format(layout)
+		return time.Unix(sec, 0).Format(layout)
 
 	case MSLayout, MSNoneHyphen:
-		var nsec int64 = 0
-		if unixnsec != nil && len(unixnsec) > 0 && unixnsec[0] > 0 {
-			nsec = unixnsec[0]
+		if len(nsec) > 0 && nsec[0] > 0 {
+			return time.Unix(sec, nsec[0]).Format(layout)
 		}
-		return time.Unix(unixsec, nsec).Format(layout)
+		return time.Unix(sec, 0).Format(layout)
 	}
 
 	// TimeLayout as the default time layout
-	return time.Unix(unixsec, 0).Format(TimeLayout)
+	return time.Unix(sec, 0).Format(TimeLayout)
 }
 
 // FormatNow format now to given time layout, it may format as TimeLayout
