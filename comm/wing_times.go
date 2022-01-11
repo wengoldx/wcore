@@ -16,31 +16,22 @@ import (
 	"time"
 )
 
-// Day, week, month, quarter, year duration on nanosecond
+// Day, week, duration on nanosecond
 const (
-	Day     = time.Hour * 24
-	Week    = Day * 7
-	Month   = Day * 30
-	Quarter = Month * 3
-	Year    = Day * 365
+	Day  = time.Hour * 24
+	Week = Day * 7
 )
 
-// Day, week, month, quarter, year duration on millisecond
+// Day, week, duration on millisecond
 const (
-	DayMs     = Day / time.Millisecond
-	WeekMs    = Week / time.Millisecond
-	MonthMs   = Month / time.Millisecond
-	QuarterMs = Quarter / time.Millisecond
-	YearMs    = Year / time.Millisecond
+	DayMs  = Day / time.Millisecond
+	WeekMs = Week / time.Millisecond
 )
 
-// Day, week, month, quarter, year duration on second
+// Day, week duration on second
 const (
-	DaySeconds     = Day / time.Second
-	WeekSeconds    = Week / time.Second
-	MonthSeconds   = Month / time.Second
-	QuarterSeconds = Quarter / time.Second
-	YearSeconds    = Year / time.Second
+	DaySeconds  = Day / time.Second
+	WeekSeconds = Week / time.Second
 )
 
 const (
@@ -184,6 +175,13 @@ func NextTime(duration time.Duration, start ...int64) int64 {
 	return time.Now().Add(duration).Unix()
 }
 
+// DayUnix return the given day unix time at 0:00:00
+func DayUnix(src int64) int64 {
+	now := time.Unix(src, 0).Format(DateLayout)
+	st, _ := ParseTime(DateLayout, now)
+	return st.Unix()
+}
+
 // TodayUnix return today unix time at 0:00:00
 func TodayUnix() int64 {
 	now := time.Now().Format(DateLayout)
@@ -201,12 +199,12 @@ func TommorrowUnix() int64 {
 	return NextUnix(Day)
 }
 
-// WeekUnix return next week unix time at 0:00:00
+// WeekUnix return next week day (same as current weekday) unix time at 0:00:00
 func WeekUnix() int64 {
 	return NextUnix(Week)
 }
 
-// MonthUnix return next week unix time at 0:00:00
+// MonthUnix return next month day (same as current day of month) unix time at 0:00:00
 func MonthUnix() int64 {
 	return NextUnix2(0, 1, 0)
 }
@@ -228,6 +226,31 @@ func NextUnix(duration time.Duration) int64 {
 	return st.Unix()
 }
 
+// DaysUnix return the unix time at 0:00:00, by offset days
+func DaysUnix(days int) int64 {
+	return NextUnix2(0, 0, days)
+}
+
+// WeekUnix return unix time at 0:00:00, by offset weeks
+func WeeksUnix(weeks int) int64 {
+	return NextUnix2(0, 0, weeks*7)
+}
+
+// MonthsUnix return unix time at 0:00:00, by offset months
+func MonthsUnix(months int) int64 {
+	return NextUnix2(0, months, 0)
+}
+
+// QuartersUnix return unix time at 0:00:00, by offset quarters
+func QuartersUnix(quarters int) int64 {
+	return NextUnix2(0, 3*quarters, 0)
+}
+
+// YearsUnix return unix time at 0:00:00, by offset years
+func YearsUnix(years int) int64 {
+	return NextUnix2(years, 0, 0)
+}
+
 // NextUnix2 return next 0:00:00 unix time at day after given years, months and days
 func NextUnix2(years, months, days int) int64 {
 	nt := time.Now().AddDate(years, months, days).Format(DateLayout)
@@ -235,11 +258,10 @@ func NextUnix2(years, months, days int) int64 {
 	return st.Unix()
 }
 
-// YearDiff return diff years, months, days
-func YearDiff(start, end time.Time) (int, int, int) {
-	v := end.Unix() - start.Unix()
-	y, m, d := int64(YearSeconds), int64(MonthSeconds), int64(DaySeconds)
-	return int(v / y), int(v % y / m), int(v % m / d)
+// HourDiff return diff hours, minutes, seconds
+func HourDiff(start, end time.Time) (int, int, int) {
+	v, h, m := int(end.Unix()-start.Unix()), 3600, 60
+	return (v / h), (v % h / m), (v % m)
 }
 
 // DayDiff return diff days, hours, minutes, seconds
@@ -249,14 +271,8 @@ func DayDiff(start, end time.Time) (int, int, int, int) {
 	return (v / d), (v % d / h), (v % h / m), (v % m)
 }
 
-// HourDiff return diff hours, minutes, seconds
-func HourDiff(start, end time.Time) (int, int, int) {
-	v, h, m := int(end.Unix()-start.Unix()), 3600, 60
-	return (v / h), (v % h / m), (v % m)
-}
-
-// DurHours return readable time during start to end: 06:25:48,
-// you can se the format string, but it must contain 3 %0xd to parse numbers
+// DurHours return readable time during start to end like 06:25:48,
+// you can see the format string, but it must contain 3 %0xd to parse numbers
 func DurHours(start, end time.Time, format ...string) string {
 	h, m, s := HourDiff(start, end)
 	if len(format) > 0 && format[0] != "" {
@@ -265,7 +281,7 @@ func DurHours(start, end time.Time, format ...string) string {
 	return fmt.Sprintf("%02d:%02d:%02d", h, m, s)
 }
 
-// DurDays return readable time during start to end: 2d 6h 25m 48s,
+// DurDays return readable time during start to end like 2d 6h 25m 48s,
 // you can set the format string, but it must contain 4 %0xd to parse numbers
 func DurDays(start, end time.Time, format ...string) string {
 	d, h, m, s := DayDiff(start, end)
