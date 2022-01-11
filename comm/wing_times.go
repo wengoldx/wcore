@@ -69,45 +69,63 @@ const (
 	MSNoneHyphen = "20060102150405000"
 )
 
-// IsToday check the given day string if today
+// ParseTime parse time with zoom, the src time string maybe
+// formated from time.Format() return value.
+//
+// `WARNING` :
+//
+// time.Now(), time.Format() are local time with timezoom offset,
+// but time.Parse() parse time string without timezoom just UTC time,
+// you can parse local time by use
+//
+//	time.ParseInLocation(layout, timestring, time.Local).
+func ParseTime(layout, src string) (time.Time, error) {
+	return time.ParseInLocation(layout, src, time.Local)
+}
+
+// IsToday check the given day string if today, the des time
+// string must format by time.Format() or offseted timezoom
 func IsToday(des string) bool {
 	now := time.Now().Format(DateLayout)
-	st, _ := time.Parse(DateLayout, now)
-	dt, _ := time.Parse(DateLayout, des)
+	st, _ := ParseTime(DateLayout, now)
+	dt, _ := ParseTime(DateLayout, des)
 	return st.Unix() == dt.Unix()
 }
 
-// IsTodayUnix check the given time string if today
+// IsTodayUnix check the given time string if today, the des time
+// unix seconds from time.Now() or contian timezoom
 func IsTodayUnix(des int64) bool {
 	deslayout := time.Unix(des, 0).Format(DateLayout)
 	return IsToday(deslayout)
 }
 
-// IsSameDay equal given days string based on TimeLayout
+// IsSameDay equal given days string based on TimeLayout, the src and
+// des time string must format by time.Format() or offseted timezoom
 func IsSameDay(src string, des string) bool {
-	st, _ := time.Parse(DateLayout, src)
-	dt, _ := time.Parse(DateLayout, des)
+	st, _ := ParseTime(DateLayout, src)
+	dt, _ := ParseTime(DateLayout, des)
 	return st.Unix() == dt.Unix()
 }
 
-// IsSameTime equal given time string based on TimeLayout
+// IsSameTime equal given time string based on TimeLayout, the src and
+// des time string must format by time.Format() or offseted timezoom
 func IsSameTime(src string, des string) bool {
-	st, _ := time.Parse(TimeLayout, src)
-	dt, _ := time.Parse(TimeLayout, des)
+	st, _ := ParseTime(TimeLayout, src)
+	dt, _ := ParseTime(TimeLayout, des)
 	return st.Unix() == dt.Unix()
 }
 
-// Today return today unix time
+// Today return today unix time with offseted location timezoom
 func Today() int64 {
 	return time.Now().Unix()
 }
 
-// Yesterday return yesterday unix time base on current
+// Yesterday return yesterday unix time base on current location time
 func Yesterday() int64 {
 	return time.Now().AddDate(0, 0, -1).Unix()
 }
 
-// Tommorrow return tommorrow unix time srart from current
+// Tommorrow return tommorrow unix time srart from current location time
 func Tommorrow() int64 {
 	return time.Now().AddDate(0, 0, 1).Unix()
 }
@@ -169,7 +187,7 @@ func NextTime(duration time.Duration, start ...int64) int64 {
 // TodayUnix return today unix time at 0:00:00
 func TodayUnix() int64 {
 	now := time.Now().Format(DateLayout)
-	st, _ := time.Parse(DateLayout, now)
+	st, _ := ParseTime(DateLayout, now)
 	return st.Unix()
 }
 
@@ -206,14 +224,14 @@ func YearUnix() int64 {
 // NextUnix return next 0:00:00 unix time at day after given duration
 func NextUnix(duration time.Duration) int64 {
 	nt := time.Now().Add(duration).Format(DateLayout)
-	st, _ := time.Parse(DateLayout, nt)
+	st, _ := ParseTime(DateLayout, nt)
 	return st.Unix()
 }
 
 // NextUnix2 return next 0:00:00 unix time at day after given years, months and days
 func NextUnix2(years, months, days int) int64 {
 	nt := time.Now().AddDate(years, months, days).Format(DateLayout)
-	st, _ := time.Parse(DateLayout, nt)
+	st, _ := ParseTime(DateLayout, nt)
 	return st.Unix()
 }
 
@@ -257,7 +275,7 @@ func DurDays(start, end time.Time, format ...string) string {
 	return fmt.Sprintf("%dd %dh %dm %ds", d, h, m, s)
 }
 
-// FormatUnix format unix time to given time layout
+// FormatUnix format unix time to given time layout with location timezoom
 func FormatUnix(layout string, unixsec int64, unixnsec ...int64) string {
 	switch layout {
 	case DateLayout, TimeLayout, HourLayout, DateNoneHyphen, TimeNoneHyphen, HourNoneHyphen:
@@ -275,8 +293,8 @@ func FormatUnix(layout string, unixsec int64, unixnsec ...int64) string {
 	return time.Unix(unixsec, 0).Format(TimeLayout)
 }
 
-// FormatNow format now to given time layout, it may format as
-// TimeLayout when input param not set.
+// FormatNow format now to given time layout, it may format as TimeLayout
+// when input param not set, and the formated time contain location timezoom.
 func FormatNow(layout ...string) string {
 	nowns := time.Now().UnixNano()
 	if layout != nil && len(layout) > 0 && layout[0] != "" {
