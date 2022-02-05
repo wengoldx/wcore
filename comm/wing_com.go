@@ -29,6 +29,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 	"unicode"
 )
 
@@ -75,7 +76,7 @@ func CondiInt(condition bool, trueInt int, falseInt int) int {
 }
 
 // CondiInt64 return the trueInt64 when pass the condition, or return falseInt64
-func CondiInt64(condition bool, trueInt64 int, falseInt64 int) int {
+func CondiInt64(condition bool, trueInt64 int64, falseInt64 int64) int64 {
 	if condition {
 		return trueInt64
 	}
@@ -88,6 +89,14 @@ func CondiFloat(condition bool, trueFloat float64, falseFloat float64) float64 {
 		return trueFloat
 	}
 	return falseFloat
+}
+
+// CondiDuration return the trueDur when pass the condition, or return falseDur
+func CondiDuration(condition bool, trueDur time.Duration, falseDur time.Duration) time.Duration {
+	if condition {
+		return trueDur
+	}
+	return falseDur
 }
 
 // Contain check the given string list if contains item

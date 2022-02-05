@@ -177,8 +177,8 @@ func NextTime(duration time.Duration, start ...int64) int64 {
 
 // DayUnix return the given day unix time at 0:00:00
 func DayUnix(src int64) int64 {
-	now := time.Unix(src, 0).Format(DateLayout)
-	st, _ := ParseTime(DateLayout, now)
+	dt := time.Unix(src, 0).Format(DateLayout)
+	st, _ := ParseTime(DateLayout, dt)
 	return st.Unix()
 }
 
