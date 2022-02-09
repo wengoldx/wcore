@@ -13,6 +13,8 @@ require (
 	github.com/garyburd/redigo v1.6.2
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/golang/protobuf v1.4.2
+	github.com/googollee/go-socket.io v1.0.1
+	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/huichen/sego v0.0.0-20180617034105-3f3c8a8cfacc
 	github.com/issue9/assert v1.4.1 // indirect
 	github.com/micro/go-micro v1.18.0
@@ -21,6 +23,7 @@ require (
 	github.com/prometheus/client_golang v1.7.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shiena/ansicolor v0.0.0-20200904210342-c7312218db18 // indirect
+	github.com/smartystreets/assertions v0.0.0-20190215210624-980c5ac6f3ac // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97

@@ -3,16 +3,15 @@ package tracer
 import (
 	"context"
 	"encoding/json"
-	"github.com/wengoldx/wing/logger"
-	"io"
-	"net/http"
-	"time"
-
 	bctx "github.com/astaxie/beego/context"
 	"github.com/micro/go-micro/metadata"
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
+	"github.com/wengoldx/wing/logger"
+	"io"
+	"net/http"
+	"time"
 )
 
 // NewTrace init service tracer

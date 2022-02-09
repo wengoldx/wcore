@@ -21,6 +21,7 @@ package wing
 // 	_ "github.com/wengoldx/wing/mvc"
 // 	_ "github.com/wengoldx/wing/secure"
 // 	_ "github.com/wengoldx/wing/wechat"
+// 	_ "github.com/wengoldx/wing/wsio"
 // )
 
 // func main() {}

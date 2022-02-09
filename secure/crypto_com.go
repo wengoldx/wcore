@@ -38,7 +38,7 @@ const (
 	passwordHashBytes   = 64 // default password hash length
 )
 
-// uuidNode : generate uuid string
+// For generate uuid string
 var uuidNode *snowflake.Node
 
 // init uuid generater
@@ -52,17 +52,17 @@ func init() {
 	}
 }
 
-// GenUUID generate a new uuid in int64
+// Generate a new uuid in int64
 func GenUUID() int64 {
 	return uuidNode.Generate().Int64()
 }
 
-// GenUUIDString generate a new uuid in string
+// Generate a new uuid in string
 func GenUUIDString() string {
 	return uuidNode.Generate().String()
 }
 
-// GenRandUUID generate a random number uuid with specified digits
+// Generate a random number uuid with specified digits
 func GenRandUUID(buflen ...int) string {
 	length := passwordHashBytes
 	if len(buflen) > 0 && buflen[0] > 0 {
@@ -77,7 +77,7 @@ func GenRandUUID(buflen ...int) string {
 	return string(buf)
 }
 
-// GenCode generate a code by using current nanosecond
+// Generate a code by using current nanosecond
 func GenCode() string {
 	now := time.Now().UnixNano()
 	radix := (int64)(len(radixCodeCharMap))
@@ -90,7 +90,7 @@ func GenCode() string {
 	return (string)(code)
 }
 
-// GenCodeFrom generate a code from given int64 data
+// Generate a code from given int64 data
 func GenCodeFrom(src int64) string {
 	radix := (int64)(len(radixCodeCharMap))
 
@@ -102,7 +102,7 @@ func GenCodeFrom(src int64) string {
 	return (string)(code)
 }
 
-// GenRandCode generate a code by using current nanosecond and append random suffix
+// Generate a code by using current nanosecond and append random suffix
 func GenRandCode() string {
 	now := time.Now().UnixNano()
 	radix := (int64)(len(radixCodeCharMap))
@@ -117,7 +117,7 @@ func GenRandCode() string {
 	return fmt.Sprintf("%s%04d", (string)(code), rand.Intn(1000))
 }
 
-// GenRandCodeFrom generate a code from given int64 data and append random suffix
+// Generate a code from given int64 data and append random suffix
 func GenRandCodeFrom(src int64) string {
 	radix := (int64)(len(radixCodeCharMap))
 
@@ -132,12 +132,12 @@ func GenRandCodeFrom(src int64) string {
 	return fmt.Sprintf("%s%04d", (string)(code), rand.Intn(1000))
 }
 
-// GenToken convert to lower string and encode by base64 -> md5
+// Convert to lower string and encode by base64 -> md5
 func GenToken(original string) string {
 	return EncodeB64MD5(strings.ToLower(original))
 }
 
-// GenNonce generate a random num than to string
+// Generate a random num and convert to string
 func GenNonce() string {
 	res := make([]byte, 32)
 	seeds := [][]int{{10, 48}, {26, 97}, {26, 65}}
@@ -150,7 +150,7 @@ func GenNonce() string {
 	return string(res)
 }
 
-// GenOAuthCode generate a random OAuth code
+// Generate a random OAuth code
 func GenOAuthCode(length int, randomType string) (string, error) {
 	// fill random seeds chars
 	buf := bytes.Buffer{}
@@ -180,7 +180,7 @@ func GenOAuthCode(length int, randomType string) (string, error) {
 	return buf.String(), nil
 }
 
-// GenSalt generates a random salt, default length is 64 * 2,
+// Generates a random salt, default length is 64 * 2,
 // you may set buffer length by buflen input param, and return
 // (buflen * 2) length salt string.
 func GenSalt(buflen ...int) (string, error) {
@@ -196,7 +196,7 @@ func GenSalt(buflen ...int) (string, error) {
 	return fmt.Sprintf("%x", buf), nil
 }
 
-// GenHash hash the given source with salt, default length is 64 * 2,
+// Hash the given source with salt, default length is 64 * 2,
 // you may set buffer length by buflen input param, and return
 // (buflen * 2) length hash string.
 func GenHash(src, salt string, buflen ...int) (string, error) {
@@ -212,14 +212,14 @@ func GenHash(src, salt string, buflen ...int) (string, error) {
 	return fmt.Sprintf("%x", hex), nil
 }
 
-// HashMD5 hash string by md5, it ignore write buffer errors
+// Hash string by md5, it ignore write buffer errors
 func HashMD5(original []byte) []byte {
 	h := md5.New()
 	h.Write(original)
 	return h.Sum(nil)
 }
 
-// HashMD5Check hash string by md5 and check write buffer errors
+// Hash string by md5 and check write buffer errors
 func HashMD5Check(original []byte) ([]byte, error) {
 	h := md5.New()
 	if _, err := h.Write(original); err != nil {
@@ -228,7 +228,7 @@ func HashMD5Check(original []byte) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-// HashSHA256 hash byte array by sha256
+// Hash byte array by sha256
 func HashSHA256(original []byte) []byte {
 	// h := sha256.New()
 	// h.Write(original)
@@ -237,17 +237,17 @@ func HashSHA256(original []byte) []byte {
 	return hashed[:]
 }
 
-// HashSHA256Hex hash byte array by sha256 then encode to hex
+// Hash byte array by sha256 then encode to hex
 func HashSHA256Hex(original []byte) string {
 	return hex.EncodeToString(HashSHA256(original))
 }
 
-// HashSHA256String hash string by sha256
+// Hash string by sha256
 func HashSHA256String(original string) []byte {
 	return HashSHA256([]byte(original))
 }
 
-// SignSHA1 use HmacSHA1 to calculate the signature,
+// Use HmacSHA1 to calculate the signature,
 // and format as base64 string
 func SignSHA1(securekey string, src string) string {
 	mac := hmac.New(sha1.New, []byte(securekey))
@@ -255,7 +255,7 @@ func SignSHA1(securekey string, src string) string {
 	return ByteToBase64(mac.Sum(nil))
 }
 
-// SignSHA256 use HmacSHA256 to calculate the signature,
+// Use HmacSHA256 to calculate the signature,
 // and format as base64 string
 func SignSHA256(securekey string, src string) string {
 	mac := hmac.New(sha256.New, []byte(securekey))
@@ -263,17 +263,17 @@ func SignSHA256(securekey string, src string) string {
 	return ByteToBase64(mac.Sum(nil))
 }
 
-// ByteToBase64 decode base64 string to byte array
+// Decode base64 string to byte array
 func Base64ToByte(ciphertext string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(ciphertext)
 }
 
-// ByteToBase64 encode byte array to base64 string
+// Encode byte array to base64 string
 func ByteToBase64(original []byte) string {
 	return base64.StdEncoding.EncodeToString(original)
 }
 
-// DecodeBase64 decode from base64 string
+// Decode from base64 string
 func DecodeBase64(ciphertext string) (string, error) {
 	original, err := Base64ToByte(ciphertext)
 	if err != nil {
@@ -282,27 +282,27 @@ func DecodeBase64(ciphertext string) (string, error) {
 	return string(original), nil
 }
 
-// EncodeBase64 encode string by base64
+// Encode string by base64
 func EncodeBase64(original string) string {
 	return ByteToBase64([]byte(original))
 }
 
-// HashThenBase64 hash string by sha256 and than to base64 string
+// Hash string by sha256 and than to base64 string
 func HashThenBase64(data string) string {
 	return ByteToBase64(HashSHA256String(data))
 }
 
-// HashByteThenBase64 hash byte array by sha256 and than to base64 string
+// Hash byte array by sha256 and than to base64 string
 func HashByteThenBase64(data []byte) string {
 	return ByteToBase64(HashSHA256(data))
 }
 
-// EncodeMD5 encode string by md5, it ignore write buffer errors
+// Encode string by md5, it ignore write buffer errors
 func EncodeMD5(original string) string {
 	return hex.EncodeToString(HashMD5([]byte(original)))
 }
 
-// EncodeMD5Check encode string by md5 and check write buffer errors
+// Encode string by md5 and check write buffer errors
 func EncodeMD5Check(original string) (string, error) {
 	cipher, err := HashMD5Check([]byte(original))
 	if err != nil {
@@ -311,17 +311,17 @@ func EncodeMD5Check(original string) (string, error) {
 	return hex.EncodeToString(cipher), nil
 }
 
-// EncodeB64MD5 encode string to base64, and then encode by md5
+// Encode string to base64, and then encode by md5
 func EncodeB64MD5(original string) string {
 	return EncodeMD5(EncodeBase64(original))
 }
 
-// EncodeMD5B64 encode string to md5, and then encode by base64
+// Encode string to md5, and then encode by base64
 func EncodeMD5B64(original string) string {
 	return EncodeBase64(EncodeMD5(original))
 }
 
-// ToMd5Hex encode multi-input to md5 one string,
+// Encode multi-input to md5 one string,
 // it same as EncodeMD5 when input only one string.
 func ToMD5Hex(input ...string) string {
 	h := md5.New()
@@ -334,7 +334,7 @@ func ToMD5Hex(input ...string) string {
 	return hex.EncodeToString(cipher)
 }
 
-// ToMD5Upper encode string to md5 and then transform to uppers.
+// Encode string to md5 and then transform to uppers.
 func ToMD5Upper(original string) (string, error) {
 	md5sign, err := EncodeMD5Check(original)
 	if err != nil {
@@ -343,7 +343,7 @@ func ToMD5Upper(original string) (string, error) {
 	return strings.ToUpper(md5sign), nil
 }
 
-// ToMD5Lower encode string to md5 and then transform to lowers.
+// Encode string to md5 and then transform to lowers.
 func ToMD5Lower(original string) (string, error) {
 	md5sign, err := EncodeMD5Check(original)
 	if err != nil {

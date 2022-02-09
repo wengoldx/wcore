@@ -8,7 +8,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/registry/etcd"
-	"github.com/wengoldx/wing/tool/hystrix"
+	"github.com/wengoldx/wing/extras/micro/hystrix"
 )
 
 // NewClient create new client for call any method

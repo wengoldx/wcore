@@ -20,130 +20,100 @@ import (
 	"time"
 )
 
-/*
- * Description :
- * (1). use secure.GenAESKey() to generate random AES key
- *   secretkey, err := secure.GenAESKey()
- *
- * (2). use secure.AESEncrypt() to encrypt original data with secret key
- *   ciphertext, err := secure.AESEncrypt([]byte(secretkey), original)
- *
- * (3). use secure.AESDecrypt() to decrypt ciphertext with secret key
- *   original, err := secure.AESDecrypt([]byte(secretkey), ciphertext)
- *
- *   [CODE:]
- *
- *   secretkey := secure.GenAESKey()
- *   logger.I("secret key:", secretkey)
- *
- *   original := []byte("original-content")
- *   ciphertext, _ := secure.AESEncrypt([]byte(secretkey), original)
- *   logger.I("original string:", string(original))
- *   logger.I("ciphertext string:", ciphertext)
- *
- *   encrypted, _ := secure.AESDecrypt([]byte(secretkey), ciphertext)
- *   logger.I("encrypted string: ", encrypted)
- *
- *   [CODE]
- *
- * ---------------------------------------------------------------------------------
- *
- * By the way, you can use the AES encrypt or decrypt for other languages as follows:
- *
- *   [CODE: ]
- *
- *   /// AES for java (Android)
- *
- *   public String encryptByAES(String secretkey, String original) {
- *       try {
- *           // use md5 value as the real key
- *           byte[] b = secretkey.getBytes();
- *           MessageDigest md = MessageDigest.getInstance("MD5");
- *           byte[] hashed = md.digest(b);
- *
- *           // create an 16-byte initialization vector
- *           byte[] iv = new byte[] {
- *               0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
- *           };
- *           AlgorithmParameterSpec spec = new IvParameterSpec(iv);
- *           SecretKeySpec keyspec = new SecretKeySpec(hashed), "AES");
- *
- *           // create cipher and initialize CBC vector
- *           Cipher ecipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
- *           ecipher.init(Cipher.ENCRYPT_MODE, keyspec, spec);
- *
- *           byte[] plaintext = original.getBytes();
- *           byte[] ciphertext = ecipher.doFinal(plaintext, 0, plaintext.length);
- *
- *           return Base64.encodeToString(ciphertext, Base64.DEFAULT);
- *       } catch (Exception e) {
- *           e.printStackTrace();
- *       }
- *       return null;
- *   }
- *
- *   public String decryptByAES(String secretkey, String ciphertextb64) {
- *       try {
- *           // use md5 value as the real key
- *           byte[] b = secretkey.getBytes();
- *           MessageDigest md = MessageDigest.getInstance("MD5");
- *           byte[] hashed = md.digest(b);
- *
- *           // create an 16-byte initialization vector
- *           byte[] iv = new byte[] {
- *               0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
- *           };
- *           AlgorithmParameterSpec spec = new IvParameterSpec(iv);
- *           SecretKeySpec keyspec = new SecretKeySpec(hashed), "AES");
- *
- *           // create cipher and initialize CBC vector
- *           Cipher dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
- *           dcipher.init(Cipher.DECRYPT_MODE, keyspec, spec);
- *
- *           byte[] ciphertext = Base64.decode(ciphertextb64, Base64.DEFAULT);
- *           byte[] original = dcipher.doFinal(ciphertext, 0, ciphertext.length);
- *
- *           return new String(original);
- *       } catch (Exception e) {
- *           e.printStackTrace();
- *       }
- *       return null;
- *   }
- *
- *   /// AES for node.js
- *
- *   let iv = [ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f ];
- *
- *   function encrypt_by_aes(secretkey, original) {
- *       let md5 = crypto.createHash('md5').update(secretkey).digest('hex');
- *       const ecipher = crypto.createCipheriv(
- *           'aes-128-cbc',
- *           new Buffer(md5, 'hex'),
- *           new Buffer(iv)
- *       );
- *       // ecipher.setAutoPadding(true);
- *       var ciphertextb64 = ecipher.update(original, 'utf8', 'base64');
- *       ciphertextb64 += ecipher.final('base64');
- *       console.log('ciphertextb64: ' + ciphertextb64);
- *       return ciphertextb64;
- *   }
- *
- *   function decrypt_by_aes(secretkey, ciphertextb64) {
- *       let md5 = crypto.createHash('md5').update(secretkey).digest('hex');
- *       const dcipher = crypto.createDecipheriv(
- *           'aes-128-cbc',
- *           new Buffer(md5, 'hex'),
- *           new Buffer(iv)
- *       );
- *       var original = dcipher.update(ciphertextb64, 'base64', 'utf8');
- *       original += dcipher.final('utf8');
- *       console.log('original: ' + original);
- *       return original;
- *   }
- *
- *   [CODE]
- *
- */
+// For other languages, you can use the follows example code to encrypt or decrypt AES.
+//
+// `AES for java (Android)`
+//
+// ----
+//
+//	public String encryptByAES(String secretkey, String original) {
+//	    try {
+//	        // use md5 value as the real key
+//	        byte[] b = secretkey.getBytes();
+//	        MessageDigest md = MessageDigest.getInstance("MD5");
+//	        byte[] hashed = md.digest(b);
+//
+//	        // create an 16-byte initialization vector
+//	        byte[] iv = new byte[] {
+//	            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+//	        };
+//	        AlgorithmParameterSpec spec = new IvParameterSpec(iv);
+//	        SecretKeySpec keyspec = new SecretKeySpec(hashed), "AES");
+//
+//	        // create cipher and initialize CBC vector
+//	        Cipher ecipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+//	        ecipher.init(Cipher.ENCRYPT_MODE, keyspec, spec);
+//
+//	        byte[] plaintext = original.getBytes();
+//	        byte[] ciphertext = ecipher.doFinal(plaintext, 0, plaintext.length);
+//
+//	        return Base64.encodeToString(ciphertext, Base64.DEFAULT);
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	    }
+//	    return null;
+//	}
+//
+//	public String decryptByAES(String secretkey, String ciphertextb64) {
+//	    try {
+//	        // use md5 value as the real key
+//	        byte[] b = secretkey.getBytes();
+//	        MessageDigest md = MessageDigest.getInstance("MD5");
+//	        byte[] hashed = md.digest(b);
+//
+//	        // create an 16-byte initialization vector
+//	        byte[] iv = new byte[] {
+//	            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+//	        };
+//	        AlgorithmParameterSpec spec = new IvParameterSpec(iv);
+//	        SecretKeySpec keyspec = new SecretKeySpec(hashed), "AES");
+//
+//	        // create cipher and initialize CBC vector
+//	        Cipher dcipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+//	        dcipher.init(Cipher.DECRYPT_MODE, keyspec, spec);
+//
+//	        byte[] ciphertext = Base64.decode(ciphertextb64, Base64.DEFAULT);
+//	        byte[] original = dcipher.doFinal(ciphertext, 0, ciphertext.length);
+//
+//	        return new String(original);
+//	    } catch (Exception e) {
+//	        e.printStackTrace();
+//	    }
+//	    return null;
+//	}
+//
+// `AES for node.js`
+//
+// ----
+//
+//	let iv = [ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f ];
+//
+//	function encrypt_by_aes(secretkey, original) {
+//	    let md5 = crypto.createHash('md5').update(secretkey).digest('hex');
+//	    const ecipher = crypto.createCipheriv(
+//	        'aes-128-cbc',
+//	        new Buffer(md5, 'hex'),
+//	        new Buffer(iv)
+//	    );
+//	    // ecipher.setAutoPadding(true);
+//	    var ciphertextb64 = ecipher.update(original, 'utf8', 'base64');
+//	    ciphertextb64 += ecipher.final('base64');
+//	    console.log('ciphertextb64: ' + ciphertextb64);
+//	    return ciphertextb64;
+//	}
+//
+//	function decrypt_by_aes(secretkey, ciphertextb64) {
+//	    let md5 = crypto.createHash('md5').update(secretkey).digest('hex');
+//	    const dcipher = crypto.createDecipheriv(
+//	        'aes-128-cbc',
+//	        new Buffer(md5, 'hex'),
+//	        new Buffer(iv)
+//	    );
+//	    var original = dcipher.update(ciphertextb64, 'base64', 'utf8');
+//	    original += dcipher.final('utf8');
+//	    console.log('original: ' + original);
+//	    return original;
+//	}
 
 var (
 	// aesKeySeeds use to create secret key for ase crypto
@@ -156,7 +126,7 @@ var (
 	aesKeyLength = len(aesInitVector)
 )
 
-// GenAESKey generate AES key range chars in [0-9a-z]{16}
+// Generate AES key range chars in [0-9a-z]{16}
 func GenAESKey() string {
 	rand.Seed(time.Now().UnixNano())
 	secretkey := make([]rune, aesKeyLength)
@@ -170,7 +140,20 @@ func GenAESKey() string {
 
 // ------- AES-CBC : Cipher block chaining (CBC) mode.
 
-// AESEncrypt using secret key to encrypt original data
+// Using CBC formated secret key to encrypt original data
+//	@param secretkey Secure key buffer
+//	@param original Original datas buffer to encrypt
+//	@return - string Encrypted ciphertext formated by base64
+//			- error Exception message
+//
+// ----
+//
+//	secretkey := secure.GenAESKey()
+//	original := []byte("original-content")
+//	ciphertext, _ := secure.AESEncrypt([]byte(secretkey), original)
+//
+//	encrypted, _ := secure.AESDecrypt([]byte(secretkey), ciphertext)
+//	logger.I("encrypted original string: ", encrypted)
 func AESEncrypt(secretkey, original []byte) (string, error) {
 	if len(secretkey) != aesKeyLength {
 		return "", invar.ErrKeyLenSixteen
@@ -189,7 +172,11 @@ func AESEncrypt(secretkey, original []byte) (string, error) {
 	return EncodeBase64(string(crypted)), nil
 }
 
-// AESDecrypt using secret key to decrypt ciphertext
+// Using CBC formated secret key to decrypt ciphertext
+//	@param secretkey Secure key buffer
+//	@param ciphertextb64 Ciphertext formated by base64
+//	@return - string Decrypted plaintext string
+//			- error Exception message
 func AESDecrypt(secretkey []byte, ciphertextb64 string) (string, error) {
 	if len(secretkey) != aesKeyLength {
 		return "", invar.ErrKeyLenSixteen
@@ -212,14 +199,14 @@ func AESDecrypt(secretkey []byte, ciphertextb64 string) (string, error) {
 	return string(pkcs5Unpadding(decrypted)), nil
 }
 
-// pkcs5Padding use to padding the space of data
+// Use to padding the space of data
 func pkcs5Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
 }
 
-// pkcs5Unpadding use to unpadding the space of data
+// Use to unpadding the space of data
 func pkcs5Unpadding(encrypt []byte) []byte {
 	padding := encrypt[len(encrypt)-1]
 	return encrypt[:len(encrypt)-int(padding)]
@@ -227,7 +214,7 @@ func pkcs5Unpadding(encrypt []byte) []byte {
 
 // ------- AES-256-GCM
 
-// GCMEncrypt using AES-256-GCM to encrypt the given original text,
+// Using AES-256-GCM to encrypt the given original text
 //	@param secretkey Secure key buffer
 //	@param original Original datas buffer to encrypt
 //	@param additional Additional datas
@@ -241,6 +228,8 @@ func pkcs5Unpadding(encrypt []byte) []byte {
 // to as secretkey input param, or use hex.EncodeToString() encode any
 // secret string, but use hex.DecodeString() decode the encode hash key
 // before call this function.
+//
+// ----
 //
 //	// use secure.GenAESKey() generate a secretkey
 //	secretkey := secure.GenAESKey()
@@ -278,7 +267,7 @@ func GCMEncrypt(secretkey, original []byte, additional ...[]byte) (string, strin
 	return ByteToBase64(ciphertext), string(nonce), nil
 }
 
-// GCMDecrypt using AES-256-GCM to decrypt ciphertext
+// Using AES-256-GCM to decrypt ciphertext
 //	@param secretkey Secure key buffer
 //	@param ciphertextb64 Ciphertext formated by base64
 //	@param noncestr Nonce string which generated when encrypt

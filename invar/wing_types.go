@@ -215,3 +215,6 @@ const (
 	// StatusFullConnectionPool [4],status instance id exist
 	StatusInstanceIdExist
 )
+
+// Event socket.io event string
+type Event string

@@ -22,7 +22,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-// ObatinJwtToken generate a jwt token with keyword and salt string,
+// Generate a jwt token with keyword and salt string,
 // the token will expired after the given duration
 func GenJwtToken(keyword, salt string, dur time.Duration) (string, error) {
 	expireAt := time.Now().Add(dur).Unix()
@@ -45,7 +45,7 @@ func GenJwtToken(keyword, salt string, dur time.Duration) (string, error) {
 	return signedToken, nil
 }
 
-// ViaLoginToken verify the encoded jwt token witch salt string
+// Verify the encoded jwt token witch salt string
 func ViaJwtToken(signedToken, salt string) (string, error) {
 	token, err := jwt.ParseWithClaims(signedToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(salt), nil
@@ -59,17 +59,23 @@ func ViaJwtToken(signedToken, salt string) (string, error) {
 	return "", err
 }
 
-// EncodeJwtKeyword encode account uuid, password and subject string,
-// NOTICE THAT this method joined the uuid, pwd and subject with ';' char!
-func EncodeJwtKeyword(uuid, pwd, subject string) string {
+// Encode account uuid, password and subject string
+//
+// `NOTICE`
+//
+// THAT this method joined the uuid, pwd and subject with ';' char!
+func EncJwtKeyword(uuid, pwd, subject string) string {
 	sets := []string{uuid, pwd, subject}
 	orikey := strings.Join(sets, ";")
 	return EncodeBase64(orikey)
 }
 
-// EncodeJwtKeyword decode account uuid, password and subject from jwt keyword string,
-// NOTICE THAT this method split the keyword by ';' char!
-func DecodeJwtKeyword(keyword string) (string, string, string) {
+// Decode account uuid, password and subject from jwt keyword string
+//
+// `NOTICE`
+//
+// THAT this method split the keyword by ';' char!
+func DecJwtKeyword(keyword string) (string, string, string) {
 	orikeys, err := DecodeBase64(keyword)
 	if err != nil {
 		return "", "", ""

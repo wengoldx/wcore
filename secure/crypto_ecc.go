@@ -18,7 +18,7 @@ import (
 	"math/big"
 )
 
-// GenECCPriKey generate a ECC private key by origin key text
+// Generate a ECC private key by origin key text
 func GenECCPriKey(prikey string) (*ecdsa.PrivateKey, error) {
 	keylen := len(prikey)
 	if keylen != 97 {
@@ -47,7 +47,7 @@ func GenECCPriKey(prikey string) (*ecdsa.PrivateKey, error) {
 	return ecckey, nil
 }
 
-// GenECCPubKey generate a ECC public key by origin key text
+// Generate a ECC public key by origin key text
 func GenECCPubKey(pubkey string) (*ecdsa.PublicKey, error) {
 	keylen := len(pubkey)
 	if keylen != 65 {
@@ -73,7 +73,7 @@ func GenECCPubKey(pubkey string) (*ecdsa.PublicKey, error) {
 	return ecckey.Public().(*ecdsa.PublicKey), nil
 }
 
-// GenECCPriKeyB64 generate a ECC private key by base64 formated key text
+// Generate a ECC private key by base64 formated key text
 func GenECCPriKeyB64(prikeyb64 string) (*ecdsa.PrivateKey, error) {
 	prikey, err := DecodeBase64(prikeyb64)
 	if err != nil {
@@ -82,7 +82,7 @@ func GenECCPriKeyB64(prikeyb64 string) (*ecdsa.PrivateKey, error) {
 	return GenECCPriKey(prikey)
 }
 
-// GenECCPubKeyB64 generate a ECC public key by base64 formated key text
+// Generate a ECC public key by base64 formated key text
 func GenECCPubKeyB64(pubkeyb64 string) (*ecdsa.PublicKey, error) {
 	pubkey, err := DecodeBase64(pubkeyb64)
 	if err != nil {
@@ -91,13 +91,13 @@ func GenECCPubKeyB64(pubkeyb64 string) (*ecdsa.PublicKey, error) {
 	return GenECCPubKey(pubkey)
 }
 
-// GenECCShareKeys generate ECC shared keys by ECC public key and private digital signature
+// Generate ECC shared keys by ECC public key and private digital signature
 func GenECCShareKeys(pub *ecdsa.PublicKey, priD *big.Int) (*big.Int, *big.Int) {
 	shareX, shareY := elliptic.P256().ScalarMult(pub.X, pub.Y, priD.Bytes())
 	return shareX, shareY
 }
 
-// GenEccShareKeysHash generate ECC share keys hash data by origin private and public key
+// Generate ECC share keys hash data by origin private and public key
 func GenEccShareKeysHash(prikey, pubkey string) ([]byte, error) {
 	eprikey, err := GenECCPriKey(prikey)
 	if err != nil {
@@ -124,7 +124,7 @@ func GenEccShareKeysHash(prikey, pubkey string) ([]byte, error) {
 	return HashSHA256(sharekey), nil
 }
 
-// GenEccShareKeysHashB64 generate ECC share keys hash data by base64 formated private and public key
+// Generate ECC share keys hash data by base64 formated private and public key
 func GenEccShareKeysHashB64(prikeyb64, pubkeyb64 string) ([]byte, error) {
 	eprikey, err := GenECCPriKeyB64(prikeyb64)
 	if err != nil {
@@ -151,7 +151,7 @@ func GenEccShareKeysHashB64(prikeyb64, pubkeyb64 string) ([]byte, error) {
 	return HashSHA256(sharekey), nil
 }
 
-// GenRSFromB2BI generate R and S from sign data
+// Generate R and S from sign data
 func GenRSFromB2BI(sign []byte) (*big.Int, *big.Int) {
 	if len(sign) != 64 {
 		zero := big.NewInt(0)
@@ -171,7 +171,7 @@ func GenRSFromB2BI(sign []byte) (*big.Int, *big.Int) {
 	return r.SetBytes(rb), s.SetBytes(sb)
 }
 
-// ECCHashSignB64 use ECC to sign hash data to base64 string by given origin private key text
+// Use ECC to sign hash data to base64 string by given origin private key text
 func ECCHashSignB64(hash []byte, prikeyb64 string) (string, error) {
 	eprikey, err := GenECCPriKeyB64(prikeyb64)
 	if err != nil {
@@ -190,7 +190,7 @@ func ECCHashSignB64(hash []byte, prikeyb64 string) (string, error) {
 	return ByteToBase64(sign), nil
 }
 
-// ECCHashVerifyB64 use ECC public key and rs data to verify given hash data
+// Use ECC public key and rs data to verify given hash data
 func ECCHashVerifyB64(hash []byte, pubkeyb64 string, rsb64 string) (bool, error) {
 	epubkey, err := GenECCPubKeyB64(pubkeyb64)
 	if err != nil {

@@ -29,17 +29,17 @@ const (
 	E424Locked           = http.StatusLocked
 
 	// @deprecated: use the up define of ExxxXXXX
-	StatusErrParseParams      = E400ParseParams
-	StatusErrInputParams      = E406InputParams
-	StatusErrUnauthorized     = E401Unauthorized
-	StatusErrCaseException    = E404Exception
-	StatusErrPermissionDenind = E403PermissionDenied
-	StatusErrFuncDisabled     = E405FuncDisabled
-	StatusErrTimeout          = E408Timeout
-	StatusErrDuplicate        = E409Duplicate
-	StatusErrInvalidState     = E412InvalidState
-	StatusErrLocked           = E424Locked
-	StatusErrGone             = E410Gone
+	// StatusErrParseParams      = E400ParseParams
+	// StatusErrInputParams      = E406InputParams
+	// StatusErrUnauthorized     = E401Unauthorized
+	// StatusErrCaseException    = E404Exception
+	// StatusErrPermissionDenind = E403PermissionDenied
+	// StatusErrFuncDisabled     = E405FuncDisabled
+	// StatusErrTimeout          = E408Timeout
+	// StatusErrDuplicate        = E409Duplicate
+	// StatusErrInvalidState     = E412InvalidState
+	// StatusErrLocked           = E424Locked
+	// StatusErrGone             = E410Gone
 )
 
 var statusText = map[int]string{

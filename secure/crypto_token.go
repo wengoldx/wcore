@@ -18,7 +18,8 @@ import (
 	"time"
 )
 
-// GenLoginToken generate a login token with account and password
+// Generate a login token with account and password
+//
 // --------------------------------------------------------
 //  account   password
 //      |- + -|
@@ -36,7 +37,8 @@ func GenLoginToken(acc, pwd string) string {
 	return EncodeBase64(origin)
 }
 
-// ViaLoginToken verify login token
+// Verify login token
+//
 // --------------------------------------------------------
 //        token => base64
 //                   |

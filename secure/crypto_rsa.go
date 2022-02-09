@@ -85,9 +85,9 @@ const (
 	blockRsaPublicKey  = "RSA Public key"
 )
 
-// LoadRSAKey load RSA or RSA2 private or public key content from the given
-// pem file, and if input the beffer size, the bufbits must larger than pem
-// file size by call GenRSAKeys to set bits.
+// Load RSA private or public key content from the given pem file,
+// and the input buffer size of buffbits must larger than pem file size
+// by call GenRSAKeys to set bits.
 func LoadRSAKey(filepath string, buffbits ...int) ([]byte, error) {
 	if len(buffbits) > 0 && buffbits[0] > 0 {
 		pemfile, err := os.Open(filepath)
@@ -116,8 +116,12 @@ func LoadRSAKey(filepath string, buffbits ...int) ([]byte, error) {
 // public key, than decrypt by private key.
 // ------------------------------------------------------------
 
-// GenRSAKeys generate RSA private and public keys in PKCS#1, ASN.1 DER form,
+// Generate RSA private and public keys in PKCS#1, ASN.1 DER format,
 // and limit bits length of key cert.
+//	@param bits Limit bits length of key cert
+//	@return - string Private key original string
+//			- string Public key original string
+//			- error Exception message
 func GenRSAKeys(bits int) (string, string, error) {
 	// generate private key
 	prikey, err := rsa.GenerateKey(rand.Reader, bits)
@@ -148,7 +152,7 @@ func GenRSAKeys(bits int) (string, string, error) {
 	return pribuff.String(), pubbuff.String(), nil
 }
 
-// RSAEncrypt using RSA public key to encrypt original data.
+// Using RSA public key to encrypt original data.
 func RSAEncrypt(pubkey, original []byte) ([]byte, error) {
 	block, _ := pem.Decode(pubkey)
 	if block == nil {
@@ -163,7 +167,7 @@ func RSAEncrypt(pubkey, original []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, pub, original)
 }
 
-// RSAEncryptB64 using RSA public key to encrypt original data,
+// Using RSA public key to encrypt original data,
 // then format to base64 form.
 func RSAEncryptB64(pubkey, original []byte) (string, error) {
 	buf, err := RSAEncrypt(pubkey, original)
@@ -173,7 +177,7 @@ func RSAEncryptB64(pubkey, original []byte) (string, error) {
 	return ByteToBase64(buf), nil
 }
 
-// RSAEncrypt4F using RSA public key file to encrypt original data.
+// Using RSA public key file to encrypt original data.
 func RSAEncrypt4F(pubfile string, original []byte) ([]byte, error) {
 	pubkey, err := LoadRSAKey(pubfile)
 	if err != nil {
@@ -182,7 +186,7 @@ func RSAEncrypt4F(pubfile string, original []byte) ([]byte, error) {
 	return RSAEncrypt(pubkey, original)
 }
 
-// RSAEncrypt4FB64 using RSA public key file to encrypt original data,
+// Using RSA public key file to encrypt original data,
 // then format to base64 form.
 func RSAEncrypt4FB64(pubfile string, original []byte) (string, error) {
 	buf, err := RSAEncrypt4F(pubfile, original)
@@ -192,7 +196,7 @@ func RSAEncrypt4FB64(pubfile string, original []byte) (string, error) {
 	return ByteToBase64(buf), nil
 }
 
-// RSADecrypt using RSA private key to decrypt ciphertext.
+// Using RSA private key to decrypt ciphertext.
 func RSADecrypt(prikey, ciphertext []byte) ([]byte, error) {
 	block, _ := pem.Decode(prikey)
 	if block == nil {
@@ -206,7 +210,7 @@ func RSADecrypt(prikey, ciphertext []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, pri, ciphertext)
 }
 
-// RSADecrypt4F using RSA private key file to decrypt ciphertext.
+// Using RSA private key file to decrypt ciphertext.
 func RSADecrypt4F(prifile string, ciphertext []byte) ([]byte, error) {
 	prikey, err := LoadRSAKey(prifile)
 	if err != nil {
@@ -220,7 +224,7 @@ func RSADecrypt4F(prifile string, ciphertext []byte) ([]byte, error) {
 // format and verify by public key.
 // ------------------------------------------------------------
 
-// RSASign using RSA private key to make digital signature,
+// Using RSA private key to make digital signature,
 // the private key in PKCS#1, ASN.1 DER form.
 func RSASign(prikey, original []byte) ([]byte, error) {
 	block, _ := pem.Decode(prikey)
@@ -237,17 +241,7 @@ func RSASign(prikey, original []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, pri, crypto.SHA256, hashed)
 }
 
-// RSASignB64 using RSA private key to make digital signature,
-// then format to base64 form, the private key in PKCS#1, ASN.1 DER form.
-func RSASignB64(prikey, original []byte) (string, error) {
-	buf, err := RSASign(prikey, original)
-	if err != nil {
-		return "", err
-	}
-	return ByteToBase64(buf), nil
-}
-
-// RSASign4F using RSA private key file to make digital signature,
+// Using RSA private key file to make digital signature,
 // the private key in PKCS#1, ASN.1 DER form.
 func RSASign4F(prifile string, original []byte) ([]byte, error) {
 	prikey, err := LoadRSAKey(prifile)
@@ -257,7 +251,17 @@ func RSASign4F(prifile string, original []byte) ([]byte, error) {
 	return RSASign(prikey, original)
 }
 
-// RSASign4FB64 using RSA private key file to make digital signature,
+// Using RSA private key to make digital signature,
+// then format to base64 form, the private key in PKCS#1, ASN.1 DER form.
+func RSASignB64(prikey, original []byte) (string, error) {
+	buf, err := RSASign(prikey, original)
+	if err != nil {
+		return "", err
+	}
+	return ByteToBase64(buf), nil
+}
+
+// Using RSA private key file to make digital signature,
 // then format to base64 form, the private key in PKCS#1, ASN.1 DER form.
 func RSASign4FB64(prifile string, original []byte) (string, error) {
 	buf, err := RSASign4F(prifile, original)
@@ -267,11 +271,9 @@ func RSASign4FB64(prifile string, original []byte) (string, error) {
 	return ByteToBase64(buf), nil
 }
 
-// ------------------------------------------------------------
-// Verify PKIX signature data
-// ------------------------------------------------------------
+// ------- PKIX : Verify PKCS#1 v1.5 signature data
 
-// RSAVerify using RSA public key to verify signatured data.
+// Using RSA public key to verify PKCS#1 v1.5 signatured data.
 func RSAVerify(pubkey, original, signature []byte) error {
 	block, _ := pem.Decode(pubkey)
 	if block == nil {
@@ -287,7 +289,7 @@ func RSAVerify(pubkey, original, signature []byte) error {
 	return rsa.VerifyPKCS1v15(pub, crypto.SHA256, hashed[:], signature)
 }
 
-// RSAVerify4F using RSA public key file to verify signatured data.
+// Using RSA public key file to verify PKCS#1 v1.5 signatured data.
 func RSAVerify4F(pubfile string, original, signature []byte) error {
 	pubkey, err := LoadRSAKey(pubfile)
 	if err != nil {
@@ -296,12 +298,10 @@ func RSAVerify4F(pubfile string, original, signature []byte) error {
 	return RSAVerify(pubkey, original, signature)
 }
 
-// ------------------------------------------------------------
-// Verify ANS.1 signature data
-// ------------------------------------------------------------
+// ------- ASN : Verify ASN.1 signature data
 
-// RSAVerifyANS1 using RSA public key to verify ANS1 signatured data.
-func RSAVerifyANS(pubkey, original, signature []byte) error {
+// Using RSA public key to verify ASN.1 signatured data.
+func RSAVerifyASN(pubkey, original, signature []byte) error {
 	block, _ := pem.Decode(pubkey)
 	if block == nil {
 		return invar.ErrBadPublicKey
@@ -316,13 +316,13 @@ func RSAVerifyANS(pubkey, original, signature []byte) error {
 	return rsa.VerifyPKCS1v15(pub, crypto.SHA256, hashed[:], signature)
 }
 
-// RSAVerifyANS4F using RSA public key file to verify ANS1 signatured data.
-func RSAVerifyANS4F(pubfile string, original, signature []byte) error {
+// Using RSA public key file to verify ASN.1 signatured data.
+func RSAVerifyASN4F(pubfile string, original, signature []byte) error {
 	pubkey, err := LoadRSAKey(pubfile)
 	if err != nil {
 		return err
 	}
-	return RSAVerifyANS(pubkey, original, signature)
+	return RSAVerifyASN(pubkey, original, signature)
 }
 
 // ------------------------------------------------------------
@@ -330,7 +330,7 @@ func RSAVerifyANS4F(pubfile string, original, signature []byte) error {
 // format and verify by public key.
 // ------------------------------------------------------------
 
-// RSA2Sign using RSA2 private key to make digital signature,
+// Using RSA2 private key to make digital signature,
 // the private key in PKCS#8, ASN.1 DER form.
 func RSA2Sign(prikey, original []byte) ([]byte, error) {
 	block, _ := pem.Decode(prikey)
@@ -348,7 +348,7 @@ func RSA2Sign(prikey, original []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, pri, crypto.SHA256, hashed)
 }
 
-// RSA2SignB64 using RSA2 private key file to make digital signature,
+// Using RSA2 private key file to make digital signature,
 // then format to base64 form, the private key in PKCS#8, ASN.1 DER form.
 func RSA2SignB64(prikey, original []byte) (string, error) {
 	buf, err := RSA2Sign(prikey, original)
@@ -358,7 +358,7 @@ func RSA2SignB64(prikey, original []byte) (string, error) {
 	return ByteToBase64(buf), nil
 }
 
-// RSA2Sign4F using RSA2 private key file to make digital signature.
+// Using RSA2 private key file to make digital signature.
 // the private key in PKCS#8, ASN.1 DER form.
 func RSA2Sign4F(prifile string, original []byte) ([]byte, error) {
 	prikey, err := LoadRSAKey(prifile)
@@ -368,7 +368,7 @@ func RSA2Sign4F(prifile string, original []byte) ([]byte, error) {
 	return RSA2Sign(prikey, original)
 }
 
-// RSA2Sign4FB64 using RSA2 private key file to make digital signature,
+// Using RSA2 private key file to make digital signature,
 // then format to base64 form, the private key in PKCS#8, ASN.1 DER form.
 func RSA2Sign4FB64(prifile string, original []byte) (string, error) {
 	buf, err := RSA2Sign4F(prifile, original)
@@ -378,12 +378,12 @@ func RSA2Sign4FB64(prifile string, original []byte) (string, error) {
 	return ByteToBase64(buf), nil
 }
 
-// RSA2Verify using RSA2 public key to verify signatured data.
+// Using RSA2 public key to verify PKCS#8, ASN.1 signatured data.
 func RSA2Verify(pubkey, original, signature []byte) error {
 	return RSA2Verify(pubkey, original, signature)
 }
 
-// RSA2Verify4F using RSA2 public key to verify signatured data.
+// Using RSA2 public key to verify PKCS#8, ASN.1 signatured data.
 func RSA2Verify4F(pubfile string, original, signature []byte) error {
 	return RSA2Verify4F(pubfile, original, signature)
 }

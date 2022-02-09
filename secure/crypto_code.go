@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-// SoleCoder random coder to generate unique number code
+// Random coder to generate unique number code
 //
 // `USEAGE` :
 //
@@ -37,7 +37,7 @@ type SoleCoder struct {
 	codes map[string]bool
 }
 
-// NewSoleCoder create SoleCoder and init with exist codes
+// Create SoleCoder and init with exist codes
 func NewSoleCoder(data ...[]string) *SoleCoder {
 	coder := &SoleCoder{
 		codes: make(map[string]bool),
@@ -56,7 +56,7 @@ func NewSoleCoder(data ...[]string) *SoleCoder {
 	return coder
 }
 
-// Gen generate a given length number code, it may throw a error
+// Generate a given length number code, it may throw a error
 // when over the retry times
 func (c *SoleCoder) Gen(codelen int, times ...int) (string, error) {
 	if c.codes == nil {
@@ -81,7 +81,7 @@ func (c *SoleCoder) Gen(codelen int, times ...int) (string, error) {
 	return c.innerGenerate(codelen, radix)
 }
 
-// Remove remove used sole code outof cache
+// Remove used sole code outof cache
 func (c *SoleCoder) Remove(code string) {
 	if c.codes != nil {
 		if ok, _ := c.codes[code]; ok {
@@ -90,7 +90,7 @@ func (c *SoleCoder) Remove(code string) {
 	}
 }
 
-// innerGenerate generate a give length number code
+// Generate a give length number code
 func (c *SoleCoder) innerGenerate(codelen, radix int) (string, error) {
 	rand.Seed(time.Now().UnixNano())
 	format := "%0" + fmt.Sprintf("%d", codelen) + "d"
