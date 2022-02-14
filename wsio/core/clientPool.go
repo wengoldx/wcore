@@ -15,7 +15,6 @@ import (
 	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"sort"
 	"sync"
 )
 
@@ -120,30 +119,12 @@ func (cp *ClientPool) LeaveWaiting(cid string) {
 }
 
 // Return waiting clients ids
-func (cp *ClientPool) IdleClients() ([]string, error) {
-	if len(cp.waitings) == 0 {
-		return nil, invar.ErrEmptyData
+func (cp *ClientPool) IdleClients() []string {
+	var idles []string
+	for k, _ := range cp.waitings {
+		idles = append(idles, k)
 	}
-
-	type uc struct {
-		uuid   string
-		weight int
-	}
-	var max []uc
-
-	for k, v := range cp.waitings {
-		max = append(max, uc{uuid: k, weight: v})
-	}
-	sort.Slice(max, func(i, j int) bool {
-		return max[i].weight > max[j].weight
-	})
-
-	// add each client's uuid to string array
-	var ids []string
-	for _, v := range max {
-		ids = append(ids, v.uuid)
-	}
-	return ids, nil
+	return idles
 }
 
 // -------- quick handle functions for indicate client
