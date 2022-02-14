@@ -25,7 +25,7 @@ type ClientPool struct {
 	clients map[string]*client // Client map, seach key is client id
 	s2c     map[string]string  // Socket id to Client id, seach key is socket id, value is client id
 
-	usingWaiting bool           // open or close waiting function, default is disable
+	waitOnCreate bool           // open or close waiting function, default is disable
 	waitings     map[string]int // Idel clients map, seach key is client id, value is weights
 }
 
@@ -61,7 +61,9 @@ func (cp *ClientPool) Register(cid string, sc sio.Socket, option ...interface{})
 		return err
 	}
 
-	cp.waitingLocked(cid)
+	if cp.waitOnCreate {
+		cp.waitingLocked(cid)
+	}
 	return nil
 }
 
@@ -87,9 +89,9 @@ func (cp *ClientPool) ClientID(sid string) string {
 	return cp.s2c[sid]
 }
 
-// Using waiting map function if input true.
-func (cp *ClientPool) UsingWaiting(using bool) {
-	cp.usingWaiting = using
+// Flag client to waiting state on create.
+func (cp *ClientPool) WaitOnCreate(wait bool) {
+	cp.waitOnCreate = wait
 }
 
 // Increate 1 of waiting weight for client.

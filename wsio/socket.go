@@ -129,6 +129,11 @@ func Ons(events map[string]SocketEvent) error {
 	return nil
 }
 
+// Flog client to waiting map when create if input wait is true.
+func WaitClientOnCreate(wait bool) {
+	core.Clients().WaitOnCreate(wait)
+}
+
 // createHandler create http handler for socket.io
 func (cc *WingSIO) createHandler() (http.Handler, error) {
 	server, err := sio.NewServer(nil)
@@ -233,9 +238,7 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 
 // onDisconnected event of disconnect
 func (cc *WingSIO) onDisconnected(sc sio.Socket) {
-	clientPool := core.Clients()
-	uuid, opt := clientPool.Deregister(sc)
-
+	uuid, opt := core.Clients().Deregister(sc)
 	if cc.handler != nil && cc.handler.Disconnect != nil {
 		cc.handler.Disconnect(uuid, opt)
 	}
