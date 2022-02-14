@@ -28,6 +28,12 @@ const (
 	maxConnectCount    = 200000
 )
 
+// client datas for temp cache
+type clientOpt struct {
+	UID string
+	Opt interface{}
+}
+
 // Socket.io connecte information, it will generate a socket server
 // and register as http Handler to listen socket signalings.
 //
@@ -57,9 +63,12 @@ const (
 //	}
 //	wsio.Ons(socketEvents)
 type WingSIO struct {
-	lock sync.Mutex             // Mutex sync lock
-	h2u  map[uintptr]string     // http request to uuid
-	opts map[string]interface{} // client option data caches
+	// Mutex sync lock, protect client connecting
+	lock sync.Mutex
+
+	// http request pointer to client, cache datas temporary
+	// only for client authenticate-connect process.
+	caches map[uintptr]*clientOpt
 
 	// socket server
 	server *sio.Server
@@ -77,8 +86,7 @@ var wsc *WingSIO
 
 func init() {
 	wsc = &WingSIO{
-		h2u:         make(map[uintptr]string),
-		opts:        make(map[string]interface{}),
+		caches:      make(map[uintptr]*clientOpt),
 		controllers: make(map[string]*SocketController),
 	}
 
@@ -212,14 +220,14 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 	h := uintptr(unsafe.Pointer(sc.Request()))
 	logger.I("Socket http request pointer:", h)
 
-	uuid, option := cc.unbindUUIDFromHTTPLocked(h)
-	if uuid == "" {
+	cd := cc.unbindUUIDFromHTTPLocked(h)
+	if cd == nil || cd.UID == "" {
 		logger.E("Invalid socket request: not found uuid")
 		sc.Disconnect()
 		return
 	}
 
-	clientPool := core.Clients()
+	clientPool, uuid, option := core.Clients(), cd.UID, cd.Opt
 	if err := clientPool.Register(uuid, sc, option); err != nil {
 		logger.E("Faild register socket client:", uuid)
 		sc.Disconnect()
@@ -249,19 +257,15 @@ func (cc *WingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string, opt interface{}) 
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
-	cc.h2u[h] = uuid
-	cc.opts[uuid] = opt
+	cc.caches[h] = &clientOpt{UID: uuid, Opt: opt}
 }
 
 // unbindUUIDFromHTTPLocked unbind uuid -> http request pointer on locked status
-func (cc *WingSIO) unbindUUIDFromHTTPLocked(h uintptr) (string, interface{}) {
+func (cc *WingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
-	uuid := cc.h2u[h]
-	delete(cc.h2u, h)
-
-	opt := cc.opts[uuid]
-	delete(cc.opts, uuid)
-	return uuid, opt
+	data := cc.caches[h]
+	delete(cc.caches, h)
+	return data
 }
