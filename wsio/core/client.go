@@ -1,0 +1,175 @@
+// Copyright (c) 2019-2029 DY All Rights Reserved.
+//
+// Author : yangping
+// Email  : youhei_yp@163.com
+//
+// Prismy.No | Date       | Modified by. | Description
+// -------------------------------------------------------------------
+// 00001       2022/02/09   yangping       New version
+// -------------------------------------------------------------------
+
+package core
+
+import (
+	sio "github.com/googollee/go-socket.io"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
+)
+
+// socket connected client
+type client struct {
+	id     string      // Client id, may by same as uuid
+	socket sio.Socket  // Client socket.io connection.
+	option interface{} // Client optional data
+}
+
+// Generate a new client, just init client id.
+func newClient(cid string) *client {
+	c := &client{
+		id:     cid,
+		socket: nil,
+	}
+	return c
+}
+
+// Return client id that set when register on client connnecte.
+func (c *client) UID() string {
+	return c.id
+}
+
+// Return client extra optional data, it maybe nil when not set.
+func (c *client) Option() interface{} {
+	return c.option
+}
+
+// Set client optional data.
+func (c *client) SetOption(opt interface{}) {
+	c.option = opt
+}
+
+// Send signaling message to client.
+func (c *client) Send(evt invar.Event, msg string) error {
+	if !c.registered() {
+		return invar.ErrInvalidState
+	}
+	c.socket.Emit(string(evt), msg)
+	logger.D("Send to", c.id, "[", evt, "] >>", msg)
+	return nil
+}
+
+// Push client join to given room.
+func (c *client) Join(room string) error {
+	if !c.registered() {
+		return invar.ErrInvalidState
+	} else if room == "" {
+		return invar.ErrInvalidParams
+	}
+
+	// check client if already joined given room
+	rooms := c.socket.Rooms()
+	for _, joinedroom := range rooms {
+		if joinedroom == room {
+			return nil
+		}
+	}
+
+	logger.D("Client:", c.id, "join room:", room)
+	return c.socket.Join(room)
+}
+
+// Pull client leave from given room.
+func (c *client) Leave(room string) error {
+	if !c.registered() {
+		return invar.ErrInvalidState
+	} else if room == "" {
+		return invar.ErrInvalidParams
+	}
+
+	logger.D("Client:", c.id, "leave room:", room)
+	return c.socket.Leave(room)
+}
+
+// Return client joined rooms, it maybe nil when not joined.
+func (c *client) Rooms() ([]string, error) {
+	if !c.registered() {
+		return nil, invar.ErrInvalidState
+	}
+	return c.socket.Rooms(), nil
+}
+
+// Broadcast signaling message to rooms that given by input param or all client joined.
+//
+// `NOTICE`
+//
+// The input param rooms should already joined by client when you want only
+// broadcast event and message to indicate part of joined rooms.
+//
+//	rooms := client.Rooms()
+//	client.Broadcast("evt-string", "message-content", rooms[0])
+//	client.Broadcast("evt-string", "message-content", rooms[0], rooms[1])
+//	client.Broadcast("evt-string", "message-content", rooms[:2]...)
+//
+// Or, not set input param rooms, it will broadcast event and message to all
+// rooms that joined by client as:
+//
+//	client.Broadcast("evt-string", "message-content")
+func (c *client) Broadcast(evt invar.Event, msg string, rooms ...string) error {
+	if !c.registered() {
+		return invar.ErrInvalidState
+	}
+
+	tagrooms := []string{}
+	if len(rooms) > 0 {
+		for _, room := range rooms {
+			if room != "" { // pick valid target rooms from given params
+				tagrooms = append(tagrooms, room)
+			}
+		}
+	} else {
+		rooms := c.socket.Rooms()
+		for _, room := range rooms {
+			if room == "" { // pick joined rooms when not given indicate rooms
+				tagrooms = append(tagrooms, room)
+			}
+		}
+	}
+
+	// execute broadcast to valid target rooms
+	for _, room := range tagrooms {
+		if err := c.socket.BroadcastTo(room, string(evt), msg); err != nil {
+			logger.E("Client", c.id, "broadcast [", evt, "] err:", err)
+			return err
+		}
+		logger.D("Broadcast to", c.id, "[", evt, "]", room, ">>", msg)
+	}
+	return nil
+}
+
+// --------
+
+// Binds the socket with client.
+func (c *client) register(sc sio.Socket, opt interface{}) error {
+	if c.registered() {
+		cid, sid := c.id, sc.Id()
+		logger.E("Client", cid, "already bind socket", sid)
+		return invar.ErrDupRegister
+	}
+	c.socket = sc
+	c.option = opt
+	return nil
+}
+
+// Unbind the socket with client and disconnect.
+func (c *client) deregister() {
+	if c.registered() {
+		sid := c.socket.Id()
+		logger.D("Unbind socket", sid, "from client", c.id)
+		c.socket.Disconnect()
+		c.socket = nil
+	}
+}
+
+// Check client if bind with valid socket, true is bind.
+func (c *client) registered() bool {
+	return c.socket != nil
+}
