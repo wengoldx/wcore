@@ -43,9 +43,14 @@ type EventAck struct {
 
 // SocketHandler socket handler callbacks
 type SocketHandler struct {
-	Authenticate func(token string) (string, error)
-	Connect      func(uuid string) error
-	Disconnect   func()
+	// Auth client handler function
+	Authenticate func(token string) (string, interface{}, error)
+
+	// Client connected handler function
+	Connect func(uuid string, option interface{}) error
+
+	// Client disconnected handler function
+	Disconnect func(uuid string, option interface{})
 }
 
 // AckResp response normal ack to socket client

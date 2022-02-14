@@ -21,10 +21,12 @@ import (
 
 // ClientPool client pool
 type ClientPool struct {
-	lock     sync.Mutex         // Mutex sync lock
-	clients  map[string]*client // Client map, seach key is client id
-	s2c      map[string]string  // Socket id to Client id, seach key is socket id, value is client id
-	waitings map[string]int     // Idel clients map, seach key is client id, value is weights
+	lock    sync.Mutex         // Mutex sync lock
+	clients map[string]*client // Client map, seach key is client id
+	s2c     map[string]string  // Socket id to Client id, seach key is socket id, value is client id
+
+	usingWaiting bool           // open or close waiting function, default is disable
+	waitings     map[string]int // Idel clients map, seach key is client id, value is weights
 }
 
 // clientPool singleton instance
@@ -64,11 +66,11 @@ func (cp *ClientPool) Register(cid string, sc sio.Socket, option ...interface{})
 }
 
 // Deregister client and unbind socket.
-func (cp *ClientPool) Deregister(sc sio.Socket) {
+func (cp *ClientPool) Deregister(sc sio.Socket) (string, interface{}) {
 	cp.lock.Lock()
 	defer cp.lock.Unlock()
 
-	cp.deregisterLocked(sc)
+	return cp.deregisterLocked(sc)
 }
 
 // Check the client if exist.
@@ -83,6 +85,11 @@ func (cp *ClientPool) ClientID(sid string) string {
 	defer cp.lock.Unlock()
 
 	return cp.s2c[sid]
+}
+
+// Using waiting map function if input true.
+func (cp *ClientPool) UsingWaiting(using bool) {
+	cp.usingWaiting = using
 }
 
 // Increate 1 of waiting weight for client.
@@ -198,7 +205,7 @@ func (cp *ClientPool) registerLocked(cid string, sc sio.Socket, opt interface{})
 }
 
 // Deregister the client without acquiring the lock.
-func (cp *ClientPool) deregisterLocked(sc sio.Socket) {
+func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, interface{}) {
 	sid := sc.Id()
 	if cid := cp.s2c[sid]; cid != "" {
 		delete(cp.s2c, sid)
@@ -207,12 +214,13 @@ func (cp *ClientPool) deregisterLocked(sc sio.Socket) {
 		if c := cp.clients[cid]; c != nil {
 			delete(cp.clients, cid)
 			c.deregister()
-			return
+			return cid, c.option
 		}
 	}
 
 	logger.I("Disconnect unkown client socket", sid)
 	sc.Disconnect()
+	return "", nil
 }
 
 // Increate waiting weight for client without acquiring the lock.

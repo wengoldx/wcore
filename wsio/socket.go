@@ -57,8 +57,9 @@ const (
 //	}
 //	wsio.Ons(socketEvents)
 type WingSIO struct {
-	lock sync.Mutex         // Mutex sync lock
-	h2u  map[uintptr]string // http request to uuid
+	lock sync.Mutex             // Mutex sync lock
+	h2u  map[uintptr]string     // http request to uuid
+	opts map[string]interface{} // client option data caches
 
 	// socket server
 	server *sio.Server
@@ -77,6 +78,7 @@ var wsc *WingSIO
 func init() {
 	wsc = &WingSIO{
 		h2u:         make(map[uintptr]string),
+		opts:        make(map[string]interface{}),
 		controllers: make(map[string]*SocketController),
 	}
 
@@ -93,7 +95,7 @@ func init() {
 
 // Set handler to execute clients authenticate, connect and disconnect.
 func Handler(handler *SocketHandler) {
-	if wsc != nil && handler != nil {
+	if handler != nil {
 		logger.E("Invalid socket event or callback!")
 		wsc.handler = handler
 	}
@@ -101,7 +103,7 @@ func Handler(handler *SocketHandler) {
 
 // Register single socket event, the input params numst not empty and nil.
 func On(evt string, callback SocketEvent) error {
-	if wsc == nil || evt == "" || callback == nil {
+	if evt == "" || callback == nil {
 		logger.E("Invalid socket event or callback!")
 		return invar.ErrInvalidState
 	}
@@ -183,18 +185,19 @@ func (cc *WingSIO) onAuthentication(req *http.Request) error {
 	// auth client token by handler if set Authenticate function
 	// handler, or just use token as uuid when not set.
 	uuid := token
+	var option interface{} = nil
 	if cc.handler != nil && cc.handler.Authenticate != nil {
-		uid, err := cc.handler.Authenticate(token)
+		uid, opt, err := cc.handler.Authenticate(token)
 		if err != nil || uid == "" {
 			return invar.ErrInvalidClient
 		}
-		uuid = uid
+		uuid, option = uid, opt
 	}
 
 	// bind http.Request -> uuid
 	h := uintptr(unsafe.Pointer(req))
 	logger.I("Client:", uuid, "http ptr:", h)
-	cc.bindHTTP2UUIDLocked(h, uuid)
+	cc.bindHTTP2UUIDLocked(h, uuid, option)
 	return nil
 }
 
@@ -204,7 +207,7 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 	h := uintptr(unsafe.Pointer(sc.Request()))
 	logger.I("Socket http request pointer:", h)
 
-	uuid := cc.unbindUUIDFromHTTPLocked(h)
+	uuid, option := cc.unbindUUIDFromHTTPLocked(h)
 	if uuid == "" {
 		logger.E("Invalid socket request: not found uuid")
 		sc.Disconnect()
@@ -212,7 +215,7 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 	}
 
 	clientPool := core.Clients()
-	if err := clientPool.Register(uuid, sc); err != nil {
+	if err := clientPool.Register(uuid, sc, option); err != nil {
 		logger.E("Faild register socket client:", uuid)
 		sc.Disconnect()
 		return
@@ -220,7 +223,7 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 
 	// handle connect callback for socket with uuid
 	if cc.handler != nil && cc.handler.Connect != nil {
-		if err := cc.handler.Connect(uuid); err != nil {
+		if err := cc.handler.Connect(uuid, option); err != nil {
 			logger.E("Client:", uuid, "connect socket err:", err)
 			sc.Disconnect()
 		}
@@ -231,26 +234,31 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 // onDisconnected event of disconnect
 func (cc *WingSIO) onDisconnected(sc sio.Socket) {
 	clientPool := core.Clients()
-	clientPool.Deregister(sc)
+	uuid, opt := clientPool.Deregister(sc)
 
-	if wsc.handler != nil && wsc.handler.Disconnect != nil {
-		wsc.handler.Disconnect()
+	if cc.handler != nil && cc.handler.Disconnect != nil {
+		cc.handler.Disconnect(uuid, opt)
 	}
 }
 
 // bindHTTP2UUIDLocked bind http request pointer -> uuid on locked status
-func (cc *WingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string) {
+func (cc *WingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string, opt interface{}) {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
+
 	cc.h2u[h] = uuid
+	cc.opts[uuid] = opt
 }
 
 // unbindUUIDFromHTTPLocked unbind uuid -> http request pointer on locked status
-func (cc *WingSIO) unbindUUIDFromHTTPLocked(h uintptr) string {
+func (cc *WingSIO) unbindUUIDFromHTTPLocked(h uintptr) (string, interface{}) {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
 	uuid := cc.h2u[h]
 	delete(cc.h2u, h)
-	return uuid
+
+	opt := cc.opts[uuid]
+	delete(cc.opts, uuid)
+	return uuid, opt
 }
