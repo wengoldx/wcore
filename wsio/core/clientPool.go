@@ -12,7 +12,6 @@ package core
 
 import (
 	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 	"sync"
@@ -52,7 +51,11 @@ func (cp *ClientPool) Register(cid string, sc sio.Socket, option ...interface{})
 	cp.lock.Lock()
 	defer cp.lock.Unlock()
 
-	opt := comm.Condition(len(option) > 0, option[0], nil)
+	var opt interface{}
+	if len(option) > 0 {
+		opt = option[0]
+	}
+
 	if err := cp.registerLocked(cid, sc, opt); err != nil {
 		logger.E("Regisger client err:", err.Error())
 		return err

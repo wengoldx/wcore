@@ -29,7 +29,6 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 	"unicode"
 )
 
@@ -52,51 +51,22 @@ func Try(do func(), catcher func(error), finaly ...func()) {
 }
 
 // Condition return the trueData when pass the condition, or return falseData
+//
+// `USAGE` :
+//
+//	// use as follow to return diffrent type value, but the input
+//	// true and false params MUST BE no-nil datas.
+//	a := Condition(condition, trueString, falseString)	// return interface{}
+//	b := Condition(condition, trueInt, falseInt).(int)
+//	c := Condition(condition, trueInt64, falseInt64).(int64)
+//	d := Condition(condition, trueFloat, falseFloat).(float64)
+//	e := Condition(condition, trueDur, falseDur).(time.Duration)
+//	f := Condition(condition, trueString, falseString).(string)
 func Condition(condition bool, trueData interface{}, falseData interface{}) interface{} {
 	if condition {
 		return trueData
 	}
 	return falseData
-}
-
-// CondiString return the trueString when pass the condition, or return falseString
-func CondiString(condition bool, trueString string, falseString string) string {
-	if condition {
-		return trueString
-	}
-	return falseString
-}
-
-// CondiInt return the trueInt when pass the condition, or return falseInt
-func CondiInt(condition bool, trueInt int, falseInt int) int {
-	if condition {
-		return trueInt
-	}
-	return falseInt
-}
-
-// CondiInt64 return the trueInt64 when pass the condition, or return falseInt64
-func CondiInt64(condition bool, trueInt64 int64, falseInt64 int64) int64 {
-	if condition {
-		return trueInt64
-	}
-	return falseInt64
-}
-
-// CondiFloat return the trueFloat when pass the condition, or return falseFloat
-func CondiFloat(condition bool, trueFloat float64, falseFloat float64) float64 {
-	if condition {
-		return trueFloat
-	}
-	return falseFloat
-}
-
-// CondiDuration return the trueDur when pass the condition, or return falseDur
-func CondiDuration(condition bool, trueDur time.Duration, falseDur time.Duration) time.Duration {
-	if condition {
-		return trueDur
-	}
-	return falseDur
 }
 
 // Contain check the given string list if contains item

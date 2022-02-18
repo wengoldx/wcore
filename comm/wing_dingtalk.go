@@ -467,7 +467,7 @@ func (s *DTalkSender) SendActionCard2(title, text string, btns []DTButton, isVer
 		return err
 	}
 
-	vertical := CondiString(isVertical, "0", "1")
+	vertical := Condition(isVertical, "0", "1").(string)
 	logger.D("Send action card type message with multips buttons")
 	return s.send(posturl, &DTMsgSplitAction{
 		Text:    DTSplitAction{Title: title, Text: text, BtnLayer: vertical, Btns: btns},
