@@ -20,12 +20,10 @@ import (
 
 // ClientPool client pool
 type ClientPool struct {
-	lock    sync.Mutex         // Mutex sync lock
-	clients map[string]*client // Client map, seach key is client id
-	s2c     map[string]string  // Socket id to Client id, seach key is socket id, value is client id
-
-	waitOnCreate bool           // open or close waiting function, default is disable
-	waitings     map[string]int // Idel clients map, seach key is client id, value is weights
+	lock     sync.Mutex         // Mutex sync lock
+	clients  map[string]*client // Client map, seach key is client id
+	s2c      map[string]string  // Socket id to Client id, seach key is socket id, value is client id
+	waitings map[string]int     // Idel clients map, seach key is client id, value is weights
 }
 
 // clientPool singleton instance
@@ -60,9 +58,7 @@ func (cp *ClientPool) Register(cid string, sc sio.Socket, option ...interface{})
 		return err
 	}
 
-	if cp.waitOnCreate {
-		cp.waitingLocked(cid)
-	}
+	cp.waitingLocked(cid)
 	return nil
 }
 
@@ -86,11 +82,6 @@ func (cp *ClientPool) ClientID(sid string) string {
 	defer cp.lock.Unlock()
 
 	return cp.s2c[sid]
-}
-
-// Flag client to waiting state on create.
-func (cp *ClientPool) WaitOnCreate(wait bool) {
-	cp.waitOnCreate = wait
 }
 
 // Increate 1 of waiting weight for client.
@@ -147,7 +138,7 @@ func (cp *ClientPool) SetOption(cid string, opt interface{}) error {
 }
 
 // Send signaling with message to indicate client.
-func (cp *ClientPool) Signaling(cid string, evt invar.Event, data string) error {
+func (cp *ClientPool) Signaling(cid, evt, data string) error {
 	if c, ok := cp.clients[cid]; ok {
 		return c.Send(evt, data)
 	}

@@ -18,7 +18,7 @@ import (
 
 // socket connected client
 type client struct {
-	id     string      // Client id, may by same as uuid
+	id     string      // Client id, maybe same as uuid
 	socket sio.Socket  // Client socket.io connection.
 	option interface{} // Client optional data
 }
@@ -48,11 +48,14 @@ func (c *client) SetOption(opt interface{}) {
 }
 
 // Send signaling message to client.
-func (c *client) Send(evt invar.Event, msg string) error {
+func (c *client) Send(evt, msg string) error {
 	if !c.registered() {
 		return invar.ErrInvalidState
 	}
-	c.socket.Emit(string(evt), msg)
+	if err := c.socket.Emit(evt, msg); err != nil {
+		logger.E("Send [", evt, "] err:", err)
+		return err
+	}
 	logger.D("Send to", c.id, "[", evt, "] >>", msg)
 	return nil
 }
@@ -113,7 +116,7 @@ func (c *client) Rooms() ([]string, error) {
 // rooms that joined by client as:
 //
 //	client.Broadcast("evt-string", "message-content")
-func (c *client) Broadcast(evt invar.Event, msg string, rooms ...string) error {
+func (c *client) Broadcast(evt, msg string, rooms ...string) error {
 	if !c.registered() {
 		return invar.ErrInvalidState
 	}
@@ -136,7 +139,7 @@ func (c *client) Broadcast(evt invar.Event, msg string, rooms ...string) error {
 
 	// execute broadcast to valid target rooms
 	for _, room := range tagrooms {
-		if err := c.socket.BroadcastTo(room, string(evt), msg); err != nil {
+		if err := c.socket.BroadcastTo(room, evt, msg); err != nil {
 			logger.E("Client", c.id, "broadcast [", evt, "] err:", err)
 			return err
 		}
@@ -163,7 +166,7 @@ func (c *client) register(sc sio.Socket, opt interface{}) error {
 func (c *client) deregister() {
 	if c.registered() {
 		sid := c.socket.Id()
-		logger.D("Unbind socket", sid, "from client", c.id)
+		logger.D("Unbind socket", sid, "of client", c.id)
 		c.socket.Disconnect()
 		c.socket = nil
 	}

@@ -137,11 +137,6 @@ func Ons(events map[string]SocketEvent) error {
 	return nil
 }
 
-// Flog client to waiting map when create if input wait is true.
-func WaitClientOnCreate(wait bool) {
-	core.Clients().WaitOnCreate(wait)
-}
-
 // createHandler create http handler for socket.io
 func (cc *WingSIO) createHandler() (http.Handler, error) {
 	server, err := sio.NewServer(nil)
