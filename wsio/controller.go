@@ -44,13 +44,13 @@ type EventAck struct {
 // SocketHandler socket handler callbacks
 type SocketHandler struct {
 	// Auth client handler function
-	Authenticate func(token string) (string, interface{}, error)
+	OnAuthenticate func(token string) (string, interface{}, error)
 
 	// Client connected handler function
-	Connect func(uuid string, option interface{}) error
+	OnConnect func(uuid string, option interface{}) error
 
 	// Client disconnected handler function
-	Disconnect func(uuid string, option interface{})
+	OnDisconnect func(uuid string, option interface{})
 }
 
 // AckResp response normal ack to socket client

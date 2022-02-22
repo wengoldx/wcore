@@ -62,7 +62,7 @@ type clientOpt struct {
 //		types.EvtLabel02: ctrl.SIOEventFunc02,
 //	}
 //	wsio.Ons(socketEvents)
-type WingSIO struct {
+type wingSIO struct {
 	// Mutex sync lock, protect client connecting
 	lock sync.Mutex
 
@@ -82,10 +82,10 @@ type WingSIO struct {
 }
 
 // Socket connection server
-var wsc *WingSIO
+var wsc *wingSIO
 
 func init() {
-	wsc = &WingSIO{
+	wsc = &wingSIO{
 		caches:      make(map[uintptr]*clientOpt),
 		controllers: make(map[string]*SocketController),
 	}
@@ -138,7 +138,7 @@ func Ons(events map[string]SocketEvent) error {
 }
 
 // createHandler create http handler for socket.io
-func (cc *WingSIO) createHandler() (http.Handler, error) {
+func (cc *wingSIO) createHandler() (http.Handler, error) {
 	server, err := sio.NewServer(nil)
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func (cc *WingSIO) createHandler() (http.Handler, error) {
 }
 
 // onAuthentication event of authentication
-func (cc *WingSIO) onAuthentication(req *http.Request) error {
+func (cc *wingSIO) onAuthentication(req *http.Request) error {
 	if err := req.ParseForm(); err != nil {
 		logger.E("Prase url err:", err)
 		return err
@@ -194,8 +194,8 @@ func (cc *WingSIO) onAuthentication(req *http.Request) error {
 	// handler, or just use token as uuid when not set.
 	uuid := token
 	var option interface{} = nil
-	if cc.handler != nil && cc.handler.Authenticate != nil {
-		uid, opt, err := cc.handler.Authenticate(token)
+	if cc.handler != nil && cc.handler.OnAuthenticate != nil {
+		uid, opt, err := cc.handler.OnAuthenticate(token)
 		if err != nil || uid == "" {
 			return invar.ErrInvalidClient
 		}
@@ -210,7 +210,7 @@ func (cc *WingSIO) onAuthentication(req *http.Request) error {
 }
 
 // onConnect event of connect
-func (cc *WingSIO) onConnect(sc sio.Socket) {
+func (cc *wingSIO) onConnect(sc sio.Socket) {
 	// found client uuid and unbind -> http.Request
 	h := uintptr(unsafe.Pointer(sc.Request()))
 	logger.I("Socket http request pointer:", h)
@@ -230,8 +230,8 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 	}
 
 	// handle connect callback for socket with uuid
-	if cc.handler != nil && cc.handler.Connect != nil {
-		if err := cc.handler.Connect(uuid, option); err != nil {
+	if cc.handler != nil && cc.handler.OnConnect != nil {
+		if err := cc.handler.OnConnect(uuid, option); err != nil {
 			logger.E("Client:", uuid, "connect socket err:", err)
 			sc.Disconnect()
 		}
@@ -240,15 +240,15 @@ func (cc *WingSIO) onConnect(sc sio.Socket) {
 }
 
 // onDisconnected event of disconnect
-func (cc *WingSIO) onDisconnected(sc sio.Socket) {
+func (cc *wingSIO) onDisconnected(sc sio.Socket) {
 	uuid, opt := core.Clients().Deregister(sc)
-	if cc.handler != nil && cc.handler.Disconnect != nil {
-		cc.handler.Disconnect(uuid, opt)
+	if cc.handler != nil && cc.handler.OnDisconnect != nil {
+		cc.handler.OnDisconnect(uuid, opt)
 	}
 }
 
 // bindHTTP2UUIDLocked bind http request pointer -> uuid on locked status
-func (cc *WingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string, opt interface{}) {
+func (cc *wingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string, opt interface{}) {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
@@ -256,7 +256,7 @@ func (cc *WingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string, opt interface{}) 
 }
 
 // unbindUUIDFromHTTPLocked unbind uuid -> http request pointer on locked status
-func (cc *WingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
+func (cc *wingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 

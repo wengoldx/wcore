@@ -12,6 +12,7 @@ package secure
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/wengoldx/wing/invar"
 	"strings"
 	"time"
 )
@@ -59,12 +60,38 @@ func ViaJwtToken(signedToken, salt string) (string, error) {
 	return "", err
 }
 
+// Encode account uuid and optianl datas as claims content of jwt token
+func EncClaims(uuid string, params ...string) string {
+	sets := []string{uuid}
+	if len(params) > 0 {
+		sets = append(sets, params...)
+	}
+	orikey := strings.Join(sets, ";")
+	return EncodeBase64(orikey)
+}
+
+// Decode claims of jwt token and return datas as string array
+func DecClaims(keyword string, count ...int) ([]string, error) {
+	orikeys, err := DecodeBase64(keyword)
+	if err != nil {
+		return nil, err
+	}
+
+	sets := strings.Split(orikeys, ";")
+
+	// check claims content fields if give the verify count param
+	if cl := len(count); cl > 0 && count[0] > 0 && count[0] != len(sets) {
+		return nil, invar.ErrInvalidNum
+	}
+	return sets, nil
+}
+
+// deprecated the follow functions ----------------
+
 // Encode account uuid, password and subject string
 //
-// `NOTICE`
-//
-// THAT this method joined the uuid, pwd and subject with ';' char!
-func EncJwtKeyword(uuid, pwd, subject string) string {
+// `Deprecated` : Please use EncClaims instead
+func EncJwtKeyword(uuid, pwd string, subject string) string {
 	sets := []string{uuid, pwd, subject}
 	orikey := strings.Join(sets, ";")
 	return EncodeBase64(orikey)
@@ -72,9 +99,7 @@ func EncJwtKeyword(uuid, pwd, subject string) string {
 
 // Decode account uuid, password and subject from jwt keyword string
 //
-// `NOTICE`
-//
-// THAT this method split the keyword by ';' char!
+// `Deprecated` : Please use DecClaims instead
 func DecJwtKeyword(keyword string) (string, string, string) {
 	orikeys, err := DecodeBase64(keyword)
 	if err != nil {
