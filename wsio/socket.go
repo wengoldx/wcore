@@ -179,14 +179,11 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 // onAuthentication event of authentication
 func (cc *wingSIO) onAuthentication(req *http.Request) error {
 	if err := req.ParseForm(); err != nil {
-		logger.E("Prase url err:", err)
 		return err
 	}
 
-	// get client auth token
 	token := req.Form.Get("token")
 	if token == "" {
-		logger.E("Not found client auth token!")
 		return invar.ErrInvalidClient
 	}
 
@@ -204,39 +201,37 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 
 	// bind http.Request -> uuid
 	h := uintptr(unsafe.Pointer(req))
-	logger.I("Client:", uuid, "http ptr:", h)
+	logger.D("Bind request:", h, "with client:", uuid)
 	cc.bindHTTP2UUIDLocked(h, uuid, option)
 	return nil
 }
 
 // onConnect event of connect
 func (cc *wingSIO) onConnect(sc sio.Socket) {
-	// found client uuid and unbind -> http.Request
+	// find client uuid and unbind -> http.Request
 	h := uintptr(unsafe.Pointer(sc.Request()))
-	logger.I("Socket http request pointer:", h)
-
-	cd := cc.unbindUUIDFromHTTPLocked(h)
-	if cd == nil || cd.UID == "" {
-		logger.E("Invalid socket request: not found uuid")
+	c := cc.unbindUUIDFromHTTPLocked(h)
+	if c == nil || c.UID == "" {
+		logger.E("Invalid socket request bind!")
 		sc.Disconnect()
 		return
 	}
 
-	clientPool, uuid, option := core.Clients(), cd.UID, cd.Opt
-	if err := clientPool.Register(uuid, sc, option); err != nil {
-		logger.E("Faild register socket client:", uuid)
+	clientPool := core.Clients()
+	if err := clientPool.Register(c.UID, sc, c.Opt); err != nil {
+		logger.E("Faild register socket client:", c.UID)
 		sc.Disconnect()
 		return
 	}
 
 	// handle connect callback for socket with uuid
 	if cc.handler != nil && cc.handler.OnConnect != nil {
-		if err := cc.handler.OnConnect(uuid, option); err != nil {
-			logger.E("Client:", uuid, "connect socket err:", err)
+		if err := cc.handler.OnConnect(c.UID, c.Opt); err != nil {
+			logger.E("Client:", c.UID, "connect socket err:", err)
 			sc.Disconnect()
 		}
 	}
-	logger.I("Connected socket client:", uuid)
+	logger.I("Connected socket client:", c.UID)
 }
 
 // onDisconnected event of disconnect
@@ -260,7 +255,10 @@ func (cc *wingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
-	data := cc.caches[h]
-	delete(cc.caches, h)
-	return data
+	if data, ok := cc.caches[h]; ok {
+		co := &clientOpt{UID: data.UID, Opt: data.Opt}
+		delete(cc.caches, h)
+		return co
+	}
+	return nil
 }

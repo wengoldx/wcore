@@ -291,6 +291,16 @@ func DurDays(start, end time.Time, format ...string) string {
 	return fmt.Sprintf("%dd %dh %dm %ds", d, h, m, s)
 }
 
+// DurNowNs return formated second string from given start in unix nanoseconds
+func DurNowNs(start int64) string {
+	dur := time.Now().UnixNano() - start
+	s := time.Duration(dur) / time.Second
+	ms := (time.Duration(dur) % time.Second) / time.Millisecond
+	ws := (time.Duration(dur) % time.Millisecond) / time.Microsecond
+	ns := time.Duration(dur) % time.Microsecond
+	return fmt.Sprintf("%vs %v.%v.%v", s, ms, ws, ns)
+}
+
 // FormatTime format unix time to TimeLayout or MSLayout layout
 func FormatTime(sec int64, nsec ...int64) string {
 	if len(nsec) > 0 && nsec[0] > 0 {
