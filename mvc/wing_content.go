@@ -209,11 +209,6 @@ func OpenMySQL(charset string, sessions ...string) error {
 	return nil
 }
 
-// @deprecated Use OpenMySQL instead
-func OpenMySQLByKeys(charset string, sessions ...string) error {
-	return OpenMySQL(charset, sessions...)
-}
-
 // Select mysql Connection by request key words
 // if mode is dev, the key will auto splice '-dev'
 func Select(session string) *WingProvider {
