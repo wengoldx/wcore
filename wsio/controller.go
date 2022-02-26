@@ -1,72 +1,81 @@
-// Copyright (c) 2019-2029 Dunyu All Rights Reserved.
+// Copyright (c) 2019-2029 DY All Rights Reserved.
 //
-// Author      : jidi
-// Email       : j18041361158@163.com
-// Version     : 1.0
+// Author : yangping
+// Email  : youhei_yp@163.com
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
-// 00001       2019/12/16   jidi           New version
-// 00002       2020/08/24   jidi           modify request status update
-// 00003       2021/07/07   tangxiaoyu     add method
+// 00001       2022/02/09   yangping       New version
 // -------------------------------------------------------------------
 
 package wsio
 
 import (
 	"encoding/json"
-	"github.com/wengoldx/wing/logger"
+	sio "github.com/googollee/go-socket.io"
 )
 
-const (
-	// StSuccess success status
-	SioSuccess = 1 + iota
+// Auth client outset, it will disconnect when return no-nil error
+//	@param token client login jwt-token contain uuid or optional data in claims key string
+//	@return - string client uuid
+//			- interface{} client optional data parsed from token
+//			- error Exception message
+type AuthHandler func(token string) (string, string, error)
 
-	// StError error status
-	SioError
-)
+// Client connected callback, it will disconnect when return no-nil error
+//	@param uuid client unique id
+//	@param option client login optional data, maybe nil
+//	@return - error Exception message
+type ConnectHandler func(uuid, option string) error
+
+// Client disconnected handler function
+//	@param uuid client unique id
+//	@param option client login optional data, maybe nil
+//
+// `NOTICE` :
+//
+// The client of uuid already released when call this event function.
+type DisconnectHandler func(uuid, option string)
 
 // Socket signlaing event function
-type SocketEvent func(c *SocketController, uuid, params string) string
+type SignalingEvent func(sc sio.Socket, uuid, params string) string
 
-// SocketController signaling controller
-type SocketController struct {
-	evt     string
-	handler SocketEvent
+// Socket signaling adaptor to register events
+type SignalingAdaptor interface {
+
+	// Retruen socket signaling events
+	Signalings() []string
+
+	// Dispath socket signaling callback by event
+	Dispatch(evt string) SignalingEvent
 }
 
-// EventAck socket event ack
+// Socket event ack
 type EventAck struct {
 	State   int    `json:"state"`
 	Message string `json:"message"`
 }
 
-// SocketHandler socket handler callbacks
-type SocketHandler struct {
-	// Auth client handler function
-	OnAuthenticate func(token string) (string, interface{}, error)
+const (
+	// StSuccess success status
+	StSuccess = iota + 1
 
-	// Client connected handler function
-	OnConnect func(uuid string, option interface{}) error
+	// StError error status
+	StError
+)
 
-	// Client disconnected handler function
-	OnDisconnect func(uuid string, option interface{})
-}
-
-// AckResp response normal ack to socket client
-func (c *SocketController) AckResp(msg string) string {
+// Response normal ack to socket client
+func AckResp(msg string) string {
 	resp, _ := json.Marshal(&EventAck{
-		State: SioSuccess, Message: msg,
+		State: StSuccess, Message: msg,
 	})
-	logger.I("Ack evt[", c.evt, "] resp: ", msg)
 	return string(resp)
 }
 
-// AckError response error ack to socket client
-func (c *SocketController) AckError(msg string) string {
+// Response error ack to socket client
+func AckError(msg string) string {
 	resp, _ := json.Marshal(&EventAck{
-		State: SioError, Message: msg,
+		State: StError, Message: msg,
 	})
-	logger.E("Ack  evt[", c.evt, "] err: ", msg)
 	return string(resp)
 }

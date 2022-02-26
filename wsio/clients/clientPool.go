@@ -8,13 +8,15 @@
 // 00001       2022/02/09   yangping       New version
 // -------------------------------------------------------------------
 
-package core
+package clients
 
 import (
 	sio "github.com/googollee/go-socket.io"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
+	"sort"
 	"sync"
+	"time"
 )
 
 // ClientPool client pool
@@ -22,17 +24,23 @@ type ClientPool struct {
 	lock     sync.Mutex         // Mutex sync lock
 	clients  map[string]*client // Client map, seach key is client id
 	s2c      map[string]string  // Socket id to Client id, seach key is socket id, value is client id
-	waitings map[string]int     // Idel clients map, seach key is client id, value is weights
+	waitings map[string]int64   // Client weights map, seach key is client id, value is unix nanosecond start waiting
 }
 
 // clientPool singleton instance
 var clientPool *ClientPool
 
+// idelWeight waiting client weight
+type idelWeight struct {
+	uuid   string
+	weight int64
+}
+
 func init() {
 	clientPool = &ClientPool{
 		clients:  make(map[string]*client),
 		s2c:      make(map[string]string),
-		waitings: make(map[string]int),
+		waitings: make(map[string]int64),
 	}
 }
 
@@ -47,14 +55,9 @@ func (cp *ClientPool) Client(cid string) *client {
 }
 
 // Register client and bind socket.
-func (cp *ClientPool) Register(cid string, sc sio.Socket, option ...interface{}) error {
+func (cp *ClientPool) Register(cid string, sc sio.Socket, opt string) error {
 	cp.lock.Lock()
 	defer cp.lock.Unlock()
-
-	var opt interface{}
-	if len(option) > 0 {
-		opt = option[0]
-	}
 
 	if err := cp.registerLocked(cid, sc, opt); err != nil {
 		logger.E("Regisger client err:", err.Error())
@@ -66,7 +69,7 @@ func (cp *ClientPool) Register(cid string, sc sio.Socket, option ...interface{})
 }
 
 // Deregister client and unbind socket.
-func (cp *ClientPool) Deregister(sc sio.Socket) (string, interface{}) {
+func (cp *ClientPool) Deregister(sc sio.Socket) (string, string) {
 	cp.lock.Lock()
 	defer cp.lock.Unlock()
 
@@ -87,21 +90,12 @@ func (cp *ClientPool) ClientID(sid string) string {
 	return cp.s2c[sid]
 }
 
-// Increate 1 of waiting weight for client.
+// Cache or refresh waiting unix nanosecond time as weight.
 func (cp *ClientPool) Waiting(cid string) {
 	cp.lock.Lock()
 	defer cp.lock.Unlock()
 
 	cp.waitingLocked(cid)
-}
-
-// Reduce 1 of waiting weight for client, it will remove client from waiting
-// map when weight value countdown to zero, and return true.
-func (cp *ClientPool) Countdown(cid string) bool {
-	cp.lock.Lock()
-	defer cp.lock.Unlock()
-
-	return cp.countdownLocked(cid)
 }
 
 // Remove client out of waiting map whatever weight value over zero or not.
@@ -121,18 +115,41 @@ func (cp *ClientPool) IdleClients() []string {
 	return idles
 }
 
+// Move client out of waiting state without acquiring the lock.
+func (cp *ClientPool) SortWaitings() []string {
+	if len(cp.waitings) == 0 {
+		return nil
+	}
+
+	var weights []idelWeight
+	for k, v := range cp.waitings {
+		weights = append(weights, idelWeight{uuid: k, weight: v})
+	}
+
+	sort.Slice(weights, func(i, j int) bool {
+		return weights[i].weight < weights[j].weight
+	})
+
+	// add each client's uuid to string array
+	uuids := []string{}
+	for _, v := range weights {
+		uuids = append(uuids, v.uuid)
+	}
+	return uuids
+}
+
 // -------- quick handle functions for indicate client
 
 // Return client optinal data, it maybe nil.
-func (cp *ClientPool) Option(cid string) interface{} {
+func (cp *ClientPool) Option(cid string) string {
 	if c, ok := cp.clients[cid]; ok {
 		return c.option
 	}
-	return nil
+	return ""
 }
 
 // Set the client optinal data, maybe return error if not exist client.
-func (cp *ClientPool) SetOption(cid string, opt interface{}) error {
+func (cp *ClientPool) SetOption(cid, opt string) error {
 	if c, ok := cp.clients[cid]; ok {
 		c.option = opt
 		return nil
@@ -151,7 +168,7 @@ func (cp *ClientPool) Signaling(cid, evt, data string) error {
 // --------
 
 // Register the client without acquiring the lock.
-func (cp *ClientPool) registerLocked(cid string, sc sio.Socket, opt interface{}) error {
+func (cp *ClientPool) registerLocked(cid string, sc sio.Socket, opt string) error {
 	var newOne *client
 	sid := sc.Id()
 
@@ -182,7 +199,7 @@ func (cp *ClientPool) registerLocked(cid string, sc sio.Socket, opt interface{})
 }
 
 // Deregister the client without acquiring the lock.
-func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, interface{}) {
+func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, string) {
 	sid := sc.Id()
 	if cid := cp.s2c[sid]; cid != "" {
 		delete(cp.s2c, sid)
@@ -197,32 +214,12 @@ func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, interface{}) {
 
 	logger.I("Disconnect unkown client socket", sid)
 	sc.Disconnect()
-	return "", nil
+	return "", ""
 }
 
 // Increate waiting weight for client without acquiring the lock.
 func (cp *ClientPool) waitingLocked(cid string) {
-	weight := 1
-	if w, ok := cp.waitings[cid]; ok {
-		weight = w + 1
-	}
-	logger.D("Increate client", cid, "waiting weight:", weight)
-	cp.waitings[cid] = weight
-}
-
-// Reduce waiting weight for client without acquiring the lock.
-func (cp *ClientPool) countdownLocked(cid string) bool {
-	if weight, ok := cp.waitings[cid]; ok {
-		if weight > 1 {
-			cp.waitings[cid] = weight - 1
-			logger.D("Countdown client", cid, "waiting weight:", (weight - 1))
-		} else if weight == 1 {
-			logger.D("Countdown client", cid, "leave waiting")
-			delete(cp.waitings, cid)
-			return true
-		}
-	}
-	return false
+	cp.waitings[cid] = time.Now().UnixNano()
 }
 
 // Move client out of waiting state without acquiring the lock.

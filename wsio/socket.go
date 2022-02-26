@@ -15,23 +15,17 @@ import (
 	sio "github.com/googollee/go-socket.io"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/wsio/core"
+	"github.com/wengoldx/wing/wsio/clients"
 	"net/http"
 	"sync"
 	"time"
 	"unsafe"
 )
 
-const (
-	serverPingInterval = 30 * time.Second
-	serverPingTimeout  = 60 * time.Second
-	maxConnectCount    = 200000
-)
-
 // client datas for temp cache
 type clientOpt struct {
 	UID string
-	Opt interface{}
+	Opt string
 }
 
 // Socket.io connecte information, it will generate a socket server
@@ -41,27 +35,17 @@ type clientOpt struct {
 //
 // `USAGE` :
 //
-//	// types.go : define socket event label
-//	const (
-//		EvtLabel01 = "evt-01"
-//		EvtLabel02 = "evt-02"
-//	)
-//
-//	// controllers.go : define socket event func
-//	func SIOEventFunc01(c *wsio.SocketController, uuid, params string) string { return "" }
-//	func SIOEventFunc02(c *wsio.SocketController, uuid, params string) string { return "" }
-//
 //	// routers.go : register socket events
 //	import "github.com/wengoldx/wing/wsio"
 //
-//	// register single socket event
-//	wsio.On(types.EvtLabel01, socketEvents)
-//
-//	// register multiple socket events
-//	var socketEvents = map[string]wsio.SocketEvent{
-//		types.EvtLabel02: ctrl.SIOEventFunc02,
+//	init() {
+//		// set socket io hander and signalings
+//		wsio.SetHandlers(ctrl.Authenticate, nil, nil)
+//		adaptor := &ctrl.DefSioAdaptor{}
+//		if err := wsio.SetAdapter(adaptor); err != nil {
+//			panic(err)
+//		}
 //	}
-//	wsio.Ons(socketEvents)
 type wingSIO struct {
 	// Mutex sync lock, protect client connecting
 	lock sync.Mutex
@@ -73,21 +57,33 @@ type wingSIO struct {
 	// socket server
 	server *sio.Server
 
-	// socket events controllers
-	controllers map[string]*SocketController
+	// socket golbal handler to execute clients authenticate action.
+	authHandler AuthHandler
 
-	// socket golbal callback handler to execute clients
-	// authenticate, connect, disconnect actions
-	handler *SocketHandler
+	// socket golbal handler to execute clients connect action.
+	connHandler ConnectHandler
+
+	// socket golbal handler to execute clients disconnect actions
+	discHandler DisconnectHandler
 }
 
 // Socket connection server
 var wsc *wingSIO
 
+// Check client option if empty when connnection is established,
+// if optinal data is empty the connect will not establish and disconnect.
+var UsingOption = false
+
+var (
+	serverPingInterval = 30 * time.Second
+	serverPingTimeout  = 60 * time.Second
+	maxConnectCount    = 200000
+)
+
 func init() {
+	setupWsioConfigs()
 	wsc = &wingSIO{
-		caches:      make(map[uintptr]*clientOpt),
-		controllers: make(map[string]*SocketController),
+		caches: make(map[uintptr]*clientOpt),
 	}
 
 	// set http handler for socke.io
@@ -102,39 +98,62 @@ func init() {
 }
 
 // Set handler to execute clients authenticate, connect and disconnect.
-func Handler(handler *SocketHandler) {
-	if handler != nil {
-		logger.E("Invalid socket event or callback!")
-		wsc.handler = handler
-	}
+func SetHandlers(auth AuthHandler, conn ConnectHandler, disc DisconnectHandler) {
+	wsc.authHandler, wsc.connHandler, wsc.discHandler = auth, conn, disc
+	logger.D("Set wsio handlers")
 }
 
-// Register single socket event, the input params numst not empty and nil.
-func On(evt string, callback SocketEvent) error {
-	if evt == "" || callback == nil {
-		logger.E("Invalid socket event or callback!")
-		return invar.ErrInvalidState
+// Set adapter to register socket signaling events.
+func SetAdapter(adaptor SignalingAdaptor) error {
+	if adaptor == nil {
+		logger.W("Invalid socket event adaptor!")
+		return nil
 	}
 
-	logger.D("Register socket event:", evt)
-	evtCtler := &SocketController{evt: evt, handler: callback}
+	evts := adaptor.Signalings()
+	if evts == nil || len(evts) == 0 {
+		logger.W("No signaling event keys!")
+		return nil
+	}
 
-	wsc.controllers[evt] = evtCtler
-	wsc.server.On(evt, func(sc sio.Socket, uuid, params string) string {
-		return callback(evtCtler, uuid, params)
-	})
-	return nil
-}
-
-// Register multiple socket events from given mapping, in shoule interrupt
-// when one event register failed.
-func Ons(events map[string]SocketEvent) error {
-	for evt, callback := range events {
-		if err := On(evt, callback); err != nil {
-			return err
+	// register socket signaling events
+	for _, evt := range evts {
+		if evt != "" {
+			callback := adaptor.Dispatch(evt)
+			if callback != nil {
+				if err := wsc.server.On(evt, callback); err != nil {
+					return err
+				}
+				logger.D("Bind signaling event", evt)
+			}
 		}
 	}
 	return nil
+}
+
+// read wsio configs from file
+func setupWsioConfigs() {
+	if interval, err := beego.AppConfig.Int64("wsio::interval"); err != nil {
+		logger.W("Read wsio::interval, err:", err)
+	} else if interval > 0 {
+		serverPingInterval = time.Duration(interval) * time.Second
+	}
+
+	if timeout, err := beego.AppConfig.Int64("wsio::timeout"); err != nil {
+		logger.W("Read wsio::timeout, err:", err)
+	} else if timeout > 0 {
+		serverPingTimeout = time.Duration(timeout) * time.Second
+	}
+
+	if using, err := beego.AppConfig.Bool("wsio::optinal"); err != nil {
+		logger.W("Load wsio::optinal, err:", err)
+	} else if using {
+		UsingOption = using
+	}
+
+	// logout the configs value
+	logger.D("Configs interval:", serverPingInterval,
+		"timeout:", serverPingTimeout, "optional:", UsingOption)
 }
 
 // createHandler create http handler for socket.io
@@ -189,13 +208,17 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 
 	// auth client token by handler if set Authenticate function
 	// handler, or just use token as uuid when not set.
-	uuid := token
-	var option interface{} = nil
-	if cc.handler != nil && cc.handler.OnAuthenticate != nil {
-		uid, opt, err := cc.handler.OnAuthenticate(token)
+	uuid, option := token, ""
+	if cc.authHandler != nil {
+		uid, opt, err := cc.authHandler(token)
 		if err != nil || uid == "" {
-			return invar.ErrInvalidClient
+			return invar.ErrAuthDenied
+		} else if UsingOption && opt == "" {
+			logger.E("Empty client", uid, "option data!")
+			return invar.ErrAuthDenied
 		}
+
+		logger.D("Decode token, uuid:", uid, "opt:", opt)
 		uuid, option = uid, opt
 	}
 
@@ -210,40 +233,40 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 func (cc *wingSIO) onConnect(sc sio.Socket) {
 	// find client uuid and unbind -> http.Request
 	h := uintptr(unsafe.Pointer(sc.Request()))
-	c := cc.unbindUUIDFromHTTPLocked(h)
-	if c == nil || c.UID == "" {
+	co := cc.unbindUUIDFromHTTPLocked(h)
+	if co == nil || co.UID == "" {
 		logger.E("Invalid socket request bind!")
 		sc.Disconnect()
 		return
 	}
 
-	clientPool := core.Clients()
-	if err := clientPool.Register(c.UID, sc, c.Opt); err != nil {
-		logger.E("Faild register socket client:", c.UID)
+	clientPool := clients.Clients()
+	if err := clientPool.Register(co.UID, sc, co.Opt); err != nil {
+		logger.E("Faild register socket client:", co.UID)
 		sc.Disconnect()
 		return
 	}
 
 	// handle connect callback for socket with uuid
-	if cc.handler != nil && cc.handler.OnConnect != nil {
-		if err := cc.handler.OnConnect(c.UID, c.Opt); err != nil {
-			logger.E("Client:", c.UID, "connect socket err:", err)
+	if cc.connHandler != nil {
+		if err := cc.connHandler(co.UID, co.Opt); err != nil {
+			logger.E("Client:", co.UID, "connect socket err:", err)
 			sc.Disconnect()
 		}
 	}
-	logger.I("Connected socket client:", c.UID)
+	logger.I("Connected socket client:", co.UID)
 }
 
 // onDisconnected event of disconnect
 func (cc *wingSIO) onDisconnected(sc sio.Socket) {
-	uuid, opt := core.Clients().Deregister(sc)
-	if cc.handler != nil && cc.handler.OnDisconnect != nil {
-		cc.handler.OnDisconnect(uuid, opt)
+	uuid, opt := clients.Clients().Deregister(sc)
+	if cc.discHandler != nil {
+		cc.discHandler(uuid, opt)
 	}
 }
 
 // bindHTTP2UUIDLocked bind http request pointer -> uuid on locked status
-func (cc *wingSIO) bindHTTP2UUIDLocked(h uintptr, uuid string, opt interface{}) {
+func (cc *wingSIO) bindHTTP2UUIDLocked(h uintptr, uuid, opt string) {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 

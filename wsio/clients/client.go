@@ -8,19 +8,20 @@
 // 00001       2022/02/09   yangping       New version
 // -------------------------------------------------------------------
 
-package core
+package clients
 
 import (
 	sio "github.com/googollee/go-socket.io"
+	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 )
 
 // socket connected client
 type client struct {
-	id     string      // Client id, maybe same as uuid
-	socket sio.Socket  // Client socket.io connection.
-	option interface{} // Client optional data
+	id     string     // Client id, maybe same as uuid
+	option string     // Client optional data, can save as nickname, category, type, struct json string and so on
+	socket sio.Socket // Client socket.io connection.
 }
 
 // Generate a new client, just init client id.
@@ -37,13 +38,13 @@ func (c *client) UID() string {
 	return c.id
 }
 
-// Return client extra optional data, it maybe nil when not set.
-func (c *client) Option() interface{} {
+// Return client extra optional data.
+func (c *client) Option() string {
 	return c.option
 }
 
 // Set client optional data.
-func (c *client) SetOption(opt interface{}) {
+func (c *client) SetOption(opt string) {
 	c.option = opt
 }
 
@@ -92,6 +93,23 @@ func (c *client) Leave(room string) error {
 	return c.socket.Leave(room)
 }
 
+// Pull client leave all joined rooms.
+func (c *client) LeaveRooms() error {
+	if !c.registered() {
+		return invar.ErrInvalidState
+	}
+
+	rooms := c.socket.Rooms()
+	for _, room := range rooms {
+		if err := c.socket.Leave(room); err != nil {
+			return err
+		}
+	}
+
+	logger.D("Client:", c.id, "leave all rooms")
+	return nil
+}
+
 // Return client joined rooms, it maybe nil when not joined.
 func (c *client) Rooms() ([]string, error) {
 	if !c.registered() {
@@ -121,21 +139,8 @@ func (c *client) Broadcast(evt, msg string, rooms ...string) error {
 		return invar.ErrInvalidState
 	}
 
-	tagrooms := []string{}
-	if len(rooms) > 0 {
-		for _, room := range rooms {
-			if room != "" { // pick valid target rooms from given params
-				tagrooms = append(tagrooms, room)
-			}
-		}
-	} else {
-		rooms := c.socket.Rooms()
-		for _, room := range rooms {
-			if room == "" { // pick joined rooms when not given indicate rooms
-				tagrooms = append(tagrooms, room)
-			}
-		}
-	}
+	// get target rooms from input params or joined
+	tagrooms := comm.Condition(len(rooms) > 0, rooms, c.socket.Rooms()).([]string)
 
 	// execute broadcast to valid target rooms
 	for _, room := range tagrooms {
@@ -151,7 +156,7 @@ func (c *client) Broadcast(evt, msg string, rooms ...string) error {
 // --------
 
 // Binds the socket with client.
-func (c *client) register(sc sio.Socket, opt interface{}) error {
+func (c *client) register(sc sio.Socket, opt string) error {
 	if c.registered() {
 		cid, sid := c.id, sc.Id()
 		logger.E("Client", cid, "already bind socket", sid)
