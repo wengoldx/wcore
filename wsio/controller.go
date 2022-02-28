@@ -13,6 +13,7 @@ package wsio
 import (
 	"encoding/json"
 	sio "github.com/googollee/go-socket.io"
+	"github.com/wengoldx/wing/logger"
 )
 
 // Auth client outset, it will disconnect when return no-nil error
@@ -69,6 +70,7 @@ func AckResp(msg string) string {
 	resp, _ := json.Marshal(&EventAck{
 		State: StSuccess, Message: msg,
 	})
+	logger.D("SIO Response data >>", msg)
 	return string(resp)
 }
 
@@ -77,5 +79,6 @@ func AckError(msg string) string {
 	resp, _ := json.Marshal(&EventAck{
 		State: StError, Message: msg,
 	})
+	logger.E("SIO Response err >>", msg)
 	return string(resp)
 }
