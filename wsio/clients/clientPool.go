@@ -220,6 +220,7 @@ func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, string) {
 // Increate waiting weight for client without acquiring the lock.
 func (cp *ClientPool) waitingLocked(cid string) {
 	cp.waitings[cid] = time.Now().UnixNano()
+	logger.D("Client", cid, "start waiting...")
 }
 
 // Move client out of waiting state without acquiring the lock.
