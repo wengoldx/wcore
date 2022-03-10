@@ -39,7 +39,6 @@ var (
 // ensureValidatorGenerated generat the validator instance if need
 func ensureValidatorGenerated() {
 	if Validator == nil {
-		logger.D("Generat the singleton validator instance")
 		Validator = validator.New()
 	}
 }
@@ -55,10 +54,10 @@ func RegisterValidators(valmap map[string]validator.Func) {
 func RegisterFieldValidator(tag string, valfunc validator.Func) {
 	ensureValidatorGenerated()
 	if err := Validator.RegisterValidation(tag, valfunc); err != nil {
-		logger.E("Register struct field validator:"+tag+", err:", err)
-	} else {
-		logger.D("struct field validator:", tag)
+		logger.E("Register validator:"+tag+", err:", err)
+		return
 	}
+	logger.I("Registered validator:", tag)
 }
 
 // responCheckState check respon state and print out log, the datatype must
@@ -279,7 +278,6 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 
 	// validate input params if need
 	if isvalidate {
-		logger.D("Validating the input params:", ps)
 		ensureValidatorGenerated()
 		if err := Validator.Struct(ps); err != nil {
 			c.E400Validate(ps, err.Error())
@@ -288,9 +286,7 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 	}
 
 	// execute business function after unmarshal and validated
-	status, resp := nextFunc()
-	// logger.D("Using protect:", isprotect, "mode limit response error to client")
-	if resp != nil {
+	if status, resp := nextFunc(); resp != nil {
 		c.responCheckState(datatype, isprotect, status, resp)
 	} else {
 		c.responCheckState(datatype, isprotect, status)

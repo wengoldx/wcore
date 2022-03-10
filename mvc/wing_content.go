@@ -131,7 +131,7 @@ func openMySQLPool(charset string, sessions []string) error {
 			// just connect local database server
 			dsn = fmt.Sprintf(mysqldsnLocal, dbuser, dbpwd, dbname, charset)
 		}
-		logger.D("Mysql session:", session, " for DSN:", dsn)
+		logger.I("Open MySQL on {", session, ":", dsn, "}")
 
 		// open and connect database
 		con, err := sql.Open("mysql", dsn)
@@ -269,7 +269,7 @@ func OpenMssql(charset string) error {
 
 	driver := "mssql"
 	dsn := fmt.Sprintf(mssqldsn, server, port, dbn, user, pwd, dts[0], dts[1])
-	logger.D("SQL Server DSN:", dsn)
+	logger.I("Open MSSQL Server on {", dsn, "}")
 
 	// open and connect database
 	con, err := sql.Open(driver, dsn)

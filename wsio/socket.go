@@ -100,7 +100,7 @@ func init() {
 // Set handler to execute clients authenticate, connect and disconnect.
 func SetHandlers(auth AuthHandler, conn ConnectHandler, disc DisconnectHandler) {
 	wsc.authHandler, wsc.connHandler, wsc.discHandler = auth, conn, disc
-	logger.D("Set wsio handlers")
+	logger.I("Set wsio handlers...")
 }
 
 // Set adapter to register socket signaling events.
@@ -124,7 +124,7 @@ func SetAdapter(adaptor SignalingAdaptor) error {
 				if err := wsc.server.On(evt, callback); err != nil {
 					return err
 				}
-				logger.D("Bind signaling event", evt)
+				logger.I("Bind signaling event:", evt)
 			}
 		}
 	}
@@ -152,7 +152,7 @@ func setupWsioConfigs() {
 	}
 
 	// logout the configs value
-	logger.D("Configs interval:", serverPingInterval,
+	logger.I("Configs interval:", serverPingInterval,
 		"timeout:", serverPingTimeout, "optional:", UsingOption)
 }
 
@@ -218,13 +218,12 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 			return invar.ErrAuthDenied
 		}
 
-		logger.D("Decode token, uuid:", uid, "opt:", opt)
+		logger.I("Decoded client token, uuid:", uid, "opt:", opt)
 		uuid, option = uid, opt
 	}
 
 	// bind http.Request -> uuid
 	h := uintptr(unsafe.Pointer(req))
-	logger.D("Bind request:", h, "with client:", uuid)
 	cc.bindHTTP2UUIDLocked(h, uuid, option)
 	return nil
 }

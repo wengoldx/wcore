@@ -147,7 +147,7 @@ func ToXMLReplace(input interface{}, from, to string) (string, error) {
 
 	trimsrc := strings.TrimSpace(from)
 	if trimsrc != "" {
-		logger.D("Replace xml string from:", trimsrc, "to:", to)
+		logger.I("Replace xml string from:", trimsrc, "to:", to)
 		xmlout = strings.Replace(xmlout, trimsrc, to, -1)
 	}
 	return xmlout, nil

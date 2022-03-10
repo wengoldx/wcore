@@ -87,17 +87,16 @@ func (t *Task) SetInterval(interval int) {
 
 // innerPostFor start runtime to post action
 func (t *Task) innerPostFor(action string) {
-	logger.D("Start runtime to post action:", action)
+	logger.I("Start runtime to post action:", action)
 	go func() { chexe <- action }()
 }
 
 // innerTaskExecuter task execute monitor to listen tasks
 func (t *Task) innerTaskExecuter(callback TaskCallback) {
 	for {
-		logger.D("Blocking for task requir select...")
 		select {
 		case action := <-chexe:
-			logger.D("Received request from:", action)
+			logger.I("Received request from:", action)
 			if callback == nil {
 				logger.E("Nil task callback, abort request")
 				break
@@ -121,13 +120,13 @@ func (t *Task) innerTaskExecuter(callback TaskCallback) {
 			if err := callback(taskdata); err != nil {
 				logger.E("Execute task callback err:", err)
 				if t.interrupt {
-					logger.D("Interrupted tasks when case error")
+					logger.I("Interrupted tasks when case error")
 					t.executing = false
 					break
 				}
 			}
 			if t.interval > 0 {
-				logger.D("Waiting to next task after:", t.interval)
+				logger.I("Waiting to next task after:", t.interval)
 				time.Sleep(t.interval)
 			}
 			t.executing = false

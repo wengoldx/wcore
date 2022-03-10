@@ -70,7 +70,6 @@ func AckResp(msg string) string {
 	resp, _ := json.Marshal(&EventAck{
 		State: StSuccess, Message: msg,
 	})
-	logger.D("SIO Response data >>", msg)
 	return string(resp)
 }
 

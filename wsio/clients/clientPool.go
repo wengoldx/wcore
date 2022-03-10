@@ -179,7 +179,7 @@ func (cp *ClientPool) registerLocked(cid string, sc sio.Socket, opt string) erro
 			return nil
 		}
 
-		logger.D("Drop socket", oldOneID, "of client", cid)
+		logger.W("Drop binded socket", oldOneID)
 		delete(cp.s2c, oldOneID)
 		oldOne.deregister() // reset and  disconnet the old socket
 		newOne = oldOne
@@ -192,7 +192,7 @@ func (cp *ClientPool) registerLocked(cid string, sc sio.Socket, opt string) erro
 		return err
 	}
 
-	logger.D("Add client", cid, "bind socket", sid)
+	logger.I("Client", cid, "bind socket", sid)
 	cp.clients[cid] = newOne
 	cp.s2c[sid] = cid // same as uuid
 	return nil
@@ -212,7 +212,7 @@ func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, string) {
 		}
 	}
 
-	logger.I("Disconnect unkown client socket", sid)
+	logger.I("Disconnect unkown socket", sid)
 	sc.Disconnect()
 	return "", ""
 }
@@ -220,13 +220,13 @@ func (cp *ClientPool) deregisterLocked(sc sio.Socket) (string, string) {
 // Increate waiting weight for client without acquiring the lock.
 func (cp *ClientPool) waitingLocked(cid string) {
 	cp.waitings[cid] = time.Now().UnixNano()
-	logger.D("Client", cid, "start waiting...")
+	logger.I("Client", cid, "start waiting...")
 }
 
 // Move client out of waiting state without acquiring the lock.
 func (cp *ClientPool) leaveWaitingLocked(cid string) {
 	if _, ok := cp.waitings[cid]; ok {
-		logger.D("Client", cid, "leave waiting")
+		logger.I("Client", cid, "leave waiting")
 		delete(cp.waitings, cid)
 	}
 }

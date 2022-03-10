@@ -106,7 +106,7 @@ func GetIP(remoteaddr string) string {
 	if ip == "::1" {
 		ip = "127.0.0.1"
 	}
-	logger.D("Got ip [", ip, "] from [", remoteaddr, "]")
+	logger.I("Got ip [", ip, "] from [", remoteaddr, "]")
 	return ip
 }
 
@@ -304,7 +304,7 @@ func httpClientDo(req *http.Request, setRequestFunc SetRequest) ([]byte, error) 
 			return nil, err
 		}
 
-		logger.D("httpClientDo: ignore TLS:", ignoreTLS)
+		logger.I("httpClientDo: ignore TLS:", ignoreTLS)
 		client.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: ignoreTLS,

@@ -255,7 +255,7 @@ func (s *DTalkSender) send(posturl string, data interface{}) error {
 		return err
 	}
 
-	logger.D("Send text message result:{code:", result.Errcode, "msg:", result.Errmsg, "}")
+	logger.I("Send text message result:{code:", result.Errcode, "msg:", result.Errmsg, "}")
 	if strings.ToLower(strings.TrimSpace(result.Errmsg)) != "ok" {
 		return invar.ErrSendFailed
 	}
@@ -302,7 +302,6 @@ func (s *DTalkSender) SendText(content string, atMobiles, atUserIDs []string, is
 		atUserIDs = []string{}
 	}
 
-	logger.D("Send text type message")
 	return s.send(posturl, &DTMsgText{
 		At:      DTAt{Mobiles: atMobiles, UserIDs: atUserIDs, AtAll: isAtAll},
 		Text:    DTText{Content: msg},
@@ -338,7 +337,6 @@ func (s *DTalkSender) SendLink(title, text, picURL, msgURL string, isSecure ...b
 		return err
 	}
 
-	logger.D("Send link type message")
 	return s.send(posturl, &DTMsgLink{
 		Link:    DTLink{Title: title, Text: text, PicURL: picURL, MsgURL: msgURL},
 		MsgType: DTalkMsgLink,
@@ -381,7 +379,6 @@ func (s *DTalkSender) SendMarkdown(title, text string, atMobiles, atUserIds []st
 		return err
 	}
 
-	logger.D("Send markdown type message")
 	return s.send(posturl, &DTMsgMarkdown{
 		Text:    DTMarkdown{Title: title, Text: text},
 		At:      DTAt{Mobiles: atMobiles, UserIDs: atUserIds, AtAll: isAtAll},
@@ -418,7 +415,6 @@ func (s *DTalkSender) SendActionCard(title, text, singleTitle, singleURL string,
 		return err
 	}
 
-	logger.D("Send action card type message with single action")
 	return s.send(posturl, &DTMsgActionCard{
 		Text:    DTActionCard{Title: title, Text: text, BtnLayer: "0", SingleTitle: singleTitle, SingleURL: singleURL},
 		MsgType: DTalkMsgActionCard,
@@ -468,7 +464,6 @@ func (s *DTalkSender) SendActionCard2(title, text string, btns []DTButton, isVer
 	}
 
 	vertical := Condition(isVertical, "0", "1").(string)
-	logger.D("Send action card type message with multips buttons")
 	return s.send(posturl, &DTMsgSplitAction{
 		Text:    DTSplitAction{Title: title, Text: text, BtnLayer: vertical, Btns: btns},
 		MsgType: DTalkMsgActionCard,
@@ -511,7 +506,6 @@ func (s *DTalkSender) SendFeedCard(links []DTFeedLink, isSecure ...bool) error {
 		return err
 	}
 
-	logger.D("Send feed card type message")
 	return s.send(posturl, &DTMsgFeedCard{
 		Card:    DTFeedCard{Links: links},
 		MsgType: DTalkFeedCard,
