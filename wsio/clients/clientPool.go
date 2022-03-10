@@ -138,6 +138,23 @@ func (cp *ClientPool) SortWaitings() []string {
 	return uuids
 }
 
+// Count clients by option key, it not count the empty option clients.
+func (cp *ClientPool) Counts() map[string]int {
+	cnts := make(map[string]int)
+	for _, client := range cp.clients {
+		if client == nil || client.option == "" {
+			continue
+		}
+
+		if cnt, ok := cnts[client.option]; ok {
+			cnts[client.option] = cnt + 1
+		} else {
+			cnts[client.option] = 1
+		}
+	}
+	return cnts
+}
+
 // -------- quick handle functions for indicate client
 
 // Return client optinal data, it maybe nil.
