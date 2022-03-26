@@ -18,9 +18,9 @@ import (
 
 // Task datas for multipe generate
 type WTask struct {
-	Name     string           // monitor task name
-	TaskFunc toolbox.TaskFunc // monitor task execute function
-	SpecStr  string           // monitor task interval
+	Name string           // monitor task name
+	Func toolbox.TaskFunc // monitor task execute function
+	Spec string           // monitor task interval
 }
 
 // Add a single monitor task to list
@@ -33,7 +33,7 @@ func AddTask(tname, spec string, f toolbox.TaskFunc) {
 // Generate tasks and start them as monitors.
 func StartTasks(monitors []*WTask) {
 	for _, m := range monitors {
-		AddTask(m.Name, m.SpecStr, m.TaskFunc)
+		AddTask(m.Name, m.Spec, m.Func)
 	}
 
 	toolbox.StartTask()
