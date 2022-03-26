@@ -333,5 +333,5 @@ func FormatNow(layout ...string) string {
 	if layout != nil && len(layout) > 0 && layout[0] != "" {
 		return FormatUnix(layout[0], nowns/1e9, (nowns%1e9)/1e6)
 	}
-	return FormatUnix(TimeLayout, nowns/1e9, (nowns%1e9)/1e6)
+	return FormatUnix(TimeLayout, nowns/1e9)
 }
