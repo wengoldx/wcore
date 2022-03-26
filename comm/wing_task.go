@@ -12,27 +12,35 @@
 package comm
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/toolbox"
 	"github.com/wengoldx/wing/logger"
 )
 
 // Task datas for multipe generate
 type WTask struct {
-	Name string           // monitor task name
-	Func toolbox.TaskFunc // monitor task execute function
-	Spec string           // monitor task interval
+	Name    string           // monitor task name
+	Func    toolbox.TaskFunc // monitor task execute function
+	Spec    string           // monitor task interval
+	ForProd bool             // indicate the task only for prod mode, default no limit
 }
 
 // Add a single monitor task to list
 func AddTask(tname, spec string, f toolbox.TaskFunc) {
-	logger.I("Create task:", tname, "and add to list")
 	monitor := toolbox.NewTask(tname, spec, f)
+	monitor.ErrLimit = 0
+
+	logger.I("Create task:", tname, "and add to list")
 	toolbox.AddTask(tname, monitor)
 }
 
 // Generate tasks and start them as monitors.
 func StartTasks(monitors []*WTask) {
 	for _, m := range monitors {
+		if m.ForProd && beego.BConfig.RunMode != "prod" {
+			logger.W("Filter out task:", m.Name, "on dev mode")
+			continue
+		}
 		AddTask(m.Name, m.Spec, m.Func)
 	}
 
