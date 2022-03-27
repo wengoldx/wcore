@@ -65,6 +65,16 @@ type wingSIO struct {
 
 	// socket golbal handler to execute clients disconnect actions
 	discHandler DisconnectHandler
+
+	// `WARNING` :
+	//
+	// the googolle/socket.io will call onConnect event duplicate times,
+	// so handle the valid first and abort the invalid second time.
+	//
+	//	see more : go-socket.io@v1.0.1/parse.go   > Decode() > NextReader()
+	//			 : go-socket.io@v1.0.1/socket.go  > loop() > for { onPacket }
+	//			 : go-socket.io@v1.0.1/handler.go > onPacket()
+	bunds map[uintptr]byte // http request url to 0 byte char (not used)
 }
 
 // Socket connection server
@@ -84,6 +94,7 @@ func init() {
 	setupWsioConfigs()
 	wsc = &wingSIO{
 		caches: make(map[uintptr]*clientOpt),
+		bunds:  make(map[uintptr]byte),
 	}
 
 	// set http handler for socke.io
@@ -232,6 +243,12 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 func (cc *wingSIO) onConnect(sc sio.Socket) {
 	// find client uuid and unbind -> http.Request
 	h := uintptr(unsafe.Pointer(sc.Request()))
+	if _, ok := cc.bunds[h]; ok /* already bund */ {
+		logger.W("Duplicate call connect, abort for", h)
+		return
+	}
+	cc.bunds[h] = 0 // cache the first time
+
 	co := cc.unbindUUIDFromHTTPLocked(h)
 	if co == nil || co.UID == "" {
 		logger.E("Invalid socket request bind!")
@@ -254,6 +271,7 @@ func (cc *wingSIO) onConnect(sc sio.Socket) {
 		}
 	}
 	logger.I("Connected socket client:", co.UID)
+	go cc.clearBundCache(h)
 }
 
 // onDisconnected event of disconnect
@@ -283,4 +301,10 @@ func (cc *wingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 		return co
 	}
 	return nil
+}
+
+// Clear the bind cache after 10ms
+func (cc *wingSIO) clearBundCache(h uintptr) {
+	time.Sleep(10 * time.Millisecond)
+	delete(cc.bunds, h)
 }
