@@ -335,3 +335,14 @@ func FormatNow(layout ...string) string {
 	}
 	return FormatUnix(TimeLayout, nowns/1e9)
 }
+
+// FormatDur format the time before or after now by add given duration, it
+// may format as TimeLayout when input layout not set, and the formated
+// time contain location timezoom.
+func FormatDur(d time.Duration, layout ...string) string {
+	nowns := time.Now().Add(d).UnixNano()
+	if layout != nil && len(layout) > 0 && layout[0] != "" {
+		return FormatUnix(layout[0], nowns/1e9, (nowns%1e9)/1e6)
+	}
+	return FormatUnix(TimeLayout, nowns/1e9)
+}
