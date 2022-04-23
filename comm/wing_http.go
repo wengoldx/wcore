@@ -53,7 +53,7 @@ func readResponse(resp *http.Response) ([]byte, error) {
 		logger.E("Failed read response, err:", err)
 		return nil, err
 	}
-	logger.D("Read response:", string(body))
+	logger.D("Response:", string(body))
 	return body, nil
 }
 
@@ -64,7 +64,7 @@ func unmarshalResponse(body []byte, out interface{}) error {
 		logger.E("Unmarshal body to struct err:", err)
 		return err
 	}
-	logger.D("Response to struct:", out)
+	logger.D("Response struct:", out)
 	return nil
 }
 
@@ -128,7 +128,7 @@ func HttpGet(tagurl string, params ...interface{}) ([]byte, error) {
 	}
 
 	rawurl := EncodeUrl(tagurl)
-	logger.D("Http get:", rawurl)
+	logger.D("Http Get:", rawurl)
 
 	resp, err := http.Get(rawurl)
 	if err != nil {
@@ -156,7 +156,7 @@ func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byt
 	if len(contentType) > 0 {
 		ct = contentType[0]
 	}
-	logger.D("Http post:", tagurl, "input:", postdata, "contentType:", ct)
+	logger.D("Http Post:", tagurl, "ContentType:", ct)
 
 	switch ct {
 	case ContentTypeJson:
@@ -164,7 +164,6 @@ func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byt
 	case ContentTypeForm:
 		return httpPostForm(tagurl, postdata.(url.Values))
 	}
-	logger.E("HttpPost: invalid contentType:", ct)
 	return nil, invar.ErrInvalidParams
 }
 
@@ -224,7 +223,7 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 	}
 
 	rawurl := EncodeUrl(tagurl)
-	logger.D("Http client get:", rawurl)
+	logger.D("Http Client Get:", rawurl)
 
 	// generate new request instanse
 	req, err := http.NewRequest("GET", rawurl, http.NoBody)
@@ -260,7 +259,7 @@ func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interf
 	} else {
 		body = http.NoBody
 	}
-	logger.D("Http client post:", tagurl)
+	logger.D("Http Client Post:", tagurl)
 
 	// generate new request instanse
 	req, err := http.NewRequest("POST", tagurl, body)
@@ -315,7 +314,7 @@ func httpClientDo(req *http.Request, setRequestFunc SetRequest) ([]byte, error) 
 	// execute http request
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.E("Execute client DO err:", err)
+		logger.E("Execute client DO, err:", err)
 		return nil, err
 	}
 

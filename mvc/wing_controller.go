@@ -240,6 +240,16 @@ func (c *WingController) E410Gone(err ...string) {
 	c.ErrorState(invar.E410Gone, err...)
 }
 
+// Get and check valid token from header by key 'token', it may
+// response error to client when token not found or empty.
+func (c *WingController) ViaAuthToken() string {
+	token := c.Ctx.Request.Header.Get("token")
+	if token == "" {
+		c.E401Unauthed("Not found token from header!")
+	}
+	return token
+}
+
 // ClientFrom return client ip from who requested
 func (c *WingController) ClientFrom() string {
 	return c.Ctx.Request.RemoteAddr
