@@ -101,10 +101,13 @@ import (
 //	Example of JSON returns when there are errors: {
 //		"errcode" : 40003, "errmsg" : "invalid openid"
 //	}
+var WeChatAgentsConfig map[string]*WxIFAgent
+
 type WxIFAgent struct {
-	AppID     string // Wechat Official Account App ID
-	AppSecret string // Wechat Official Account App Securet
-	Scope     string // 'snsapi_base' or 'snsapi_userinfo'
+	AppID     string `json:"appid"`     // Wechat Official Account App ID
+	AppSecret string `json:"appsecret"` // Wechat Official Account App Securet
+	Scope     string `json:"scope"`     // 'snsapi_base' or 'snsapi_userinfo'
+	WxSmall   bool   `json:"wxsmall"`   // wechat small login or not
 }
 
 // WxToken wechat access and refresh tokens
@@ -157,10 +160,20 @@ func (w *WxIFAgent) ToWxCodeUrl(redirecturl string, state ...string) string {
 }
 
 // ToWxTokenUrl bind request code and return wechat url to get access token
-// Step 2
+// Step 2-1
 func (w *WxIFAgent) ToWxTokenUrl(requestcode string) string {
 	tokenurl := wxauth2ApisUrlDomain +
 		"/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code"
+	tokenurl = strings.Replace(tokenurl, "APPID", w.AppID, -1)
+	tokenurl = strings.Replace(tokenurl, "SECRET", w.AppSecret, -1)
+	return strings.Replace(tokenurl, "CODE", requestcode, -1)
+}
+
+// ToWxSmallTokenUrl bind request code and return wechat small url to get access token
+// Step 2-1 wechat small program login address
+func (w *WxIFAgent) ToWxSmallTokenUrl(requestcode string) string {
+	tokenurl := wxauth2ApisUrlDomain +
+		"/jscode2session?appid=APPID&secret=SECRET&js_code=CODE&grant_type=authorization_code"
 	tokenurl = strings.Replace(tokenurl, "APPID", w.AppID, -1)
 	tokenurl = strings.Replace(tokenurl, "SECRET", w.AppSecret, -1)
 	return strings.Replace(tokenurl, "CODE", requestcode, -1)
