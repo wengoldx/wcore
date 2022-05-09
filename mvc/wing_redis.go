@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -175,10 +175,8 @@ func (c *WingRedisConn) NsKeys(keys ...string) []string {
 // NsArrKeys transform origin keys to namespaced keys
 func (c *WingRedisConn) NsArrKeys(keys []string) []string {
 	nskeys := []string{}
-	if keys != nil && len(keys) > 0 {
-		for _, key := range keys {
-			nskeys = append(nskeys, key)
-		}
+	if len(keys) > 0 {
+		nskeys = append(nskeys, keys...)
 	}
 	return nskeys
 }
@@ -208,7 +206,7 @@ func (c *WingRedisConn) setWithExpire(key, commond string, value interface{}, ex
 
 // parseGetOptions parse the GETEX, GETDEL commonds options
 func (c *WingRedisConn) parseGetOptions(options ...interface{}) (string, int64) {
-	if options == nil || len(options) == 0 {
+	if len(options) == 0 {
 		logger.E("Redis: invalid options, parse failed")
 		return "", 0
 	}
@@ -276,7 +274,7 @@ func (c *WingRedisConn) getKeyExpire(key, commond string) (int64, error) {
 // [expireat](https://redis.io/commands/expireat)
 func (c *WingRedisConn) setKeyExpire(key, commond string, expire int64, option ...string) bool {
 	set, err := false, invar.ErrInvalidRedisOptions
-	if option != nil && len(option) > 0 {
+	if len(option) > 0 {
 		switch option[0] {
 		case ExpNX, ExpXX, ExpGT, ExpLT:
 			set, err = redis.Bool(c.Conn.Do(commond, c.serviceNamespace+key, expire, option[0]))

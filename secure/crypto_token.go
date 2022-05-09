@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -57,7 +57,7 @@ func ViaLoginToken(acc, pwd, token string, duration int64) (bool, error) {
 	}
 
 	segments := strings.Split(string(origin), ".")
-	if segments != nil && len(segments) == 2 {
+	if len(segments) == 2 {
 		if segments[0] != EncodeB64MD5(acc+"."+pwd) {
 			return false, nil
 		}

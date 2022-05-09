@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -106,7 +106,7 @@ func (a *MailAgent) SendFormat(email EmailContent, mailto string, format ...map[
 func (a *MailAgent) SendAttach(email EmailContent, mailto, attach string, format ...map[string]string) error {
 	to := []string{mailto}
 	body := email.Body
-	if format != nil && len(format) > 0 {
+	if len(format) > 0 {
 		for key, content := range format[0] {
 			if key == "" || content == "" {
 				continue

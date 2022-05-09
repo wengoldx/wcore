@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -79,7 +79,7 @@ func (c *WingController) responCheckState(datatype string, needCheck bool, state
 	}
 
 	c.Ctx.Output.Status = state
-	if data != nil && len(data) > 0 {
+	if len(data) > 0 {
 		c.Data[datatype] = data[0]
 	}
 
@@ -154,7 +154,7 @@ func (c *WingController) ResponData(state int, data ...map[interface{}]interface
 	ctl, act := c.GetControllerAndAction()
 	logger.I("Respone state:OK-DATA >", ctl+"."+act)
 	c.Ctx.Output.Status = state
-	if data != nil && len(data) > 0 {
+	if len(data) > 0 {
 		c.Data = data[0]
 	}
 	c.ServeFormatted()
@@ -176,7 +176,7 @@ func (c *WingController) ResponOK() {
 func (c *WingController) ErrorState(state int, err ...string) {
 	ctl, act := c.GetControllerAndAction()
 	errmsg := invar.StatusText(state)
-	if err != nil && len(err) > 0 {
+	if len(err) > 0 {
 		errmsg += ", " + err[0]
 	}
 	logger.E("Respone error:", state, ">", ctl+"."+act, errmsg)
@@ -342,27 +342,27 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 //		} /** , false /* not limit error message even code is 40x */ */)
 //	}
 func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, option ...interface{}) {
-	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
+	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("json", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterUnmarshal(ps interface{}, nextFunc NextFunc, option ...interface{}) {
-	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
+	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("json", ps, nextFunc, false, isprotect)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
-	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
+	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("xml", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
 //	see DoAfterValidated, DoAfterValidatedXml
 func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
-	isprotect := !(option != nil && len(option) > 0 && !option[0].(bool))
+	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("xml", ps, nextFunc, false, isprotect)
 }

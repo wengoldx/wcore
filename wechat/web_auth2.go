@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -150,7 +150,7 @@ func (w *WxIFAgent) ToWxCodeUrl(redirecturl string, state ...string) string {
 	codeurl = strings.Replace(codeurl, "SCOPE", w.Scope, -1)
 
 	// replace the STATE field by given state as optional param
-	if state != nil && len(state) > 0 && len(state[0]) > 0 {
+	if len(state) > 0 && len(state[0]) > 0 {
 		codeurl = strings.Replace(codeurl, "STATE", state[0], -1)
 	}
 	return codeurl

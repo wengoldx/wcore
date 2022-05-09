@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -109,7 +109,7 @@ func (cp *ClientPool) LeaveWaiting(cid string) {
 // Return waiting clients ids
 func (cp *ClientPool) IdleClients() []string {
 	var idles []string
-	for k, _ := range cp.waitings {
+	for k := range cp.waitings {
 		idles = append(idles, k)
 	}
 	return idles

@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -14,6 +14,7 @@ package wing
 
 // import (
 // 	_ "github.com/wengoldx/wing/apis"
+// 	_ "github.com/wengoldx/wing/apis/acc"
 // 	_ "github.com/wengoldx/wing/apis/pay"
 // 	_ "github.com/wengoldx/wing/comm"
 // 	_ "github.com/wengoldx/wing/invar"

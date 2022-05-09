@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -380,10 +380,10 @@ func RSA2Sign4FB64(prifile string, original []byte) (string, error) {
 
 // Using RSA2 public key to verify PKCS#8, ASN.1 signatured data.
 func RSA2Verify(pubkey, original, signature []byte) error {
-	return RSA2Verify(pubkey, original, signature)
+	return RSAVerify(pubkey, original, signature)
 }
 
 // Using RSA2 public key to verify PKCS#8, ASN.1 signatured data.
 func RSA2Verify4F(pubfile string, original, signature []byte) error {
-	return RSA2Verify4F(pubfile, original, signature)
+	return RSAVerify4F(pubfile, original, signature)
 }

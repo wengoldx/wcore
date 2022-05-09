@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -84,7 +84,7 @@ func (c *SoleCoder) Gen(codelen int, times ...int) (string, error) {
 // Remove used sole code outof cache
 func (c *SoleCoder) Remove(code string) {
 	if c.codes != nil {
-		if ok, _ := c.codes[code]; ok {
+		if _, ok := c.codes[code]; ok {
 			c.codes[code] = false
 		}
 	}
@@ -97,7 +97,7 @@ func (c *SoleCoder) innerGenerate(codelen, radix int) (string, error) {
 	code := fmt.Sprintf(format, rand.Intn(radix))
 
 	// check generated code if it unique
-	if ok, cc := c.codes[code]; ok && cc {
+	if cc, ok := c.codes[code]; ok && cc {
 		return "", invar.ErrDupData
 	}
 	c.codes[code] = true

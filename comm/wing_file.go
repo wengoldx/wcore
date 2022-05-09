@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -365,7 +365,7 @@ func ReadPropFile(path string) (map[string]string, error) {
 
 // joinLeft only for ReadPropFile()
 func joinLeft(g []string) string {
-	if g == nil || len(g) == 0 {
+	if len(g) == 0 {
 		return ""
 	}
 	var bf bytes.Buffer
@@ -378,7 +378,7 @@ func joinLeft(g []string) string {
 			break
 		}
 	}
-	return string(bf.Bytes())
+	return bf.String()
 }
 
 // HumanReadable format the size number of len.
@@ -399,7 +399,7 @@ func VerifyFile(fh *multipart.FileHeader, maxBytes ...int64) (string, error) {
 	suffix := path.Ext(fh.Filename)
 
 	maxSizeInByte := (int64)(0)
-	if maxBytes != nil && len(maxBytes) > 0 && maxBytes[0] > 0 {
+	if len(maxBytes) > 0 && maxBytes[0] > 0 {
 		maxSizeInByte = maxBytes[0]
 	}
 

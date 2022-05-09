@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -325,7 +325,7 @@ func EncodeMD5B64(original string) string {
 // it same as EncodeMD5 when input only one string.
 func ToMD5Hex(input ...string) string {
 	h := md5.New()
-	if input != nil {
+	if len(input) > 0 {
 		for _, v := range input {
 			io.WriteString(h, v)
 		}

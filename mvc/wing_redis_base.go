@@ -1,7 +1,7 @@
-// Copyright (c) 2019-2029 DY All Rights Reserved.
+// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
 //
-// Author : yangping
-// Email  : youhei_yp@163.com
+// Author      : https://www.wengold.net
+// Email       : support@wengold.net
 //
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
@@ -35,7 +35,7 @@ import (
 // see https://redis.io/commands/set
 func (c *WingRedisConn) Set(key string, value interface{}, options ...interface{}) error {
 	err := invar.ErrInvalidRedisOptions
-	if options != nil && len(options) > 0 {
+	if len(options) > 0 {
 		switch option := options[0].(type) {
 		case string:
 			if len(options) > 1 {
