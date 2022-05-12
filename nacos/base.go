@@ -72,6 +72,25 @@ func accessValidParams(ns, gp string) {
 	}
 }
 
+// Load register server's nacos informations
+//	@return - string nacos remote server ip
+//			- string local server listing ip
+//			- string namespace id of local server
+//			- string group name of local server
+func loadConfigs() (string, string, string, string) {
+	svr := beego.AppConfig.String("nacossvr")
+	addr := beego.AppConfig.String("nacosaddr")
+	if svr == "" || addr == "" {
+		panic("Not found nacos configs!")
+	}
+
+	ns := beego.AppConfig.String("nacosns")
+	gp := beego.AppConfig.String("nacosgp")
+	accessValidParams(ns, gp)
+
+	return svr, addr, ns, gp
+}
+
 // -------- Auto Register Define --------
 
 // Server register informations
@@ -84,16 +103,37 @@ type ServerItem struct {
 // Callback to listen server address and port changed
 type RegisterCallback func(svr string, addr string, port int)
 
-// Register the given server
-//	@params ns    string namespace, rang in [NS_PROD, NS_DEV]
-//	@params addr  string business server running ip address
-//	@params group string group name, range in [GP_BASIC, GP_IFSC, GP_DTE, GP_CWS]
+// Register the given server, you must set configs in app.conf
 //	@return - *ServerStub nacos server stub instance
-func RegisterServer(nacos, ns, addr string, group string) *ServerStub {
-	accessValidParams(ns, group)
+//
+//	`NOTICE` : nacos config as follows.
+//
+// ----
+//
+//	; Nacos remote server host
+//	nacossvr = "10.239.40.24"
+//
+//	; Server nacos group name
+//	nacosgp = "group.ifsc"
+//
+//	[dev]
+//	; Nacos namespace id
+//	nacosns = "dunyu-server-dev"
+//
+//	; Inner net address for dev servers access
+//	nacosaddr = "10.239.20.99"
+//
+//	[prod]
+//	; Nacos namespace id
+//	nacosns = "dunyu-server-prod"
+//
+//	; Inner net address for prod servers access
+//	nacosaddr = "10.239.40.64"
+func RegisterServer() *ServerStub {
+	svr, addr, ns, group := loadConfigs()
 
 	// Generate nacos server stub and setup it
-	stub := NewServerStub(ns, nacos)
+	stub := NewServerStub(ns, svr)
 	if err := stub.Setup(); err != nil {
 		panic(err)
 	}
