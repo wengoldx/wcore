@@ -19,6 +19,7 @@ require (
 	github.com/issue9/assert v1.4.1 // indirect
 	github.com/micro/go-micro v1.18.0
 	github.com/mozillazg/go-pinyin v0.18.0
+	github.com/nacos-group/nacos-sdk-go v1.1.1
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.7.0
 	github.com/satori/go.uuid v1.2.0
