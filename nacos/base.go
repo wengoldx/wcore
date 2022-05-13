@@ -20,7 +20,7 @@ import (
 
 const (
 	LogLevel = "warn"          // default level to print nacos logs on warn, it not same nacos-sdk-go:info
-	logDir   = "./nacos/logs"  // default nacos logout dir
+	logDir   = "./nacos/logs"  // default nacos logs dir
 	cacheDir = "./nacos/cache" // default nacos caches dir
 
 	NS_META = "dunyu-meta-configs" // META namespace id
@@ -36,7 +36,7 @@ const (
 
 // Generate nacos client config, contain nacos remote server and
 // current business servers configs, this client keep alive with
-// 5s pingpong heartbeat and logout logs on info leven.
+// 5s pingpong heartbeat and output logs on warn leven.
 //
 //	`NOTICE`
 //	The remote server must access on http://{svr}:8848/nacos
@@ -95,15 +95,15 @@ func loadConfigs() (string, string, string, string) {
 
 // Server register informations
 type ServerItem struct {
-	Name     string           // Server name, same as beego app name
-	Group    string           // Server group, range in [GP_BASIC, GP_IFSC, GP_DTE, GP_CWS]
-	Callback RegisterCallback // Server register datas changed callback
+	Name     string         // Server name, same as beego app name
+	Group    string         // Server group, range in [GP_BASIC, GP_IFSC, GP_DTE, GP_CWS]
+	Callback ServerCallback // Server register datas changed callback
 }
 
-// Callback to listen server address and port changed
-type RegisterCallback func(svr string, addr string, port int)
+// Callback to listen server address and port changes
+type ServerCallback func(svr string, addr string, port int)
 
-// Register the given server, you must set configs in app.conf
+// Register current server to nacos, you must set configs in app.conf
 //	@return - *ServerStub nacos server stub instance
 //
 //	`NOTICE` : nacos config as follows.
@@ -144,48 +144,38 @@ func RegisterServer() *ServerStub {
 	// keep empty, so get server host as input param by 'addr'.
 	//
 	// And here not use cluster name, please keep it empty!
-	app := beego.BConfig.AppName
-	port := beego.BConfig.Listen.HTTPPort
+	app, port := beego.BConfig.AppName, beego.BConfig.Listen.HTTPPort
 	if err := stub.Register(app, addr, uint64(port), group); err != nil {
 		panic(err)
 	}
 
-	logger.I("Registered server:", app, "addr:", addr, "to nacos")
+	logger.I("Registered server", app+"@"+addr)
 	return stub
 }
 
-// Get target server informations and listen status change
-//	@params stub    *ServerStub   nacos server stub instance
-//	@params targets []*ServerItem target server registry informations
-func GetAndListen(stub *ServerStub, targets []*ServerItem) {
-	if stub == nil || len(targets) == 0 {
-		panic("Invalid server stub or empty targets servers!")
-	}
-
-	for _, tag := range targets {
-		if svr, err := stub.GetServer(tag.Name, tag.Group); err != nil {
-			panic("Get server, err:" + err.Error())
-		} else if len(svr.Hosts) > 0 {
-			addr, port := svr.Hosts[0].Ip, svr.Hosts[0].Port
-			logger.I("Get server:", tag.Name, "on", addr, port)
-
-			tag.Callback(tag.Name, addr, int(port))
-		}
-
-		// subscribe target server registry changed event
-		if err := stub.Subscribe(tag.Name, tag.OnChanged, tag.Group); err != nil {
-			panic("Subscribe " + tag.Name + " err:" + err.Error())
+// Listing services address and port changes, it will call the callback
+// immediately to return target service host when them allready registerd
+// to service central of nacos.
+//	@params servers []*ServerItem target server registry informations
+func (ss *ServerStub) ListenServers(servers []*ServerItem) {
+	for _, s := range servers {
+		if err := ss.Subscribe(s.Name, s.OnChanged, s.Group); err != nil {
+			panic("Subscribe server " + s.Name + " err:" + err.Error())
 		}
 	}
 }
 
-// Subscribe callback called when target server registry changed
-func (s *ServerItem) OnChanged(services []model.SubscribeService, err error) {
-	if err == nil && len(services) > 0 {
-		addr, port := services[0].Ip, services[0].Port
-		logger.I("Update server", s.Name, "changed to", addr, port)
-
-		s.Callback(s.Name, addr, int(port))
+// Subscribe callback called when target service address and port changed
+func (si *ServerItem) OnChanged(services []model.SubscribeService, err error) {
+	if err != nil {
+		logger.E("Received server", si.Name, "change, err:", err)
 		return
+	}
+
+	if len(services) > 0 {
+		addr, port := services[0].Ip, services[0].Port
+		logger.I("Update server", si.Name, "to {", addr, "-", port, "}")
+
+		si.Callback(si.Name, addr, int(port))
 	}
 }

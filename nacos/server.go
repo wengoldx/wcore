@@ -69,7 +69,6 @@ func (s *ServerStub) Register(name, host string, port uint64, opts ...string) er
 	dip := vo.RegisterInstanceParam{
 		Ip: host, Port: port, ServiceName: name,
 		Weight: 10, Enable: true, Healthy: true, Ephemeral: true,
-		Metadata: map[string]string{"idc": "shanghai"},
 	}
 
 	if cnt := len(opts); cnt > 0 {
