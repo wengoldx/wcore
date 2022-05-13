@@ -11,9 +11,7 @@
 package pay
 
 type PayAgent struct {
-	// Wgpay service access url domain, it allways get from app.conf
-	// by beego.AppConfig.String("domain") code.
-	Domain string
+	Domain string // Wgpay server access url, such as http://192.168.1.100:3000
 }
 
 // Trade ticket node
