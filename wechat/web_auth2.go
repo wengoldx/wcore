@@ -15,13 +15,11 @@ import (
 )
 
 // WxIFAgent interfaces agent to using Wechat Official Account AppID and AppSecret to
-// authenticate wechat user and get user profiles. it not support for wechat app, and
-// you may using UnionID to verify same wechat user if same one from multiple app on
-// wechat platforms.
+// authenticate wechat user and get user profiles.
 //
 // DESCRIPTION FROM [Wechat](https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html) at 2019/07/05
 //
-// There are four steps in the process for webpage authorization wich wechar OAuth2.0
+// There are four steps in the process for webpage authorization with wechar OAuth2.0
 //
 // #### Step 1
 //
@@ -89,7 +87,7 @@ import (
 //	    "errmsg"  : "invalid openid"
 //	}
 //
-// `OTHERS` :
+// `Additional` :
 //
 // Testing the validity of the authorization certificate (access_token)
 //
@@ -101,13 +99,11 @@ import (
 //	Example of JSON returns when there are errors: {
 //		"errcode" : 40003, "errmsg" : "invalid openid"
 //	}
-var WeChatAgentsConfig map[string]*WxIFAgent
-
 type WxIFAgent struct {
 	AppID     string `json:"appid"`     // Wechat Official Account App ID
 	AppSecret string `json:"appsecret"` // Wechat Official Account App Securet
-	Scope     string `json:"scope"`     // 'snsapi_base' or 'snsapi_userinfo'
-	WxSmall   bool   `json:"wxsmall"`   // wechat small login or not
+	Scope     string `json:"scope"`     // Scope key of 'snsapi_base' or 'snsapi_userinfo'
+	IsWxApp   bool   `json:"isapp"`     // Indicate wechat app or not, true is app
 }
 
 // WxToken wechat access and refresh tokens
@@ -138,13 +134,15 @@ type WxResult struct {
 	Message string `json:"errmsg"`
 }
 
+// Agents map
+var WxAgentsConfig map[string]*WxIFAgent
+
 const (
 	wxauth2OpenUrlDomain = "https://open.weixin.qq.com"
 	wxauth2ApisUrlDomain = "https://api.weixin.qq.com/sns"
 )
 
-// ToWxCodeUrl bind redirect url and return wechat url to get request code
-// Step 1
+// `Step 1` : Bind redirect url and return wechat url to get request code
 func (w *WxIFAgent) ToWxCodeUrl(redirecturl string, state ...string) string {
 	codeurl := wxauth2OpenUrlDomain +
 		"/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&state=STATE#wechat_redirect"
@@ -159,8 +157,7 @@ func (w *WxIFAgent) ToWxCodeUrl(redirecturl string, state ...string) string {
 	return codeurl
 }
 
-// ToWxTokenUrl bind request code and return wechat url to get access token
-// Step 2-1
+// `Step 2` : Bind request code and return wechat url to get access token
 func (w *WxIFAgent) ToWxTokenUrl(requestcode string) string {
 	tokenurl := wxauth2ApisUrlDomain +
 		"/oauth2/access_token?appid=APPID&secret=SECRET&code=CODE&grant_type=authorization_code"
@@ -169,18 +166,7 @@ func (w *WxIFAgent) ToWxTokenUrl(requestcode string) string {
 	return strings.Replace(tokenurl, "CODE", requestcode, -1)
 }
 
-// ToWxSmallTokenUrl bind request code and return wechat small url to get access token
-// Step 2-1 wechat small program login address
-func (w *WxIFAgent) ToWxSmallTokenUrl(requestcode string) string {
-	tokenurl := wxauth2ApisUrlDomain +
-		"/jscode2session?appid=APPID&secret=SECRET&js_code=CODE&grant_type=authorization_code"
-	tokenurl = strings.Replace(tokenurl, "APPID", w.AppID, -1)
-	tokenurl = strings.Replace(tokenurl, "SECRET", w.AppSecret, -1)
-	return strings.Replace(tokenurl, "CODE", requestcode, -1)
-}
-
-// ToWxRefreshUrl bind expired access toke and return wechat url to refresh it
-// Step 3
+// `Step 3` : Bind expired access toke and return wechat url to refresh it
 func (w *WxIFAgent) ToWxRefreshUrl(accesscode string) string {
 	refreshurl := wxauth2ApisUrlDomain +
 		"/oauth2/refresh_token?appid=APPID&grant_type=refresh_token&refresh_token=REFRESH_TOKEN"
@@ -188,16 +174,14 @@ func (w *WxIFAgent) ToWxRefreshUrl(accesscode string) string {
 	return strings.Replace(refreshurl, "REFRESH_TOKEN", accesscode, -1)
 }
 
-// ToWxUserUrl bind access token and openid, than return wechat url to get user informations
-// Step 4
+// `Step 4` : Bind access token and openid, than return wechat url to get user informations
 func (w *WxIFAgent) ToWxUserUrl(accesstoken, openid string) string {
 	infourl := wxauth2ApisUrlDomain + "/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN"
 	infourl = strings.Replace(infourl, "ACCESS_TOKEN", accesstoken, -1)
 	return strings.Replace(infourl, "OPENID", openid, -1)
 }
 
-// ToWxVerifyUrl bind access token and openid, than return wechat url to check access token expires
-// Step OTHERS
+// `Additional` : Bind access token and openid, than return wechat url to check access token expires
 func (w *WxIFAgent) ToWxVerifyUrl(accesstoken, openid string) string {
 	viaurl := wxauth2ApisUrlDomain + "/auth?access_token=ACCESS_TOKEN&openid=OPENID"
 	viaurl = strings.Replace(viaurl, "ACCESS_TOKEN", accesstoken, -1)
