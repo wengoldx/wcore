@@ -330,7 +330,7 @@ func FormatUnix(layout string, sec int64, nsec ...int64) string {
 // when input param not set, and the formated time contain location timezoom.
 func FormatNow(layout ...string) string {
 	nowns := time.Now().UnixNano()
-	if layout != nil && len(layout) > 0 && layout[0] != "" {
+	if len(layout) > 0 && layout[0] != "" {
 		return FormatUnix(layout[0], nowns/1e9, (nowns%1e9)/1e6)
 	}
 	return FormatUnix(TimeLayout, nowns/1e9)
@@ -341,7 +341,7 @@ func FormatNow(layout ...string) string {
 // time contain location timezoom.
 func FormatDur(d time.Duration, layout ...string) string {
 	nowns := time.Now().Add(d).UnixNano()
-	if layout != nil && len(layout) > 0 && layout[0] != "" {
+	if len(layout) > 0 && layout[0] != "" {
 		return FormatUnix(layout[0], nowns/1e9, (nowns%1e9)/1e6)
 	}
 	return FormatUnix(TimeLayout, nowns/1e9)

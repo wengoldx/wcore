@@ -15,6 +15,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/model"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/logger"
 )
 
@@ -62,33 +63,20 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 	}
 }
 
-// Check namespace and group values, it will case panic when this
-// tow feilds values invalid
-func accessValidParams(ns, gp string) {
-	validns := (ns == NS_PROD || ns == NS_DEV)
-	validgp := (gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS)
-	if !validns || !validgp {
-		panic("Invalid namespace and group!")
-	}
-}
-
 // Load register server's nacos informations
 //	@return - string nacos remote server ip
-//			- string local server listing ip
-//			- string namespace id of local server
 //			- string group name of local server
-func loadConfigs() (string, string, string, string) {
+func LoadNacosSvrConfigs() (string, string) {
 	svr := beego.AppConfig.String("nacossvr")
-	addr := beego.AppConfig.String("nacosaddr")
-	if svr == "" || addr == "" {
-		panic("Not found nacos configs!")
+	if svr == "" {
+		panic("Not found nacos server host!")
 	}
 
-	ns := beego.AppConfig.String("nacosns")
 	gp := beego.AppConfig.String("nacosgp")
-	accessValidParams(ns, gp)
-
-	return svr, addr, ns, gp
+	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
+		panic("Invalid register cluster group!")
+	}
+	return svr, gp
 }
 
 // -------- Auto Register Define --------
@@ -117,20 +105,28 @@ type ServerCallback func(svr string, addr string, port int)
 //	nacosgp = "group.ifsc"
 //
 //	[dev]
-//	; Nacos namespace id
-//	nacosns = "dunyu-server-dev"
-//
 //	; Inner net address for dev servers access
 //	nacosaddr = "10.239.20.99"
 //
 //	[prod]
-//	; Nacos namespace id
-//	nacosns = "dunyu-server-prod"
-//
 //	; Inner net address for prod servers access
 //	nacosaddr = "10.239.40.64"
 func RegisterServer() *ServerStub {
-	svr, addr, ns, group := loadConfigs()
+	svr, group := LoadNacosSvrConfigs()
+	return RegisterServer2(svr, group)
+}
+
+// Register current server to nacos by given nacos server host and group
+func RegisterServer2(svr, group string) *ServerStub {
+	// Local server listing ip
+	addr := beego.AppConfig.String("nacosaddr")
+	if addr == "" {
+		panic("Not found local server ip to register!")
+	}
+
+	// Namespace id of local server
+	ns := comm.Condition(beego.BConfig.RunMode == "prod",
+		NS_PROD, NS_DEV).(string)
 
 	// Generate nacos server stub and setup it
 	stub := NewServerStub(ns, svr)
@@ -177,5 +173,68 @@ func (si *ServerItem) OnChanged(services []model.SubscribeService, err error) {
 		logger.I("Update server", si.Name, "to {", addr, "-", port, "}")
 
 		si.Callback(si.Name, addr, int(port))
+	}
+}
+
+// -------- Config Service Define --------
+
+// Meta config informations
+type MetaConfig struct {
+	Group     string                        // Server group, range in [GP_BASIC, GP_IFSC, GP_DTE, GP_CWS]
+	Stub      *ConfigStub                   // Nacos config client instance
+	Callbacks map[string]MetaConfigCallback // Meta config changed callback maps, key is dataid
+}
+
+// Callback to listen server address and port changes
+type MetaConfigCallback func(dataId, data string)
+
+// Generate a meta config client to get or listen configs changes
+//	@return - *MetaConfig nacos config client instance on NS_META namespace
+//
+//	`NOTICE` : nacos config as follows.
+//
+// ----
+//
+//	; Nacos remote server host
+//	nacossvr = "10.239.40.24"
+//
+//	; Server nacos group name
+//	nacosgp = "group.ifsc"
+func GenMetaConfig() *MetaConfig {
+	svr, group := LoadNacosSvrConfigs()
+	return GenMeteConfig2(svr, group)
+}
+
+// Generate a meta config client by given nacos server host and group
+func GenMeteConfig2(svr, group string) *MetaConfig {
+	stub := NewConfigStub(NS_META /* Fixed ns */, svr)
+	if err := stub.Setup(); err != nil {
+		panic("Gen config stub, err:" + err.Error())
+	}
+
+	cbs := make(map[string]MetaConfigCallback)
+	return &MetaConfig{
+		Group: group, Stub: stub, Callbacks: cbs,
+	}
+}
+
+// Get and listing the config of indicated dataId
+func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
+	mc.Callbacks[dataId] = cb // cache callback
+
+	logger.I("Listen config {", dataId, "group:", mc.Group)
+	mc.Stub.Listen(dataId, mc.Group, mc.OnChanged)
+}
+
+// Listing callback called when target configs changed
+func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
+	if namespace != NS_META || group != mc.Group {
+		logger.E("Invalid meta config ns:", namespace, "or group:", group)
+		return
+	}
+
+	if callback, ok := mc.Callbacks[dataId]; ok {
+		logger.I("Update config did", dataId, "to:", data)
+		callback(dataId, data)
 	}
 }
