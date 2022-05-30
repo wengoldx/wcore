@@ -222,7 +222,7 @@ func GenMeteConfig2(svr, group string) *MetaConfig {
 func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
 	mc.Callbacks[dataId] = cb // cache callback
 
-	logger.I("Listen config {", dataId, "group:", mc.Group)
+	logger.I("Listen config { dataId:", dataId, "group:", mc.Group, "}")
 	mc.Stub.Listen(dataId, mc.Group, mc.OnChanged)
 }
 
@@ -234,7 +234,7 @@ func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
 	}
 
 	if callback, ok := mc.Callbacks[dataId]; ok {
-		logger.I("Update config did", dataId, "to:", data)
+		logger.I("Update config dataId", dataId, "to:", data)
 		callback(dataId, data)
 	}
 }
