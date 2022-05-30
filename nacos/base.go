@@ -222,6 +222,14 @@ func GenMeteConfig2(svr, group string) *MetaConfig {
 func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
 	mc.Callbacks[dataId] = cb // cache callback
 
+	// get config first before listing
+	data, err := mc.Stub.GetString(dataId, mc.Group)
+	if err != nil {
+		panic("Get config " + dataId + "err: " + err.Error())
+	}
+	cb(dataId, data)
+
+	// listing config changes
 	logger.I("Listen config { dataId:", dataId, "group:", mc.Group, "}")
 	mc.Stub.Listen(dataId, mc.Group, mc.OnChanged)
 }
