@@ -24,14 +24,14 @@ const (
 
 // Day, week, duration on millisecond
 const (
-	DayMs  = Day / time.Millisecond
-	WeekMs = Week / time.Millisecond
+	DayMsDur  = Day / time.Millisecond
+	WeekMsDur = Week / time.Millisecond
 )
 
 // Day, week duration on second
 const (
-	DaySeconds  = Day / time.Second
-	WeekSeconds = Week / time.Second
+	DaySecondsDur  = Day / time.Second
+	WeekSecondsDur = Week / time.Second
 )
 
 const (
@@ -267,7 +267,7 @@ func HourDiff(start, end time.Time) (int, int, int) {
 // DayDiff return diff days, hours, minutes, seconds
 func DayDiff(start, end time.Time) (int, int, int, int) {
 	v := int(end.Unix() - start.Unix())
-	var d, h, m int = int(DaySeconds), 3600, 60
+	var d, h, m int = int(DaySecondsDur), 3600, 60
 	return (v / d), (v % d / h), (v % h / m), (v % m)
 }
 

@@ -12,9 +12,9 @@ package comm
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/satori/go.uuid"
+	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 	"github.com/wengoldx/wing/secure"
 	"io/ioutil"
@@ -144,7 +144,7 @@ func (s *SmsSender) Send(phones, signname, tplcode, content string) error {
 	// check send result status
 	if result.Message != "OK" {
 		logger.E("Failed send sms:", content)
-		return errors.New("Failed to send")
+		return invar.ErrSendFailed
 	}
 	return nil
 }

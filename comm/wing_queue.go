@@ -87,6 +87,7 @@ func (q *Queue) Len() int {
 func (q *Queue) Dump() {
 	fmt.Println("-- dump the queue: (front -> back)")
 	for e := q.list.Front(); e != nil; e = e.Next() {
-		fmt.Println(fmt.Sprintf("   : %v", e.Value))
+		logs := fmt.Sprintf("   : %v", e.Value)
+		fmt.Println(logs)
 	}
 }

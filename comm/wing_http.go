@@ -40,6 +40,12 @@ const (
 	ContentTypeForm = "application/x-www-form-urlencoded"
 )
 
+// Logout http request url when flag is on, and logger level lowwer than debug.
+var DebugPrintRequest = true
+
+// Logout http response datas when flag is on, and logger level lowwer than debug.
+var DebugPrintResponse = true
+
 // readResponse read response body after executed request, it should return
 // invar.ErrInvalidState when response code is not http.StatusOK.
 func readResponse(resp *http.Response) ([]byte, error) {
@@ -53,7 +59,10 @@ func readResponse(resp *http.Response) ([]byte, error) {
 		logger.E("Failed read response, err:", err)
 		return nil, err
 	}
-	logger.D("Response:", string(body))
+
+	if DebugPrintResponse {
+		logger.D("Response:", string(body))
+	}
 	return body, nil
 }
 
@@ -64,7 +73,10 @@ func unmarshalResponse(body []byte, out interface{}) error {
 		logger.E("Unmarshal body to struct err:", err)
 		return err
 	}
-	logger.D("Response struct:", out)
+
+	if DebugPrintResponse {
+		logger.D("Response struct:", out)
+	}
 	return nil
 }
 
@@ -128,7 +140,9 @@ func HttpGet(tagurl string, params ...interface{}) ([]byte, error) {
 	}
 
 	rawurl := EncodeUrl(tagurl)
-	logger.D("Http Get:", rawurl)
+	if DebugPrintRequest {
+		logger.D("Http Get:", rawurl)
+	}
 
 	resp, err := http.Get(rawurl)
 	if err != nil {
@@ -156,7 +170,10 @@ func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byt
 	if len(contentType) > 0 {
 		ct = contentType[0]
 	}
-	logger.D("Http Post:", tagurl, "ContentType:", ct)
+
+	if DebugPrintRequest {
+		logger.D("Http Post:", tagurl, "ContentType:", ct)
+	}
 
 	switch ct {
 	case ContentTypeJson:
@@ -223,7 +240,9 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 	}
 
 	rawurl := EncodeUrl(tagurl)
-	logger.D("Http Client Get:", rawurl)
+	if DebugPrintRequest {
+		logger.D("Http Client Get:", rawurl)
+	}
 
 	// generate new request instanse
 	req, err := http.NewRequest("GET", rawurl, http.NoBody)
@@ -259,7 +278,10 @@ func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interf
 	} else {
 		body = http.NoBody
 	}
-	logger.D("Http Client Post:", tagurl)
+
+	if DebugPrintRequest {
+		logger.D("Http Client Post:", tagurl)
+	}
 
 	// generate new request instanse
 	req, err := http.NewRequest("POST", tagurl, body)

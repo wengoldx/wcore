@@ -87,6 +87,7 @@ func (s *Stack) Len() int {
 func (s *Stack) Dump() {
 	fmt.Println("-- dump the stack: (top -> bottom)")
 	for e := s.list.Front(); e != nil; e = e.Next() {
-		fmt.Println(fmt.Sprintf("   : %v", e.Value))
+		logs := fmt.Sprintf("   : %v", e.Value)
+		fmt.Println(logs)
 	}
 }
