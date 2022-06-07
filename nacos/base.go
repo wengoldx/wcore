@@ -27,7 +27,6 @@ const (
 	NS_META = "dunyu-meta-configs" // META namespace id
 	NS_PROD = "dunyu-server-prod"  // PROD namespace id
 	NS_DEV  = "dunyu-server-dev"   // DEV  namespace id
-	NS_TEST = "dunyu-test-ns"      // TEST namespace id
 
 	GP_BASIC = "group.basic" // BASIC group name
 	GP_IFSC  = "group.ifsc"  // IFSC  group name
@@ -56,6 +55,9 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 		CacheDir:            cacheDir,
 		LogRollingConfig:    &constant.ClientLogRollingConfig{MaxSize: 10},
 		LogLevel:            LogLevel,
+		OpenKMS:             true,       // for use secure auth
+		Username:            "accessor", // secure account
+		Password:            "accessor", // secure passowrd
 	}
 
 	return vo.NacosClientParam{
@@ -202,11 +204,11 @@ type MetaConfigCallback func(dataId, data string)
 //	nacosgp = "group.ifsc"
 func GenMetaConfig() *MetaConfig {
 	svr, group := LoadNacosSvrConfigs()
-	return GenMeteConfig2(svr, group)
+	return GenMetaConfig2(svr, group)
 }
 
 // Generate a meta config client by given nacos server host and group
-func GenMeteConfig2(svr, group string) *MetaConfig {
+func GenMetaConfig2(svr, group string) *MetaConfig {
 	stub := NewConfigStub(NS_META /* Fixed ns */, svr)
 	if err := stub.Setup(); err != nil {
 		panic("Gen config stub, err:" + err.Error())
