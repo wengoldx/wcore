@@ -11,11 +11,12 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eapache/go-resiliency v1.2.0
 	github.com/garyburd/redigo v1.6.2
+	github.com/go-ego/gse v0.69.15
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/golang/protobuf v1.4.2
 	github.com/googollee/go-socket.io v1.0.1
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
-	github.com/huichen/sego v0.0.0-20180617034105-3f3c8a8cfacc
+	github.com/huichen/sego v0.0.0-20180617034105-3f3c8a8cfacc // indirect
 	github.com/issue9/assert v1.4.1 // indirect
 	github.com/micro/go-micro v1.18.0
 	github.com/mozillazg/go-pinyin v0.18.0

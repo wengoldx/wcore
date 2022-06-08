@@ -20,7 +20,6 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/plugins/cors"
-	"github.com/huichen/sego"
 	"github.com/mozillazg/go-pinyin"
 	"github.com/wengoldx/wing/logger"
 	"os"
@@ -31,9 +30,6 @@ import (
 	"syscall"
 	"unicode"
 )
-
-// Variables of Sego
-var Segmenter sego.Segmenter
 
 // Try try-catch-finaly method
 func Try(do func(), catcher func(error), finaly ...func()) {
@@ -190,22 +186,6 @@ func GetSortKey(str string) string {
 		}
 	}
 	return sortKey
-}
-
-// GetKeyWords get more search keywords
-func GetKeyWords(str string) []string {
-	segments := Segmenter.Segment([]byte(str))
-
-	// use search mode 'true' to get more search keywords
-	words := sego.SegmentsToSlice(segments, true)
-	var keywords []string
-	for _, v := range words {
-		if v == " " {
-			continue
-		}
-		keywords = append(keywords, v)
-	}
-	return keywords
 }
 
 // RemoveDuplicate remove duplicate data from array
