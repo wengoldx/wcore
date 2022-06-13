@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./proto";
+
+service Acc {
+	rpc ViaToken (Token) returns (UUID);
+	rpc GetProfSumms(UUIDS) returns (ProfSumms);
+}
+
+message Token {
+	string token = 1;
+}
+
+message UUID {
+	string uuid = 1;
+}
+
+message UUIDS {
+	repeated string uuids = 1;
+}
+
+message ProfSumm {
+	string uuid = 1;
+	int64  sex = 2;
+	string nickname = 3;
+	string heardurl = 4;
+}
+
+message ProfSumms {
+	repeated ProfSumm profsumms = 1;
+}
