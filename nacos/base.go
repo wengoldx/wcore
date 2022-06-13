@@ -55,7 +55,6 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 		CacheDir:            cacheDir,
 		LogRollingConfig:    &constant.ClientLogRollingConfig{MaxSize: 10},
 		LogLevel:            LogLevel,
-		OpenKMS:             true,       // for use secure auth
 		Username:            "accessor", // secure account
 		Password:            "accessor", // secure passowrd
 	}
