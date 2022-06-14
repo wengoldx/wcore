@@ -109,9 +109,15 @@ type ServerCallback func(svr string, addr string, port int)
 //	; Inner net address for dev servers access
 //	nacosaddr = "10.239.20.99"
 //
+//	; Inner net port for grpc access
+//	nacosport = 3000
+//
 //	[prod]
 //	; Inner net address for prod servers access
 //	nacosaddr = "10.239.40.64"
+//
+//	; Inner net port for grpc access
+//	nacosport = 3000
 func RegisterServer() *ServerStub {
 	svr, group := LoadNacosSvrConfigs()
 	return RegisterServer2(svr, group)
@@ -125,6 +131,13 @@ func RegisterServer2(svr, group string) *ServerStub {
 		panic("Not found local server ip to register!")
 	}
 
+	// Server access port for grpc, it maybe same as httpport config
+	// when the local server not support grpc but for http
+	port, err := beego.AppConfig.Int("nacosport")
+	if err != nil || port < 3000 /* remain 0 ~ 3000 */ {
+		panic("Not found port number or less 3000!")
+	}
+
 	// Namespace id of local server
 	ns := comm.Condition(beego.BConfig.RunMode == "prod",
 		NS_PROD, NS_DEV).(string)
@@ -135,10 +148,9 @@ func RegisterServer2(svr, group string) *ServerStub {
 		panic(err)
 	}
 
-	// Fixed app name as nacos server name to register, and pick server port
-	// from config 'httpport' value, but not pick server host ip from config
-	// 'httpaddr' value, becase it empty and the nginx proxy server need it
-	// keep empty, so get server host as input param by 'addr'.
+	// Fixed app name as nacos server name to register,
+	// and pick server port from config 'nacosport' not form 'httpport' value,
+	// becase it maybe support either grpc or http hanlder to accesse.
 	//
 	// And here not use cluster name, please keep it empty!
 	app, port := beego.BConfig.AppName, beego.BConfig.Listen.HTTPPort
