@@ -17,17 +17,11 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/plugins/cors"
 	"github.com/mozillazg/go-pinyin"
 	"github.com/wengoldx/wing/logger"
-	"os"
-	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
-	"syscall"
 	"unicode"
 )
 
@@ -36,7 +30,7 @@ func Try(do func(), catcher func(error), finaly ...func()) {
 	defer func() {
 		if i := recover(); i != nil {
 			execption := errors.New(fmt.Sprint(i))
-			logger.E("catched exception:", i)
+			logger.E("Catched exception:", i)
 			catcher(execption)
 			if len(finaly) > 0 {
 				finaly[0]()
@@ -204,65 +198,4 @@ func RemoveDuplicate(oldArr []string) []string {
 		}
 	}
 	return newArr
-}
-
-// IgnoreSysSignalPIPE ignore system PIPE signal
-func IgnoreSysSignalPIPE() {
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGPIPE)
-	go func() {
-		for {
-			select {
-			case sig := <-sc:
-				if sig == syscall.SIGPIPE {
-					logger.E("!! IGNORE BROKEN PIPE SIGNAL !!")
-				}
-			}
-		}
-	}()
-}
-
-// AccessAllowOriginBy allow cross domain access for the given origins
-func AccessAllowOriginBy(category int, origins string, allowCredentials bool) {
-	beego.InsertFilter("*", category, cors.Allow(&cors.Options{
-		AllowAllOrigins:  !allowCredentials,
-		AllowCredentials: allowCredentials,
-		AllowOrigins:     []string{origins}, // use to set allow Origins
-		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
-	}))
-}
-
-// AccessAllowOriginByLocal allow cross domain access for localhost,
-// the port number must config in /conf/app.conf file like :
-//
-// ---
-//
-//	; Server port of HTTP
-//	httpport=3200
-func AccessAllowOriginByLocal(category int, allowCredentials bool) {
-	if beego.BConfig.Listen.HTTPPort > 0 {
-		localhosturl := fmt.Sprintf("http://127.0.0.1:%v/", beego.BConfig.Listen.HTTPPort)
-		AccessAllowOriginBy(category, localhosturl, allowCredentials)
-	}
-}
-
-// ExecuteServer start and excute backend server
-func ExecuteServer(allowCredentials ...bool) {
-	IgnoreSysSignalPIPE()
-	if len(allowCredentials) > 0 {
-		AccessAllowOriginBy(beego.BeforeRouter, "*", allowCredentials[0])
-		AccessAllowOriginBy(beego.BeforeStatic, "*", allowCredentials[0])
-	} else {
-		AccessAllowOriginBy(beego.BeforeRouter, "*", false)
-		AccessAllowOriginBy(beego.BeforeStatic, "*", false)
-	}
-
-	// just output log to file on prod mode
-	if beego.BConfig.RunMode != "dev" &&
-		logger.GetLevel() != logger.LevelDebug {
-		beego.BeeLogger.DelLogger(logs.AdapterConsole)
-	}
-	beego.Run()
 }
