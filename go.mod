@@ -13,7 +13,7 @@ require (
 	github.com/garyburd/redigo v1.6.2
 	github.com/go-ego/gse v0.69.15
 	github.com/go-playground/validator/v10 v10.9.0
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.5.2
 	github.com/googollee/go-socket.io v1.0.1
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/huichen/sego v0.0.0-20180617034105-3f3c8a8cfacc // indirect
@@ -29,7 +29,9 @@ require (
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
-	google.golang.org/protobuf v1.23.0
+	google.golang.org/grpc v1.47.0
+	google.golang.org/grpc/examples v0.0.0-20220608152536-584d9cd11a1d // indirect
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.4.0 // indirect
