@@ -17,6 +17,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/logger"
+	"strconv"
 )
 
 const (
@@ -90,7 +91,7 @@ type ServerItem struct {
 }
 
 // Callback to listen server address and port changes
-type ServerCallback func(svr string, addr string, port int)
+type ServerCallback func(svr string, addr string, port, httpport int)
 
 // Register current server to nacos, you must set configs in app.conf
 //	@return - *ServerStub nacos server stub instance
@@ -185,7 +186,15 @@ func (si *ServerItem) OnChanged(services []model.SubscribeService, err error) {
 		addr, port := services[0].Ip, services[0].Port
 		logger.I("Update server", si.Name, "to {", addr, "-", port, "}")
 
-		si.Callback(si.Name, addr, int(port))
+		// FIXME : paser httpport from metadatas
+		meta, httpport := services[0].Metadata, 0
+		if meta != nil {
+			if hp, ok := meta["httpport"]; ok {
+				httpport, _ = strconv.Atoi(hp)
+				logger.I("Parsed server httport:", httpport)
+			}
+		}
+		si.Callback(si.Name, addr, int(port), httpport)
 	}
 }
 
