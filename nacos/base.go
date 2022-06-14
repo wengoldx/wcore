@@ -154,7 +154,7 @@ func RegisterServer2(svr, group string) *ServerStub {
 	// becase it maybe support either grpc or http hanlder to accesse.
 	//
 	// And here not use cluster name, please keep it empty!
-	app, port := beego.BConfig.AppName, beego.BConfig.Listen.HTTPPort
+	app := beego.BConfig.AppName
 	if err := stub.Register(app, addr, uint64(port), group); err != nil {
 		panic(err)
 	}
