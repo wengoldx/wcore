@@ -11,11 +11,13 @@
 package nacos
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/model"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"github.com/wengoldx/wing/invar"
+	"strconv"
 )
 
 // Nacos naming client stub
@@ -69,6 +71,11 @@ func (s *ServerStub) Register(name, host string, port uint64, opts ...string) er
 	dip := vo.RegisterInstanceParam{
 		Ip: host, Port: port, ServiceName: name,
 		Weight: 10, Enable: true, Healthy: true, Ephemeral: true,
+
+		// FIXME : add local server http port as metadatas
+		Metadata: map[string]string{
+			"httpport": strconv.Itoa(beego.BConfig.Listen.HTTPPort),
+		},
 	}
 
 	if cnt := len(opts); cnt > 0 {
@@ -88,7 +95,7 @@ func (s *ServerStub) Register(name, host string, port uint64, opts ...string) er
 	return nil
 }
 
-// Register business server into nacos remote server
+// Deregister business server out of nacos remote server
 //	@params name string   business server name
 //	@params host string   business server deploied ip or domain
 //	@params port uint64   business server port, must over 3000
