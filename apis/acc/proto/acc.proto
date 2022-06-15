@@ -6,6 +6,7 @@ option go_package = "./proto";
 service Acc {
 	rpc ViaToken (Token) returns (UUID);
 	rpc GetProfSumms(UUIDS) returns (ProfSumms);
+	rpc GetProfile(UUID) returns (Profile);
 }
 
 message Token {
@@ -29,4 +30,13 @@ message ProfSumm {
 
 message ProfSumms {
 	repeated ProfSumm profsumms = 1;
+}
+
+message Profile {
+	string uuid = 1;
+	string nickname = 2;
+	string heardurl = 3;
+	int64  sex = 4;
+	string birthday = 5;
+	bool   isverify = 6;
 }
