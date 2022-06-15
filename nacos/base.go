@@ -11,6 +11,7 @@
 package nacos
 
 import (
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/model"
@@ -18,21 +19,6 @@ import (
 	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/logger"
 	"strconv"
-)
-
-const (
-	LogLevel = "warn"          // default level to print nacos logs on warn, it not same nacos-sdk-go:info
-	logDir   = "./nacos/logs"  // default nacos logs dir
-	cacheDir = "./nacos/cache" // default nacos caches dir
-
-	NS_META = "dunyu-meta-configs" // META namespace id
-	NS_PROD = "dunyu-server-prod"  // PROD namespace id
-	NS_DEV  = "dunyu-server-dev"   // DEV  namespace id
-
-	GP_BASIC = "group.basic" // BASIC group name
-	GP_IFSC  = "group.ifsc"  // IFSC  group name
-	GP_DTE   = "group.dte"   // DTE   group name
-	GP_CWS   = "group.cws"   // CWS   group name
 )
 
 // Generate nacos client config, contain nacos remote server and
@@ -52,12 +38,12 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 		NamespaceId:         ns,
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
-		LogDir:              logDir,
-		CacheDir:            cacheDir,
+		LogDir:              nacosDirLogs,
+		CacheDir:            nacosDirCache,
 		LogRollingConfig:    &constant.ClientLogRollingConfig{MaxSize: 10},
-		LogLevel:            LogLevel,
-		Username:            "accessor", // secure account
-		Password:            "accessor", // secure passowrd
+		LogLevel:            nacosLogLevel,
+		Username:            nacosSysSecure, // secure account
+		Password:            nacosSysSecure, // secure passowrd
 	}
 
 	return vo.NacosClientParam{
@@ -69,12 +55,12 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 //	@return - string nacos remote server ip
 //			- string group name of local server
 func LoadNacosSvrConfigs() (string, string) {
-	svr := beego.AppConfig.String("nacossvr")
+	svr := beego.AppConfig.String(configKeySvr)
 	if svr == "" {
 		panic("Not found nacos server host!")
 	}
 
-	gp := beego.AppConfig.String("nacosgp")
+	gp := beego.AppConfig.String(configKeyGroup)
 	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
 		panic("Invalid register cluster group!")
 	}
@@ -127,21 +113,20 @@ func RegisterServer() *ServerStub {
 // Register current server to nacos by given nacos server host and group
 func RegisterServer2(svr, group string) *ServerStub {
 	// Local server listing ip
-	addr := beego.AppConfig.String("nacosaddr")
+	addr := beego.AppConfig.String(configKeyAddr)
 	if addr == "" {
 		panic("Not found local server ip to register!")
 	}
 
 	// Server access port for grpc, it maybe same as httpport config
 	// when the local server not support grpc but for http
-	port, err := beego.AppConfig.Int("nacosport")
+	port, err := beego.AppConfig.Int(configKeyPort)
 	if err != nil || port < 3000 /* remain 0 ~ 3000 */ {
 		panic("Not found port number or less 3000!")
 	}
 
 	// Namespace id of local server
-	ns := comm.Condition(beego.BConfig.RunMode == "prod",
-		NS_PROD, NS_DEV).(string)
+	ns := comm.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
 
 	// Generate nacos server stub and setup it
 	stub := NewServerStub(ns, svr)
@@ -159,7 +144,8 @@ func RegisterServer2(svr, group string) *ServerStub {
 		panic(err)
 	}
 
-	logger.I("Registered server", app+"@"+addr)
+	logmsg := fmt.Sprintf("%s@%s:%v", app, addr, port)
+	logger.I("Registered server on", logmsg)
 	return stub
 }
 
@@ -184,16 +170,17 @@ func (si *ServerItem) OnChanged(services []model.SubscribeService, err error) {
 
 	if len(services) > 0 {
 		addr, port := services[0].Ip, services[0].Port
-		logger.I("Update server", si.Name, "to {", addr, "-", port, "}")
 
-		// FIXME : paser httpport from metadatas
+		// Paser httpport from metadata map if it exist
 		meta, httpport := services[0].Metadata, 0
 		if meta != nil {
-			if hp, ok := meta["httpport"]; ok {
+			if hp, ok := meta[configKeyHPort]; ok {
 				httpport, _ = strconv.Atoi(hp)
-				logger.I("Parsed server httport:", httpport)
 			}
 		}
+
+		logmsg := fmt.Sprintf("%s@%s:%v - httpport:%v", si.Name, addr, port, httpport)
+		logger.I("Update server to", logmsg)
 		si.Callback(si.Name, addr, int(port), httpport)
 	}
 }

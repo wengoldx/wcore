@@ -72,9 +72,9 @@ func (s *ServerStub) Register(name, host string, port uint64, opts ...string) er
 		Ip: host, Port: port, ServiceName: name,
 		Weight: 10, Enable: true, Healthy: true, Ephemeral: true,
 
-		// FIXME : add local server http port as metadatas
+		// Add local server access http port into metadata map
 		Metadata: map[string]string{
-			"httpport": strconv.Itoa(beego.BConfig.Listen.HTTPPort),
+			configKeyHPort: strconv.Itoa(beego.BConfig.Listen.HTTPPort),
 		},
 	}
 
