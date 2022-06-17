@@ -21,52 +21,6 @@ import (
 	"strconv"
 )
 
-// Generate nacos client config, contain nacos remote server and
-// current business servers configs, this client keep alive with
-// 5s pingpong heartbeat and output logs on warn leven.
-//
-//	`NOTICE`
-//	The remote server must access on http://{svr}:8848/nacos
-func genClientParam(ns, svr string) vo.NacosClientParam {
-	sc := []constant.ServerConfig{
-		constant.ServerConfig{
-			Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 8848,
-		},
-	}
-
-	cc := &constant.ClientConfig{
-		NamespaceId:         ns,
-		TimeoutMs:           5000,
-		NotLoadCacheAtStart: true,
-		LogDir:              nacosDirLogs,
-		CacheDir:            nacosDirCache,
-		LogRollingConfig:    &constant.ClientLogRollingConfig{MaxSize: 10},
-		LogLevel:            nacosLogLevel,
-		Username:            nacosSysSecure, // secure account
-		Password:            nacosSysSecure, // secure passowrd
-	}
-
-	return vo.NacosClientParam{
-		ClientConfig: cc, ServerConfigs: sc,
-	}
-}
-
-// Load register server's nacos informations
-//	@return - string nacos remote server ip
-//			- string group name of local server
-func LoadNacosSvrConfigs() (string, string) {
-	svr := beego.AppConfig.String(configKeySvr)
-	if svr == "" {
-		panic("Not found nacos server host!")
-	}
-
-	gp := beego.AppConfig.String(configKeyGroup)
-	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
-		panic("Invalid register cluster group!")
-	}
-	return svr, gp
-}
-
 // -------- Auto Register Define --------
 
 // Server register informations
@@ -105,13 +59,9 @@ type ServerCallback func(svr string, addr string, port, httpport int)
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
-func RegisterServer() *ServerStub {
-	svr, group := LoadNacosSvrConfigs()
-	return RegisterServer2(svr, group)
-}
+func RegisterServer(opts ...string) *ServerStub {
+	svr, group := parseOptions(opts...)
 
-// Register current server to nacos by given nacos server host and group
-func RegisterServer2(svr, group string) *ServerStub {
 	// Local server listing ip
 	addr := beego.AppConfig.String(configKeyAddr)
 	if addr == "" {
@@ -198,7 +148,7 @@ type MetaConfig struct {
 type MetaConfigCallback func(dataId, data string)
 
 // Generate a meta config client to get or listen configs changes
-//	@return - *MetaConfig nacos config client instance on NS_META namespace
+//	@return - *MetaConfig nacos config client instance
 //
 //	`NOTICE` : nacos config as follows.
 //
@@ -209,14 +159,14 @@ type MetaConfigCallback func(dataId, data string)
 //
 //	; Server nacos group name
 //	nacosgp = "group.ifsc"
-func GenMetaConfig() *MetaConfig {
-	svr, group := LoadNacosSvrConfigs()
-	return GenMetaConfig2(svr, group)
-}
+func GenMetaConfig(opts ...string) *MetaConfig {
+	svr, group := parseOptions(opts...)
 
-// Generate a meta config client by given nacos server host and group
-func GenMetaConfig2(svr, group string) *MetaConfig {
-	stub := NewConfigStub(NS_META /* Fixed ns */, svr)
+	// Namespace id of meta configs
+	ns := comm.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
+
+	// Generate nacos config stub and setup it
+	stub := NewConfigStub(ns, svr)
 	if err := stub.Setup(); err != nil {
 		panic("Gen config stub, err:" + err.Error())
 	}
@@ -254,4 +204,67 @@ func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
 		logger.I("Update config dataId", dataId, "to:", data)
 		callback(dataId, data)
 	}
+}
+
+// ---------------------------------------
+
+// Generate nacos client config, contain nacos remote server and
+// current business servers configs, this client keep alive with
+// 5s pingpong heartbeat and output logs on warn leven.
+//
+//	`NOTICE`
+//	The remote server must access on http://{svr}:8848/nacos
+func genClientParam(ns, svr string) vo.NacosClientParam {
+	sc := []constant.ServerConfig{
+		constant.ServerConfig{
+			Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 8848,
+		},
+	}
+
+	cc := &constant.ClientConfig{
+		NamespaceId:         ns,
+		TimeoutMs:           5000,
+		NotLoadCacheAtStart: true,
+		LogDir:              nacosDirLogs,
+		CacheDir:            nacosDirCache,
+		LogRollingConfig:    &constant.ClientLogRollingConfig{MaxSize: 10},
+		LogLevel:            nacosLogLevel,
+		Username:            nacosSysSecure, // secure account
+		Password:            nacosSysSecure, // secure passowrd
+	}
+
+	return vo.NacosClientParam{
+		ClientConfig: cc, ServerConfigs: sc,
+	}
+}
+
+// Load register server's nacos informations
+//	@return - string nacos remote server ip
+//			- string group name of local server
+func loadNacosSvrConfigs() (string, string) {
+	svr := beego.AppConfig.String(configKeySvr)
+	if svr == "" {
+		panic("Not found nacos server host!")
+	}
+
+	gp := beego.AppConfig.String(configKeyGroup)
+	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
+		panic("Invalid register cluster group!")
+	}
+	return svr, gp
+}
+
+// Parse input params and check server and group names
+func parseOptions(opts ...string) (string, string) {
+	if cnt := len(opts); cnt >= 2 /* 0:server, 1:group */ {
+		svr, gp := opts[0], opts[1]
+		logger.I("Input options, svr:", svr, "group:", gp)
+
+		validgp := (gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS)
+		if svr == "" || !validgp {
+			panic("Invalid svr or group params!")
+		}
+		return svr, gp
+	}
+	return loadNacosSvrConfigs()
 }
