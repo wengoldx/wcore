@@ -208,6 +208,37 @@ func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
 
 // ---------------------------------------
 
+// Get and check register server's nacos informations
+//	@return - string nacos remote server ip
+//			- string group name of local server
+func NacosSvrConfigs() (string, string) {
+	svr := beego.AppConfig.String(configKeySvr)
+	if svr == "" {
+		panic("Not found nacos server host!")
+	}
+
+	gp := beego.AppConfig.String(configKeyGroup)
+	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
+		panic("Invalid register cluster group!")
+	}
+	return svr, gp
+}
+
+// Parse input params and check server and group names
+func parseOptions(opts ...string) (string, string) {
+	if cnt := len(opts); cnt >= 2 /* 0:server, 1:group */ {
+		svr, gp := opts[0], opts[1]
+		logger.I("Input options, svr:", svr, "group:", gp)
+
+		validgp := (gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS)
+		if svr == "" || !validgp {
+			panic("Invalid svr or group params!")
+		}
+		return svr, gp
+	}
+	return NacosSvrConfigs()
+}
+
 // Generate nacos client config, contain nacos remote server and
 // current business servers configs, this client keep alive with
 // 5s pingpong heartbeat and output logs on warn leven.
@@ -236,35 +267,4 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 	return vo.NacosClientParam{
 		ClientConfig: cc, ServerConfigs: sc,
 	}
-}
-
-// Load register server's nacos informations
-//	@return - string nacos remote server ip
-//			- string group name of local server
-func loadNacosSvrConfigs() (string, string) {
-	svr := beego.AppConfig.String(configKeySvr)
-	if svr == "" {
-		panic("Not found nacos server host!")
-	}
-
-	gp := beego.AppConfig.String(configKeyGroup)
-	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
-		panic("Invalid register cluster group!")
-	}
-	return svr, gp
-}
-
-// Parse input params and check server and group names
-func parseOptions(opts ...string) (string, string) {
-	if cnt := len(opts); cnt >= 2 /* 0:server, 1:group */ {
-		svr, gp := opts[0], opts[1]
-		logger.I("Input options, svr:", svr, "group:", gp)
-
-		validgp := (gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS)
-		if svr == "" || !validgp {
-			panic("Invalid svr or group params!")
-		}
-		return svr, gp
-	}
-	return loadNacosSvrConfigs()
 }
