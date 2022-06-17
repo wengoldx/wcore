@@ -45,3 +45,11 @@ const (
 	GP_DTE   = "group.dte"   // DTE   group name
 	GP_CWS   = "group.cws"   // CWS   group name
 )
+
+// Nacos data id for wing/nacos
+const (
+	DID_ADMINS     = "dunyu.acc.admins" // Data id of sysmgr admins,      it must group by BASIC
+	DID_WX_AGENTS  = "dunyu.wx.agents"  // Data id of wechat agents,      it must group by BASIC
+	DID_NTF_SENDER = "dunyu.ntf.sender" // Data id of dingtalk nofitier,  it must group by BASIC
+	DID_MIO_PATHS  = "dunyu.mio.paths"  // Data id of minio source paths, it must group by BASIC
+)
