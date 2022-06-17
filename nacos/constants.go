@@ -48,8 +48,9 @@ const (
 
 // Nacos data id for wing/nacos
 const (
-	DID_ADMINS     = "dunyu.acc.admins" // Data id of sysmgr admins,      it must group by BASIC
-	DID_WX_AGENTS  = "dunyu.wx.agents"  // Data id of wechat agents,      it must group by BASIC
-	DID_NTF_SENDER = "dunyu.ntf.sender" // Data id of dingtalk nofitier,  it must group by BASIC
-	DID_MIO_PATHS  = "dunyu.mio.paths"  // Data id of minio source paths, it must group by BASIC
+	DID_ACC_ADMINS = "dunyu.acc.admins" // Group by BASIC, data id of sysmgr admins
+	DID_ACC_SALT   = "dunyu.acc.secure" // Group by BASIC, data id of account secure salt
+	DID_WX_AGENTS  = "dunyu.wx.agents"  // Group by BASIC, data id of wechat agents
+	DID_NTF_SENDER = "dunyu.ntf.sender" // Group by BASIC, data id of dingtalk nofitier
+	DID_MIO_PATHS  = "dunyu.mio.paths"  // Group by BASIC, data id of minio source paths
 )
