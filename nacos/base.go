@@ -177,6 +177,16 @@ func GenMetaConfig(opts ...string) *MetaConfig {
 	}
 }
 
+// Get and listing the configs of indicated dataIds
+func (mc *MetaConfig) ListenConfigs(dataIds []string, cb MetaConfigCallback) {
+	for _, dataId := range dataIds {
+		if dataId == "" || cb == nil {
+			continue
+		}
+		mc.ListenConfig(dataId, cb)
+	}
+}
+
 // Get and listing the config of indicated dataId
 func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
 	mc.Callbacks[dataId] = cb // cache callback
@@ -189,7 +199,7 @@ func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
 	cb(dataId, data)
 
 	// listing config changes
-	logger.I("Listen config { dataId:", dataId, "group:", mc.Group, "}")
+	logger.I("Start listing config { dataId:", dataId, "group:", mc.Group, "}")
 	mc.Stub.Listen(dataId, mc.Group, mc.OnChanged)
 }
 
@@ -228,8 +238,6 @@ func NacosSvrConfigs() (string, string) {
 func parseOptions(opts ...string) (string, string) {
 	if cnt := len(opts); cnt >= 2 /* 0:server, 1:group */ {
 		svr, gp := opts[0], opts[1]
-		logger.I("Input options, svr:", svr, "group:", gp)
-
 		validgp := (gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS)
 		if svr == "" || !validgp {
 			panic("Invalid svr or group params!")
