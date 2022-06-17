@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./proto";
+
+service Mea {
+  rpc Measure(BodyAdd) returns (ReqID);
+  rpc ReMeasure(BodyUpdate) returns (EmptyMessage);
+  rpc Delete(ReqID) returns (EmptyMessage);
+  rpc Capture(ReqID) returns (EmptyMessage);
+  rpc BodyDetail(ReqID) returns (BodyDetailResp);
+  rpc BodyList(ReqIDs) returns (BodyBasicResp);
+}
+
+message ReqID { string reqid = 1; }
+
+message ReqIDs { repeated string reqids = 1; }
+
+message BodyAdd {
+  int64 sex = 1;
+  int64 height = 2;
+  int64 weight = 3;
+  string fronturl = 4;
+  string sideurl = 5;
+  int64 bust = 6;
+  int64 waist = 7;
+  int64 hipline = 8;
+  int64 wrist = 9;
+  string notifyurl = 10;
+}
+
+message BodyUpdate {
+  string reqid = 1;
+  int64 sex = 2;
+  int64 height = 3;
+  int64 weight = 4;
+  string fronturl = 5;
+  string sideurl = 6;
+  int64 bust = 7;
+  int64 waist = 8;
+  int64 hipline = 9;
+  int64 wrist = 10;
+  string notifyurl = 11;
+}
+
+message EmptyMessage {}
+
+message BodyBasic {
+  int64 bodyid = 1;
+  string thumbnail = 2;
+  string reqid = 3;
+  int64 sex = 4;
+  int64 status = 5;
+  repeated string captures = 6;
+  int64 createtime = 7;
+}
+
+message BodyBasicResp { repeated BodyBasic body = 1; }
+
+message BodyDetailResp {
+  int64 bodyid = 1;
+  string reqid = 2;
+  int64 status = 3;
+  int64 sex = 4;
+  string thumbnail = 5;
+  repeated string captures = 6;
+  int64 height = 7;
+  int64 weight = 8;
+  int64 bust = 9;
+  int64 neck = 10;
+  int64 upperneck = 11;
+  int64 shoulder = 12;
+  int64 armlen = 13;
+  int64 armcir = 14;
+  int64 waist = 15;
+  int64 hipcir = 16;
+  int64 thighcir = 17;
+  int64 knee = 18;
+  int64 anklecir = 19;
+  int64 hipline = 20;
+  int64 wrist = 21;
+  int64 clothlen = 22;
+  int64 outsidelen = 23;
+  int64 elbowcir = 24;
+  int64 bpShoulderdis = 25;
+  int64 bellyShoulderdis = 26;
+  int64 waistShoulderdis = 27;
+  int64 bpdis = 28;
+  int64 Hipheight = 29;
+  int64 waistKneedis = 30;
+  int64 bellycir = 31;
+  int64 armscye = 32;
+  int64 createtime = 33;
+  int64 modifytime = 34;
+}

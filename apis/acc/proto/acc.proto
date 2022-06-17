@@ -4,39 +4,31 @@ package proto;
 option go_package = "./proto";
 
 service Acc {
-	rpc ViaToken (Token) returns (UUID);
-	rpc GetProfSumms(UUIDS) returns (ProfSumms);
-	rpc GetProfile(UUID) returns (Profile);
+  rpc ViaToken(Token) returns (UUID);
+  rpc GetProfSumms(UUIDS) returns (ProfSumms);
+  rpc GetProfile(UUID) returns (Profile);
 }
 
-message Token {
-	string token = 1;
-}
+message Token { string token = 1; }
 
-message UUID {
-	string uuid = 1;
-}
+message UUID { string uuid = 1; }
 
-message UUIDS {
-	repeated string uuids = 1;
-}
+message UUIDS { repeated string uuids = 1; }
 
 message ProfSumm {
-	string uuid = 1;
-	int64  sex = 2;
-	string nickname = 3;
-	string heardurl = 4;
+  string uuid = 1;
+  int64 sex = 2;
+  string nickname = 3;
+  string heardurl = 4;
 }
 
-message ProfSumms {
-	repeated ProfSumm profsumms = 1;
-}
+message ProfSumms { repeated ProfSumm profsumms = 1; }
 
 message Profile {
-	string uuid = 1;
-	string nickname = 2;
-	string heardurl = 3;
-	int64  sex = 4;
-	string birthday = 5;
-	bool   isverify = 6;
+  string uuid = 1;
+  string nickname = 2;
+  string heardurl = 3;
+  int64 sex = 4;
+  string birthday = 5;
+  bool isverify = 6;
 }
