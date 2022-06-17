@@ -195,7 +195,7 @@ func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
 
 // Listing callback called when target configs changed
 func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
-	if namespace != NS_META || group != mc.Group {
+	if (namespace != NS_DEV && namespace != NS_PROD) || group != mc.Group {
 		logger.E("Invalid meta config ns:", namespace, "or group:", group)
 		return
 	}

@@ -33,7 +33,6 @@ const (
 
 // Nacos namespace string for wing/nacos
 const (
-	NS_META = "dunyu-meta-configs" // META namespace id
 	NS_PROD = "dunyu-server-prod"  // PROD namespace id
 	NS_DEV  = "dunyu-server-dev"   // DEV  namespace id
 )
