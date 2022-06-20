@@ -7,6 +7,9 @@ service Acc {
   rpc ViaToken(Token) returns (UUID);
   rpc GetProfSumms(UUIDS) returns (ProfSumms);
   rpc GetProfile(UUID) returns (Profile);
+  rpc UpdateContact(UpdateContect) returns (EmptyMessage);
+  rpc GetContact(UUID) returns (ContactInfo);
+  rpc BindAccount(BindReq) returns (Token);
 }
 
 message Token { string token = 1; }
@@ -14,6 +17,8 @@ message Token { string token = 1; }
 message UUID { string uuid = 1; }
 
 message UUIDS { repeated string uuids = 1; }
+
+message EmptyMessage {}
 
 message ProfSumm {
   string uuid = 1;
@@ -31,4 +36,24 @@ message Profile {
   int64 sex = 4;
   string birthday = 5;
   bool isverify = 6;
+}
+
+message ContactInfo {
+  string contact = 1;
+  string email = 2;
+  string phone = 3;
+}
+
+message UpdateContect {
+  string contact = 1;
+  string email = 2;
+  string phone = 3;
+  string uuid = 4;
+}
+
+message BindReq {
+  string uuid = 1;
+  string unionid = 2;
+  string email = 3;
+  string pwd = 4;
 }
