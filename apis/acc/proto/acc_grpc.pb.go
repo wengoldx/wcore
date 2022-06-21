@@ -25,6 +25,10 @@ type AccClient interface {
 	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUID, error)
 	GetProfSumms(ctx context.Context, in *UUIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
+	UpdateContact(ctx context.Context, in *UpdateContect, opts ...grpc.CallOption) (*EmptyRespone, error)
+	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ContactInfo, error)
+	BindAccount(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*Token, error)
+	ViaAdmin(ctx context.Context, in *ViaAdminReq, opts ...grpc.CallOption) (*EmptyRespone, error)
 }
 
 type accClient struct {
@@ -62,6 +66,42 @@ func (c *accClient) GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *accClient) UpdateContact(ctx context.Context, in *UpdateContect, opts ...grpc.CallOption) (*EmptyRespone, error) {
+	out := new(EmptyRespone)
+	err := c.cc.Invoke(ctx, "/proto.Acc/UpdateContact", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ContactInfo, error) {
+	out := new(ContactInfo)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetContact", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) BindAccount(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := c.cc.Invoke(ctx, "/proto.Acc/BindAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) ViaAdmin(ctx context.Context, in *ViaAdminReq, opts ...grpc.CallOption) (*EmptyRespone, error) {
+	out := new(EmptyRespone)
+	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -69,6 +109,10 @@ type AccServer interface {
 	ViaToken(context.Context, *Token) (*UUID, error)
 	GetProfSumms(context.Context, *UUIDS) (*ProfSumms, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
+	UpdateContact(context.Context, *UpdateContect) (*EmptyRespone, error)
+	GetContact(context.Context, *UUID) (*ContactInfo, error)
+	BindAccount(context.Context, *BindReq) (*Token, error)
+	ViaAdmin(context.Context, *ViaAdminReq) (*EmptyRespone, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -84,6 +128,18 @@ func (UnimplementedAccServer) GetProfSumms(context.Context, *UUIDS) (*ProfSumms,
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
+}
+func (UnimplementedAccServer) UpdateContact(context.Context, *UpdateContect) (*EmptyRespone, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateContact not implemented")
+}
+func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*ContactInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
+}
+func (UnimplementedAccServer) BindAccount(context.Context, *BindReq) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
+}
+func (UnimplementedAccServer) ViaAdmin(context.Context, *ViaAdminReq) (*EmptyRespone, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViaAdmin not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -152,6 +208,78 @@ func _Acc_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_UpdateContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateContect)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).UpdateContact(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/UpdateContact",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).UpdateContact(ctx, req.(*UpdateContect))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_GetContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GetContact(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GetContact",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GetContact(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).BindAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/BindAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).BindAccount(ctx, req.(*BindReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_ViaAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ViaAdminReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).ViaAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/ViaAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).ViaAdmin(ctx, req.(*ViaAdminReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +298,22 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProfile",
 			Handler:    _Acc_GetProfile_Handler,
+		},
+		{
+			MethodName: "UpdateContact",
+			Handler:    _Acc_UpdateContact_Handler,
+		},
+		{
+			MethodName: "GetContact",
+			Handler:    _Acc_GetContact_Handler,
+		},
+		{
+			MethodName: "BindAccount",
+			Handler:    _Acc_BindAccount_Handler,
+		},
+		{
+			MethodName: "ViaAdmin",
+			Handler:    _Acc_ViaAdmin_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

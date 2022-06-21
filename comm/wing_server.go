@@ -18,6 +18,7 @@ import (
 	"github.com/astaxie/beego/plugins/cors"
 	"github.com/wengoldx/wing/logger"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"net"
 	"os"
 	"os/signal"
@@ -118,4 +119,15 @@ func GrpcServer(regfunc RegisterGrpcHandler, options ...string) {
 		logger.E("Start grpc server, err:", err)
 		panic(err)
 	}
+}
+
+func DialGrpcServer(addr string, port int) *grpc.ClientConn {
+	domain := fmt.Sprintf("%s:%d", addr, port)
+	conn, err := grpc.Dial(domain, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.E("dial grpc address", domain, " fialed", err)
+		return nil
+	}
+	logger.I("Connect grpc server", domain, " successed")
+	return conn
 }
