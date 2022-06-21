@@ -59,6 +59,7 @@ type WingController struct {
 //	}
 type WAuthController struct {
 	WingController
+	WAuthInterface // http request agent and token auth interface
 }
 
 // WAuthInterface is an interface to auth http request agent and token handler.
@@ -117,12 +118,6 @@ func (c *WAuthController) Prepare() {
 	}
 
 	logger.D("Authoration:", authoration, "token:", token)
-}
-
-// Default function to auth http request agent and token
-func (c *WAuthController) AuthHeaderFunc(token string) bool {
-	logger.D("Default auth token function, passed...")
-	return true
 }
 
 // responCheckState check respon state and print out log, the datatype must
