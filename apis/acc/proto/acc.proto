@@ -7,9 +7,10 @@ service Acc {
   rpc ViaToken(Token) returns (UUID);
   rpc GetProfSumms(UUIDS) returns (ProfSumms);
   rpc GetProfile(UUID) returns (Profile);
-  rpc UpdateContact(UpdateContect) returns (EmptyMessage);
+  rpc UpdateContact(UpdateContect) returns (EmptyRespone);
   rpc GetContact(UUID) returns (ContactInfo);
   rpc BindAccount(BindReq) returns (Token);
+  rpc ViaAdmin(ViaAdminReq) returns (EmptyRespone);
 }
 
 message Token { string token = 1; }
@@ -18,7 +19,7 @@ message UUID { string uuid = 1; }
 
 message UUIDS { repeated string uuids = 1; }
 
-message EmptyMessage {}
+message EmptyRespone {}
 
 message ProfSumm {
   string uuid = 1;
@@ -56,4 +57,10 @@ message BindReq {
   string unionid = 2;
   string email = 3;
   string pwd = 4;
+}
+
+message ViaAdminReq {
+  string uuid = 1;
+  string md5pwd = 2;
+  string unionid = 3;
 }
