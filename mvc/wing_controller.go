@@ -20,14 +20,19 @@ import (
 	"strings"
 )
 
-// WingController the extend bee controller to support http request
+// WingController the base controller to support bee http functions.
+type WingController struct {
+	beego.Controller
+}
+
+// WAuthController the extend bee controller to support http request
 // agent and auth token to verify.
 //
 // `USAGE` :
 //
 //	// You can define the custom controller like:
 //	type CustomController struct {
-//		mvc.WingController
+//		mvc.WAuthController
 //	}
 //
 //	// Rest4Method custom RESTful APIs
@@ -48,22 +53,22 @@ import (
 //	}
 //
 //	// Http request agent and token auth handler
-//	func (c *CustomController) AuhtTokenFunc(token string) bool {
+//	func (c *CustomController) AuthHeaderFunc(token string) bool {
 //		// TODO. Auth the input token, and return result status
 //		return true
 //	}
-type WingController struct {
-	beego.Controller   // bee controller interfaces
-	AuthTokenInterface // http request agent and token auth interface
+type WAuthController struct {
+	WingController
+	WAuthInterface // http request agent and token auth interface
+}
+
+// WAuthInterface is an interface to auth http request agent and token handler.
+type WAuthInterface interface {
+	AuthHeaderFunc(token string) bool
 }
 
 // NextFunc do action after input params validated.
 type NextFunc func() (int, interface{})
-
-// AuthTokenInterface is an interface to auth http request agent and token handler.
-type AuthTokenInterface interface {
-	AuthTokenFunc(token string) bool
-}
 
 // Validator use for verify the input params on struct level
 var Validator *validator.Validate
@@ -93,7 +98,7 @@ func RegisterFieldValidator(tag string, valfunc validator.Func) {
 }
 
 // Check authenticate from request header
-func (c *WingController) Prepare() {
+func (c *WAuthController) Prepare() {
 	agent := c.Ctx.Request.UserAgent()
 	if agent != "WENGOLD" {
 		logger.E("Invalid http request agent:", agent)
@@ -104,7 +109,7 @@ func (c *WingController) Prepare() {
 	}
 
 	token := c.Ctx.Request.Header.Get("Token")
-	if token == "" || !c.AuthTokenFunc(token) {
+	if token == "" || !c.AuthHeaderFunc(token) {
 		logger.E("Unauthed request token:", token)
 
 		// TODO. comment out when use token auth
@@ -116,7 +121,7 @@ func (c *WingController) Prepare() {
 }
 
 // Default function to auth http request agent and token
-func (c *WingController) AuhtTokenFunc(token string) bool {
+func (c *WAuthController) AuthHeaderFunc(token string) bool {
 	logger.D("Default auth token function, passed...")
 	return true
 }
