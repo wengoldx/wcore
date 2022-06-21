@@ -245,7 +245,7 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 	}
 
 	// generate new request instanse
-	req, err := http.NewRequest("GET", rawurl, http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, rawurl, http.NoBody)
 	if err != nil {
 		logger.E("Create http request err:", err)
 		return nil, err
@@ -284,7 +284,7 @@ func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interf
 	}
 
 	// generate new request instanse
-	req, err := http.NewRequest("POST", tagurl, body)
+	req, err := http.NewRequest(http.MethodPost, tagurl, body)
 	if err != nil {
 		logger.E("Create http request err:", err)
 		return nil, err

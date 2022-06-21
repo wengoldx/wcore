@@ -20,21 +20,51 @@ import (
 	"strings"
 )
 
-// WingController the base bee controller to support common utils
+// WingController the extend bee controller to support http request
+// agent and auth token to verify.
+//
+// `USAGE` :
+//
+//	// You can define the custom controller like:
+//	type CustomController struct {
+//		mvc.WingController
+//	}
+//
+//	// Rest4Method custom RESTful APIs
+//	// ----------------------------------------------
+//	// @Description The restfull api method bind with router /xx
+//	// @Param data body types.InParams true "input params"
+//	// @Success 200 {string} "response string data"
+//	// @Failure 400 parse input param error
+//	// @router /xx [post]
+//	func(c * CustomController) Rest4Method() {
+//		ps := &types.InParams{}
+//		c.DoAfterValidated(ps, func() (int, interface{}) {
+//			logger.I("Rest4Method: validated input params:", ps)
+//			return services.FuncImplMethod(ps)
+//		}, services.IsProtect())
+//	}
+//
+//	// Http request agent and token auth handler
+//	func (c *CustomController) AuhtTokenFunc(token string) bool {
+//		// TODO. Auth the input token, and return result status
+//		return true
+//	}
 type WingController struct {
-	beego.Controller
+	beego.Controller   // bee controller interfaces
+	AuthTokenInterface // http request agent and token auth interface
 }
-
-// GenInStruct generate the input param object for validate.
-type GenInStruct func() interface{}
 
 // NextFunc do action after input params validated.
 type NextFunc func() (int, interface{})
 
-var (
-	// Validator use for verify the input params on struct level
-	Validator *validator.Validate
-)
+// AuthTokenInterface is an interface to auth http request agent and token handler.
+type AuthTokenInterface interface {
+	AuthTokenFunc(token string) bool
+}
+
+// Validator use for verify the input params on struct level
+var Validator *validator.Validate
 
 // ensureValidatorGenerated generat the validator instance if need
 func ensureValidatorGenerated() {
@@ -58,6 +88,35 @@ func RegisterFieldValidator(tag string, valfunc validator.Func) {
 		return
 	}
 	logger.I("Registered validator:", tag)
+}
+
+// Check authenticate from request header
+func (c *WingController) Prepare() {
+	agent := c.Ctx.Request.UserAgent()
+	if agent != "WENGOLD" {
+		logger.E("Invalid http request agent:", agent)
+
+		// TODO. comment out when use token auth
+		// c.E401Unauthed("Invalid http agent:" + agent)
+		return
+	}
+
+	token := c.Ctx.Request.Header.Get("Token")
+	if token == "" || !c.AuthTokenFunc(token) {
+		logger.E("Unauthed request token:", token)
+
+		// TODO. comment out when use token auth
+		// c.E401Unauthed("Unauthed request token!")
+		return
+	}
+
+	logger.D("Matched agent:", agent, "token:", token)
+}
+
+// Default function to auth http request agent and token
+func (c *WingController) AuhtTokenFunc(token string) bool {
+	logger.D("Default auth token function, passed...")
+	return true
 }
 
 // responCheckState check respon state and print out log, the datatype must
