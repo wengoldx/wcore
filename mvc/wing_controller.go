@@ -33,6 +33,8 @@ import (
 //	// Rest4Method custom RESTful APIs
 //	// ----------------------------------------------
 //	// @Description The restfull api method bind with router /xx
+//	// @Param User-Agent header string true "WENGOLD user agent"
+//	// @Param Token      header string true "authenticate token"
 //	// @Param data body types.InParams true "input params"
 //	// @Success 200 {string} "response string data"
 //	// @Failure 400 parse input param error
