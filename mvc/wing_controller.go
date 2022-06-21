@@ -59,7 +59,6 @@ type WingController struct {
 //	}
 type WAuthController struct {
 	WingController
-	WAuthInterface // http request agent and token auth interface
 }
 
 // WAuthInterface is an interface to auth http request agent and token handler.
