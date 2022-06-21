@@ -25,50 +25,14 @@ type WingController struct {
 	beego.Controller
 }
 
-// WAuthController the extend bee controller to support http request
-// agent and auth token to verify.
-//
-// `USAGE` :
-//
-//	// You can define the custom controller like:
-//	type CustomController struct {
-//		mvc.WAuthController
-//	}
-//
-//	// Rest4Method custom RESTful APIs
-//	// ----------------------------------------------
-//	// @Description The restfull api method bind with router /xx
-//	// @Param Authoration header string true "WENGOLD"
-//	// @Param Token       header string true "Authentication token"
-//	// @Param data body types.InParams true "input params"
-//	// @Success 200 {string} "response string data"
-//	// @Failure 400 parse input param error
-//	// @router /xx [post]
-//	func(c * CustomController) Rest4Method() {
-//		ps := &types.InParams{}
-//		c.DoAfterValidated(ps, func() (int, interface{}) {
-//			logger.I("Rest4Method: validated input params:", ps)
-//			return services.FuncImplMethod(ps)
-//		}, services.IsProtect())
-//	}
-//
-//	// Http request agent and token auth handler
-//	func (c *CustomController) AuthHeaderFunc(token string) bool {
-//		// TODO. Auth the input token, and return result status
-//		return true
-//	}
-type WAuthController struct {
-	WingController
-	WAuthInterface // http request agent and token auth interface
-}
-
-// WAuthInterface is an interface to auth http request agent and token handler.
-type WAuthInterface interface {
-	AuthHeaderFunc(token string) bool
-}
+// AuthFunc auth request token from http header.
+type AuthFunc func(token string) bool
 
 // NextFunc do action after input params validated.
 type NextFunc func() (int, interface{})
+
+// Global handler function to auth token from http header
+var GAuthHandlerFunc AuthFunc
 
 // Validator use for verify the input params on struct level
 var Validator *validator.Validate
@@ -97,66 +61,28 @@ func RegisterFieldValidator(tag string, valfunc validator.Func) {
 	logger.I("Registered validator:", tag)
 }
 
+// ----------------
+
 // Check authenticate from request header
-func (c *WAuthController) Prepare() {
+func (c *WingController) Prepare() {
+	if GAuthHandlerFunc == nil {
+		logger.W("Controller not support header auth, please upgrade!")
+		return
+	}
+
 	authoration := c.Ctx.Request.Header.Get("Authoration")
 	if authoration != "WENGOLD" {
-		logger.E("Invalid header authoration:", authoration)
-
-		// TODO. comment out when use token auth
-		// c.E401Unauthed("Invalid header authoration:" + authoration)
+		c.E401Unauthed("Invalid header authoration: " + authoration)
 		return
 	}
 
 	token := c.Ctx.Request.Header.Get("Token")
-	if token == "" || (c.WAuthInterface != nil && !c.WAuthInterface.AuthHeaderFunc(token)) {
-		logger.E("Unauthed request token:", token)
-
-		// TODO. comment out when use token auth
-		// c.E401Unauthed("Unauthed request token!")
+	if token == "" || !GAuthHandlerFunc(token) {
+		c.E401Unauthed("Unauthed header token: " + token)
 		return
 	}
 
 	logger.D("Authoration:", authoration, "token:", token)
-}
-
-// responCheckState check respon state and print out log, the datatype must
-// range in ['json', 'jsonp', 'xml', 'yaml'], if outof range current controller
-// just return blank string to close http connection.
-func (c *WingController) responCheckState(datatype string, needCheck bool, state int, data ...interface{}) {
-	if state != invar.StatusOK {
-		if needCheck {
-			c.ErrorState(state)
-			return
-		}
-
-		errmsg := invar.StatusText(state)
-		ctl, act := c.GetControllerAndAction()
-		logger.E("Respone "+strings.ToUpper(datatype)+" error:", state, ">", ctl+"."+act, errmsg)
-	} else {
-		ctl, act := c.GetControllerAndAction()
-		logger.I("Respone state:OK-"+strings.ToUpper(datatype)+" >", ctl+"."+act)
-	}
-
-	c.Ctx.Output.Status = state
-	if len(data) > 0 {
-		c.Data[datatype] = data[0]
-	}
-
-	switch datatype {
-	case "json":
-		c.ServeJSON()
-	case "jsonp":
-		c.ServeJSONP()
-	case "xml":
-		c.ServeXML()
-	case "yaml":
-		c.ServeYAML()
-	default:
-		// just return blank string to close http connection
-		logger.W("Invalid response data tyep:" + datatype)
-		c.Ctx.ResponseWriter.Write([]byte(""))
-	}
 }
 
 // ResponJSON sends a json response to client,
@@ -324,45 +250,6 @@ func (c *WingController) BindValue(key string, dest interface{}) error {
 	return nil
 }
 
-// doAfterValidatedInner do bussiness action after success unmarshal params or
-// validate the unmarshaled json data.
-func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{},
-	nextFunc NextFunc, isvalidate, isprotect bool) {
-
-	// unmarshal the input params
-	switch datatype {
-	case "json":
-		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.E400Unmarshal(err.Error())
-			return
-		}
-	case "xml":
-		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.E400Unmarshal(err.Error())
-			return
-		}
-	default: // current not support the jsonp and yaml parse
-		c.E404Exception("Invalid data type:" + datatype)
-		return
-	}
-
-	// validate input params if need
-	if isvalidate {
-		ensureValidatorGenerated()
-		if err := Validator.Struct(ps); err != nil {
-			c.E400Validate(ps, err.Error())
-			return
-		}
-	}
-
-	// execute business function after unmarshal and validated
-	if status, resp := nextFunc(); resp != nil {
-		c.responCheckState(datatype, isprotect, status, resp)
-	} else {
-		c.responCheckState(datatype, isprotect, status)
-	}
-}
-
 // DoAfterValidated do bussiness action after success validate the given json data,
 // notice that you should register the field level validator for the input data's struct,
 // then use it in struct describetion label as validate target.
@@ -425,4 +312,84 @@ func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, 
 func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterParsedOrValidated("xml", ps, nextFunc, false, isprotect)
+}
+
+// ----------------
+
+// responCheckState check respon state and print out log, the datatype must
+// range in ['json', 'jsonp', 'xml', 'yaml'], if outof range current controller
+// just return blank string to close http connection.
+func (c *WingController) responCheckState(datatype string, needCheck bool, state int, data ...interface{}) {
+	if state != invar.StatusOK {
+		if needCheck {
+			c.ErrorState(state)
+			return
+		}
+
+		errmsg := invar.StatusText(state)
+		ctl, act := c.GetControllerAndAction()
+		logger.E("Respone "+strings.ToUpper(datatype)+" error:", state, ">", ctl+"."+act, errmsg)
+	} else {
+		ctl, act := c.GetControllerAndAction()
+		logger.I("Respone state:OK-"+strings.ToUpper(datatype)+" >", ctl+"."+act)
+	}
+
+	c.Ctx.Output.Status = state
+	if len(data) > 0 {
+		c.Data[datatype] = data[0]
+	}
+
+	switch datatype {
+	case "json":
+		c.ServeJSON()
+	case "jsonp":
+		c.ServeJSONP()
+	case "xml":
+		c.ServeXML()
+	case "yaml":
+		c.ServeYAML()
+	default:
+		// just return blank string to close http connection
+		logger.W("Invalid response data tyep:" + datatype)
+		c.Ctx.ResponseWriter.Write([]byte(""))
+	}
+}
+
+// doAfterValidatedInner do bussiness action after success unmarshal params or
+// validate the unmarshaled json data.
+func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{},
+	nextFunc NextFunc, isvalidate, isprotect bool) {
+
+	// unmarshal the input params
+	switch datatype {
+	case "json":
+		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
+			c.E400Unmarshal(err.Error())
+			return
+		}
+	case "xml":
+		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
+			c.E400Unmarshal(err.Error())
+			return
+		}
+	default: // current not support the jsonp and yaml parse
+		c.E404Exception("Invalid data type:" + datatype)
+		return
+	}
+
+	// validate input params if need
+	if isvalidate {
+		ensureValidatorGenerated()
+		if err := Validator.Struct(ps); err != nil {
+			c.E400Validate(ps, err.Error())
+			return
+		}
+	}
+
+	// execute business function after unmarshal and validated
+	if status, resp := nextFunc(); resp != nil {
+		c.responCheckState(datatype, isprotect, status, resp)
+	} else {
+		c.responCheckState(datatype, isprotect, status)
+	}
 }
