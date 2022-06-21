@@ -109,7 +109,7 @@ func (c *WAuthController) Prepare() {
 	}
 
 	token := c.Ctx.Request.Header.Get("Token")
-	if token == "" || !c.AuthHeaderFunc(token) {
+	if token == "" || (c.WAuthInterface != nil && !c.WAuthInterface.AuthHeaderFunc(token)) {
 		logger.E("Unauthed request token:", token)
 
 		// TODO. comment out when use token auth
