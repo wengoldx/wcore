@@ -38,8 +38,8 @@ type WingController struct {
 //	// Rest4Method custom RESTful APIs
 //	// ----------------------------------------------
 //	// @Description The restfull api method bind with router /xx
-//	// @Param User-Agent header string true "WENGOLD user agent"
-//	// @Param Token      header string true "authenticate token"
+//	// @Param Authoration header string true "WENGOLD"
+//	// @Param Token       header string true "Authentication token"
 //	// @Param data body types.InParams true "input params"
 //	// @Success 200 {string} "response string data"
 //	// @Failure 400 parse input param error
@@ -99,12 +99,12 @@ func RegisterFieldValidator(tag string, valfunc validator.Func) {
 
 // Check authenticate from request header
 func (c *WAuthController) Prepare() {
-	agent := c.Ctx.Request.UserAgent()
-	if agent != "WENGOLD" {
-		logger.E("Invalid http request agent:", agent)
+	authoration := c.Ctx.Request.Header.Get("Authoration")
+	if authoration != "WENGOLD" {
+		logger.E("Invalid header authoration:", authoration)
 
 		// TODO. comment out when use token auth
-		// c.E401Unauthed("Invalid http agent:" + agent)
+		// c.E401Unauthed("Invalid header authoration:" + authoration)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (c *WAuthController) Prepare() {
 		return
 	}
 
-	logger.D("Matched agent:", agent, "token:", token)
+	logger.D("Authoration:", authoration, "token:", token)
 }
 
 // Default function to auth http request agent and token
