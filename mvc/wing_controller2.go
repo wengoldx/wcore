@@ -77,7 +77,7 @@ import (
 //		}
 //	}
 //
-// `USECASE 2. Not auth but Parse input params`
+// `USECASE 3. Not auth but Parse input params`
 //
 //	//	@Description Restful api bind with /login on POST method
 //	//	@Param Authoration header string true "WENGOLD-NOSECURE"
@@ -97,14 +97,13 @@ type WAuthController struct {
 	WingController
 }
 
-// AuthFunc auth request token from http header and returen account uuid.
+// AuthFunc auth request token from http header and returen account secures.
 type AuthFunc func(token string) (string, string)
 
 // Global handler function to auth token from http header
 var GAuthHandlerFunc AuthFunc
 
-// Get authoration and token from http header, than verify token and
-// return account uuid, pwd keywords.
+// Get authoration and token from http header, than verify it and return account secures.
 func (c *WAuthController) AuthRequestHeader() (string, string) {
 	if GAuthHandlerFunc == nil {
 		c.E403Denind("Controller not set global auth hander!")
