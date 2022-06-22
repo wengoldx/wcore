@@ -17,10 +17,12 @@ import (
 	"strings"
 )
 
-// WAuthController the extend controller base on WingController to support auth account
-// from http headers, the client caller must append tow headers before post http request.
+// WAuthController the extend controller base on WingController to support
+// auth account from http headers, the client caller must append two headers
+// before post request if expect the controller method enable execute token
+// authentication from header.
 //
-// * Authoration : It must fixed keyword as WENGOLD or WENGOLD-NOSECURE
+// * Authoration : It must fixed keyword as WENGOLD
 //
 // * Token : Authenticate JWT token responsed by login success
 //
@@ -28,7 +30,7 @@ import (
 // `USAGE` :
 //
 // The validator register code of input params struct see WingController description,
-// but the restful api router function like follow.
+// but the restful auth api of router method as follow usecase 1 and 2.
 //
 // ---
 //
@@ -79,28 +81,25 @@ import (
 //		}
 //	}
 //
-// `USECASE 3. No-Auth but Parse input params`
+// `USECASE 3. No-Auth and Use WingController`
 //
 //	//	@Description Restful api bind with /update on POST method
-//	//	@Param Authoration header string true "WENGOLD-NOSECURE"
 //	//	@Param data body types.UserInfo true "input param description"
-//	//	@Success 200 {string} "response data description"
+//	//	@Success 200
 //	//	@router /update [post]
 //	func (c *AccController) AccUpdate() {
 //		ps := &types.UserInfo{}
-//		c.DoAfterValidated(ps, func(uuid, pwd string) (int, interface{}) {
-//			// do same business with input EMPTY account and pwd,
+//		c.WingController.DoAfterValidated(ps, func() (int, interface{}) {
 //			// directe use c and ps param in this methed.
 //			// ...
-//			return http.StatusOK, "Done business"
+//			return http.StatusOK, nil
 //		} , false /* not limit error message even code is 40x */)
 //	}
 //
-// `USECASE 4. No-Auth and No-Input params`
+// `USECASE 4. No-Auth and Custom code`
 //
 //	//	@Description Restful api bind with /list on GET method
-//	//	@Param Authoration header string true "WENGOLD-NOSECURE"
-//	//	@Success 200 {types.AccInfo} "response data description"
+//	//	@Success 200 {object} []types.Account "response data description"
 //	//	@router /list [get]
 //	func (c *AccController) AccList() {
 //		// do same business without auth and input params
@@ -128,15 +127,9 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 
 	// check authoration secure key
 	authoration := strings.ToUpper(c.Ctx.Request.Header.Get("Authoration"))
-	if authoration != "WENGOLD" && authoration != "WENGOLD-NOSECURE" {
+	if authoration != "WENGOLD" {
 		c.E401Unauthed("Invalid header authoration: " + authoration)
 		return "", ""
-	} else if authoration == "WENGOLD-NOSECURE" {
-		// FIXME :
-		// Here means that current controller router method
-		// no-need to auth header token, just return empty infos
-		// and pass auth.
-		return authoration, ""
 	}
 
 	// get token from header and verify it
@@ -213,11 +206,6 @@ func (c *WAuthController) doAfterParsedOrValidated(datatype string,
 			c.E400Validate(ps, err.Error())
 			return
 		}
-	}
-
-	// check if controller router no-need verfiy
-	if uuid == "WENGOLD-NOSECURE" {
-		uuid, pwd = "", ""
 	}
 
 	// execute business function after unmarshal and validated
