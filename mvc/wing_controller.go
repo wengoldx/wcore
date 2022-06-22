@@ -74,9 +74,6 @@ type WingController struct {
 // NextFunc do action after input params validated.
 type NextFunc func() (int, interface{})
 
-// NextFunc2 do action after input params validated, it decode token to get account uuid.
-type NextFunc2 func(uuid, pwd string) (int, interface{})
-
 // Validator use for verify the input params on struct level
 var Validator *validator.Validate
 
@@ -265,36 +262,28 @@ func (c *WingController) BindValue(key string, dest interface{}) error {
 //	see WingController
 func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated(func(uuid, pwd string) (int, interface{}) {
-		return nextFunc()
-	}, "json", ps, "", "", true, isprotect)
+	c.doAfterParsedOrValidated("json", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterUnmarshal(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated(func(uuid, pwd string) (int, interface{}) {
-		return nextFunc()
-	}, "json", ps, "", "", false, isprotect)
+	c.doAfterParsedOrValidated("json", ps, nextFunc, false, isprotect)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated(func(uuid, pwd string) (int, interface{}) {
-		return nextFunc()
-	}, "xml", ps, "", "", true, isprotect)
+	c.doAfterParsedOrValidated("xml", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
 //	see DoAfterValidated, DoAfterValidatedXml
 func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated(func(uuid, pwd string) (int, interface{}) {
-		return nextFunc()
-	}, "xml", ps, "", "", false, isprotect)
+	c.doAfterParsedOrValidated("xml", ps, nextFunc, false, isprotect)
 }
 
 // ----------------
@@ -340,8 +329,8 @@ func (c *WingController) responCheckState(datatype string, needCheck bool, state
 
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
-func (c *WingController) doAfterParsedOrValidated(nextFunc2 NextFunc2,
-	datatype string, ps interface{}, uuid, pwd string, isvalidate, isprotect bool) {
+func (c *WingController) doAfterParsedOrValidated(datatype string,
+	ps interface{}, nextFunc NextFunc, isvalidate, isprotect bool) {
 
 	// unmarshal the input params
 	switch datatype {
@@ -369,13 +358,8 @@ func (c *WingController) doAfterParsedOrValidated(nextFunc2 NextFunc2,
 		}
 	}
 
-	// check if controller router no-need verfiy
-	if uuid == "WENGOLD-NOSECURE" {
-		uuid, pwd = "", ""
-	}
-
 	// execute business function after unmarshal and validated
-	if status, resp := nextFunc2(uuid, pwd); resp != nil {
+	if status, resp := nextFunc(); resp != nil {
 		c.responCheckState(datatype, isprotect, status, resp)
 	} else {
 		c.responCheckState(datatype, isprotect, status)

@@ -11,6 +11,8 @@
 package mvc
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"github.com/wengoldx/wing/logger"
 	"strings"
 )
@@ -56,7 +58,7 @@ import (
 //	func (c *AccController) AccLogin() {
 //		ps := &types.Accout{}
 //		c.DoAfterValidated(ps, func(uuid, pwd string) (int, interface{}) {
-//			// do same business with input no-empty account uuid,
+//			// do same business with input NO-EMPTY account uuid,
 //			// directe use c and ps param in this methed.
 //			// ...
 //			return http.StatusOK, "Done business"
@@ -65,43 +67,57 @@ import (
 //
 // `USECASE 2. Auth account on GET http method`
 //
-//	//	@Description Restful api bind with /info on GET method
+//	//	@Description Restful api bind with /detail on GET method
 //	//	@Param Authoration header string true "WENGOLD"
 //	//	@Param Token       header string true "Authentication token"
-//	//	@Success 200 {types.AccInfo} "response data description"
-//	//	@router /info [get]
-//	func (c *AccController) AccInfo() {
+//	//	@Success 200 {types.Detail} "response data description"
+//	//	@router /detail [get]
+//	func (c *AccController) AccDetail() {
 //		if uuid, _ := c.AuthRequestHeader(); uuid != "" {
 //			// use c.BindValue("fieldkey", out) parse params from url
-//			return service.AccInfo()
+//			c.ResponJSON(service.AccDetail(uuid))
 //		}
 //	}
 //
-// `USECASE 3. Not auth but Parse input params`
+// `USECASE 3. No-Auth but Parse input params`
 //
-//	//	@Description Restful api bind with /login on POST method
+//	//	@Description Restful api bind with /update on POST method
 //	//	@Param Authoration header string true "WENGOLD-NOSECURE"
 //	//	@Param data body types.UserInfo true "input param description"
 //	//	@Success 200 {string} "response data description"
-//	//	@router /login [post]
-//	func (c *AccController) AccLogin() {
+//	//	@router /update [post]
+//	func (c *AccController) AccUpdate() {
 //		ps := &types.UserInfo{}
 //		c.DoAfterValidated(ps, func(uuid, pwd string) (int, interface{}) {
-//			// do same business with input empty account and pwd,
+//			// do same business with input EMPTY account and pwd,
 //			// directe use c and ps param in this methed.
 //			// ...
 //			return http.StatusOK, "Done business"
 //		} , false /* not limit error message even code is 40x */)
 //	}
+//
+// `USECASE 4. No-Auth and No-Input params`
+//
+//	//	@Description Restful api bind with /list on GET method
+//	//	@Param Authoration header string true "WENGOLD-NOSECURE"
+//	//	@Success 200 {types.AccInfo} "response data description"
+//	//	@router /list [get]
+//	func (c *AccController) AccList() {
+//		// do same business without auth and input params
+//		c.ResponJSON(service.AccList())
+//	}
 type WAuthController struct {
 	WingController
 }
 
+// NextFunc2 do action after input params validated, it decode token to get account uuid.
+type NextFunc2 func(uuid, pwd string) (int, interface{})
+
 // AuthFunc auth request token from http header and returen account secures.
-type AuthFunc func(token string) (string, string)
+type AuthHandlerFunc func(token string) (string, string)
 
 // Global handler function to auth token from http header
-var GAuthHandlerFunc AuthFunc
+var GAuthHandlerFunc AuthHandlerFunc
 
 // Get authoration and token from http header, than verify it and return account secures.
 func (c *WAuthController) AuthRequestHeader() (string, string) {
@@ -140,7 +156,7 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
 	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated(nextFunc2, "json", ps, uuid, pwd, true, isprotect)
+		c.doAfterParsedOrValidated("json", ps, nextFunc2, uuid, pwd, true, isprotect)
 	}
 }
 
@@ -148,7 +164,7 @@ func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, 
 func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
 	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated(nextFunc2, "json", ps, uuid, pwd, false, isprotect)
+		c.doAfterParsedOrValidated("json", ps, nextFunc2, uuid, pwd, false, isprotect)
 	}
 }
 
@@ -156,7 +172,7 @@ func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, 
 func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
 	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated(nextFunc2, "xml", ps, uuid, pwd, true, isprotect)
+		c.doAfterParsedOrValidated("xml", ps, nextFunc2, uuid, pwd, true, isprotect)
 	}
 }
 
@@ -164,6 +180,50 @@ func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc
 func (c *WAuthController) DoAfterUnmarshalXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
 	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated(nextFunc2, "xml", ps, uuid, pwd, false, isprotect)
+		c.doAfterParsedOrValidated("xml", ps, nextFunc2, uuid, pwd, false, isprotect)
+	}
+}
+
+// doAfterValidatedInner do bussiness action after success unmarshal params or
+// validate the unmarshaled json data.
+func (c *WAuthController) doAfterParsedOrValidated(datatype string,
+	ps interface{}, nextFunc2 NextFunc2, uuid, pwd string, isvalidate, isprotect bool) {
+
+	// unmarshal the input params
+	switch datatype {
+	case "json":
+		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
+			c.E400Unmarshal(err.Error())
+			return
+		}
+	case "xml":
+		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
+			c.E400Unmarshal(err.Error())
+			return
+		}
+	default: // current not support the jsonp and yaml parse
+		c.E404Exception("Invalid data type:" + datatype)
+		return
+	}
+
+	// validate input params if need
+	if isvalidate {
+		ensureValidatorGenerated()
+		if err := Validator.Struct(ps); err != nil {
+			c.E400Validate(ps, err.Error())
+			return
+		}
+	}
+
+	// check if controller router no-need verfiy
+	if uuid == "WENGOLD-NOSECURE" {
+		uuid, pwd = "", ""
+	}
+
+	// execute business function after unmarshal and validated
+	if status, resp := nextFunc2(uuid, pwd); resp != nil {
+		c.responCheckState(datatype, isprotect, status, resp)
+	} else {
+		c.responCheckState(datatype, isprotect, status)
 	}
 }
