@@ -18,7 +18,7 @@ import (
 // WAuthController the extend controller base on WingController to support auth account
 // from http headers, the client caller must append tow headers before post http request.
 //
-// * Authoration : It must fixed keyword as WENGOLD
+// * Authoration : It must fixed keyword as WENGOLD or WENGOLD-NOSECURE
 //
 // * Token : Authenticate JWT token responsed by login success
 //
@@ -37,6 +37,16 @@ import (
 //		mvc.WAuthController
 //	}
 //
+//	func init() {
+//		mvc.GAuthHandlerFunc = func(token string) (string, string) {
+//			// decode and verify token string, than return indecated
+//			// account uuid and password.
+//			return "account uuid", "account password"
+//		}
+//	}
+//
+// `USECASE 1. Auth account and Parse input params`
+//
 //	//	@Description Restful api bind with /login on POST method
 //	//	@Param Authoration header string true "WENGOLD"
 //	//	@Param Token       header string true "Authentication token"
@@ -45,15 +55,15 @@ import (
 //	//	@router /login [post]
 //	func (c *AccController) AccLogin() {
 //		ps := &types.Accout{}
-//		c.DoAfterValidated(ps, func(uuid string) (int, interface{}) {
-//			// do same business with input no-empty account uuid
+//		c.DoAfterValidated(ps, func(uuid, pwd string) (int, interface{}) {
+//			// do same business with input no-empty account uuid,
 //			// directe use c and ps param in this methed.
 //			// ...
 //			return http.StatusOK, "Done business"
 //		} , false /* not limit error message even code is 40x */)
 //	}
 //
-// `OR auth account on GET http method`
+// `USECASE 2. Auth account on GET http method`
 //
 //	//	@Description Restful api bind with /info on GET method
 //	//	@Param Authoration header string true "WENGOLD"
@@ -61,81 +71,100 @@ import (
 //	//	@Success 200 {types.AccInfo} "response data description"
 //	//	@router /info [get]
 //	func (c *AccController) AccInfo() {
-//		if uuid := c.AuthRequestHeader(); uuid != "" {
+//		if uuid, _ := c.AuthRequestHeader(); uuid != "" {
 //			// use c.BindValue("fieldkey", out) parse params from url
 //			return service.AccInfo()
 //		}
+//	}
+//
+// `USECASE 2. Not auth but Parse input params`
+//
+//	//	@Description Restful api bind with /login on POST method
+//	//	@Param Authoration header string true "WENGOLD-NOSECURE"
+//	//	@Param data body types.UserInfo true "input param description"
+//	//	@Success 200 {string} "response data description"
+//	//	@router /login [post]
+//	func (c *AccController) AccLogin() {
+//		ps := &types.UserInfo{}
+//		c.DoAfterValidated(ps, func(uuid, pwd string) (int, interface{}) {
+//			// do same business with input empty account and pwd,
+//			// directe use c and ps param in this methed.
+//			// ...
+//			return http.StatusOK, "Done business"
+//		} , false /* not limit error message even code is 40x */)
 //	}
 type WAuthController struct {
 	WingController
 }
 
 // AuthFunc auth request token from http header and returen account uuid.
-type AuthFunc func(token string) string
+type AuthFunc func(token string) (string, string)
 
 // Global handler function to auth token from http header
 var GAuthHandlerFunc AuthFunc
 
-func (c *WAuthController) AuthRequestHeader() string {
+// Get authoration and token from http header, than verify token and
+// return account uuid, pwd keywords.
+func (c *WAuthController) AuthRequestHeader() (string, string) {
 	if GAuthHandlerFunc == nil {
 		c.E403Denind("Controller not set global auth hander!")
-		return ""
+		return "", ""
 	}
 
 	// check authoration secure key
-	authoration := c.Ctx.Request.Header.Get("Authoration")
-	if strings.ToUpper(authoration) != "WENGOLD" {
+	authoration := strings.ToUpper(c.Ctx.Request.Header.Get("Authoration"))
+	if authoration != "WENGOLD" && authoration != "WENGOLD-NOSECURE" {
 		c.E401Unauthed("Invalid header authoration: " + authoration)
-		return ""
+		return "", ""
+	} else if authoration == "WENGOLD-NOSECURE" {
+		// FIXME :
+		// Here means that current controller router method
+		// no-need to auth header token, just return empty infos
+		// and pass auth.
+		return authoration, ""
 	}
 
 	// get token from header and verify it
 	if token := c.Ctx.Request.Header.Get("Token"); token != "" {
-		if uuid := GAuthHandlerFunc(token); uuid != "" {
+		if uuid, pwd := GAuthHandlerFunc(token); uuid != "" {
 			logger.D("Authenticated account:", uuid)
-			return uuid
+			return uuid, pwd
 		}
 	}
 
 	// token is empty or invalid, response unauthed
 	c.E401Unauthed("Unauthed header token!")
-	return ""
+	return "", ""
 }
 
-// DoAfterValidated do bussiness action after success validate the given json data,
-// notice that you should register the field level validator for the input data's struct,
-// then use it in struct describetion label as validate target.
-//	see WAuthController
+// DoAfterValidated do bussiness action after success validate the given json data.
 func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid := c.AuthRequestHeader(); uuid != "" {
+	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("json", ps, nextFunc2, uuid, true, isprotect)
+		c.doAfterParsedOrValidated(nextFunc2, "json", ps, uuid, pwd, true, isprotect)
 	}
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
-//	see DoAfterValidated
 func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid := c.AuthRequestHeader(); uuid != "" {
+	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("json", ps, nextFunc2, uuid, false, isprotect)
+		c.doAfterParsedOrValidated(nextFunc2, "json", ps, uuid, pwd, false, isprotect)
 	}
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
-//	see DoAfterValidated
 func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid := c.AuthRequestHeader(); uuid != "" {
+	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("xml", ps, nextFunc2, uuid, true, isprotect)
+		c.doAfterParsedOrValidated(nextFunc2, "xml", ps, uuid, pwd, true, isprotect)
 	}
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-//	see DoAfterValidated, DoAfterValidatedXml
 func (c *WAuthController) DoAfterUnmarshalXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid := c.AuthRequestHeader(); uuid != "" {
+	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("xml", ps, nextFunc2, uuid, false, isprotect)
+		c.doAfterParsedOrValidated(nextFunc2, "xml", ps, uuid, pwd, false, isprotect)
 	}
 }
