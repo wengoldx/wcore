@@ -21,18 +21,61 @@ import (
 )
 
 // WingController the base controller to support bee http functions.
+//
+// `USAGE` :
+//
+// Notice that you should register the field level validator for the input data's struct,
+// then use it in struct describetion label as validate target.
+//
+// ---
+//
+// `types.go`
+//
+//	// define restful api router input param struct
+//	type struct Accout {
+//		Acc string `json:"acc" validate:"required,IsVaildUuid"`
+//		PWD string `json:"pwd" validate:"required_without"`
+//		Num int    `json:"num"`
+//	}
+//
+//	// define custom validator on struct field level
+//	func isVaildUuid(fl validator.FieldLevel) bool {
+//		m, _ := regexp.Compile("^[0-9a-zA-Z]*$")
+//		str := fl.Field().String()
+//		return m.MatchString(str)
+//	}
+//
+//	func init() {
+//		// register router input params struct validators
+//		mvc.RegisterFieldValidator("IsVaildUuid", isVaildUuid)
+//	}
+//
+// ---
+//
+// `controller.go`
+//
+//	//	@Description Restful api bind with /login on POST method
+//	//	@Param data body types.Accout true "input param description"
+//	//	@Success 200 {string} "response data description"
+//	//	@router /login [post]
+//	func (c *AccController) AccLogin() {
+//		ps := &types.Accout{}
+//		c.DoAfterValidated(ps, func() (int, interface{}) {
+//			// do same business function
+//			// directe use c and ps param in this methed.
+//			// ...
+//			return http.StatusOK, "Done business"
+//		} , false /* not limit error message even code is 40x */)
+//	}
 type WingController struct {
 	beego.Controller
 }
 
-// AuthFunc auth request token from http header.
-type AuthFunc func(token string) bool
-
 // NextFunc do action after input params validated.
 type NextFunc func() (int, interface{})
 
-// Global handler function to auth token from http header
-var GAuthHandlerFunc AuthFunc
+// NextFunc2 do action after input params validated, it decode token to get account uuid.
+type NextFunc2 func(uuid string) (int, interface{})
 
 // Validator use for verify the input params on struct level
 var Validator *validator.Validate
@@ -62,28 +105,6 @@ func RegisterFieldValidator(tag string, valfunc validator.Func) {
 }
 
 // ----------------
-
-// Check authenticate from request header
-func (c *WingController) Prepare() {
-	if GAuthHandlerFunc == nil {
-		logger.W("Controller not support header auth, please upgrade!")
-		return
-	}
-
-	authoration := c.Ctx.Request.Header.Get("Authoration")
-	if authoration != "WENGOLD" {
-		c.E401Unauthed("Invalid header authoration: " + authoration)
-		return
-	}
-
-	token := c.Ctx.Request.Header.Get("Token")
-	if token == "" || !GAuthHandlerFunc(token) {
-		c.E401Unauthed("Unauthed header token: " + token)
-		return
-	}
-
-	logger.D("Authoration:", authoration, "token:", token)
-}
 
 // ResponJSON sends a json response to client,
 // it may not send data if the state is not status ok
@@ -226,16 +247,6 @@ func (c *WingController) E410Gone(err ...string) {
 	c.ErrorState(invar.E410Gone, err...)
 }
 
-// Get and check valid token from header by key 'token', it may
-// response error to client when token not found or empty.
-func (c *WingController) ViaAuthToken() string {
-	token := c.Ctx.Request.Header.Get("token")
-	if token == "" {
-		c.E401Unauthed("Not found token from header!")
-	}
-	return token
-}
-
 // ClientFrom return client ip from who requested
 func (c *WingController) ClientFrom() string {
 	return c.Ctx.Request.RemoteAddr
@@ -250,68 +261,36 @@ func (c *WingController) BindValue(key string, dest interface{}) error {
 	return nil
 }
 
-// DoAfterValidated do bussiness action after success validate the given json data,
-// notice that you should register the field level validator for the input data's struct,
-// then use it in struct describetion label as validate target.
-//
-// ---
-//
-// `types.go`
-//
-//	type struct Accout {
-//		Acc string `json:"acc" validate:"required,IsVaildUuid"`
-//		PWD string `json:"pwd" validate:"required_without"`
-//		Num int    `json:"num"`
-//	}
-//
-//	// define custom validator on struct field level
-//	func isVaildUuid(fl validator.FieldLevel) bool {
-//		m, _ := regexp.Compile("^[0-9a-zA-Z]*$")
-//		str := fl.Field().String()
-//		return m.MatchString(str)
-//	}
-//
-//	func init() {
-//		mvc.RegisterFieldValidator("IsVaildUuid", isVaildUuid)
-//	}
-//
-// ---
-//
-// `controller.go`
-//
-//	func (c *AccController) AccLogin() {
-//		ps := &types.Accout{}
-//		c.DoAfterValidated(ps, func() (int, interface{}) {
-//			// do same business function
-//			// directe use c and ps param in this methed.
-//			// ...
-//			return http.StatusOK, "Done business"
-//		} /** , false /* not limit error message even code is 40x */ */)
-//	}
+// DoAfterValidated do bussiness action after success validate the given json data.
+//	see WingController
 func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("json", ps, nextFunc, true, isprotect)
+	nextFunc2 := func(uuid string) (int, interface{}) { return nextFunc() }
+	c.doAfterParsedOrValidated("json", ps, nextFunc2, "", true, isprotect)
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterUnmarshal(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("json", ps, nextFunc, false, isprotect)
+	nextFunc2 := func(uuid string) (int, interface{}) { return nextFunc() }
+	c.doAfterParsedOrValidated("json", ps, nextFunc2, "", false, isprotect)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("xml", ps, nextFunc, true, isprotect)
+	nextFunc2 := func(uuid string) (int, interface{}) { return nextFunc() }
+	c.doAfterParsedOrValidated("xml", ps, nextFunc2, "", true, isprotect)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
 //	see DoAfterValidated, DoAfterValidatedXml
 func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("xml", ps, nextFunc, false, isprotect)
+	nextFunc2 := func(uuid string) (int, interface{}) { return nextFunc() }
+	c.doAfterParsedOrValidated("xml", ps, nextFunc2, "", false, isprotect)
 }
 
 // ----------------
@@ -358,7 +337,7 @@ func (c *WingController) responCheckState(datatype string, needCheck bool, state
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
 func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{},
-	nextFunc NextFunc, isvalidate, isprotect bool) {
+	nextFunc2 NextFunc2, uuid string, isvalidate, isprotect bool) {
 
 	// unmarshal the input params
 	switch datatype {
@@ -387,7 +366,7 @@ func (c *WingController) doAfterParsedOrValidated(datatype string, ps interface{
 	}
 
 	// execute business function after unmarshal and validated
-	if status, resp := nextFunc(); resp != nil {
+	if status, resp := nextFunc2(uuid); resp != nil {
 		c.responCheckState(datatype, isprotect, status, resp)
 	} else {
 		c.responCheckState(datatype, isprotect, status)
