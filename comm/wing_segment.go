@@ -23,7 +23,9 @@ var GseSegmenter *WordSegment
 
 func SegmentHelper() *WordSegment {
 	GseSegmenter = &WordSegment{}
-	GseSegmenter.segment.LoadDict("source/dictionary/s_1.txt, source/dictionary/t_1.txt")
+	upperDir := GetUpperFileDir()
+	file := upperDir + "/source/s_1.txt," + upperDir + "/source/t_1.txt"
+	GseSegmenter.segment.LoadDict(file)
 	return GseSegmenter
 }
 

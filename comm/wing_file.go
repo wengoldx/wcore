@@ -25,6 +25,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -447,4 +448,16 @@ func VerifyFileFormat(fh *multipart.FileHeader, format string, size int64) (stri
 		return "", invar.ErrUnsupportedFile
 	}
 	return suffix, nil
+}
+
+func GetUpperFileDir() string {
+	_, filePath, _, ok := runtime.Caller(0)
+	if !ok {
+		return ""
+	}
+	fileDir := path.Dir(filePath)
+	strs := strings.Split(fileDir, "/")
+	lastIndex := len(strs) - 1
+	upperDir := strings.Join(strs[:lastIndex], "/")
+	return upperDir
 }

@@ -18,11 +18,18 @@ import (
 	"github.com/astaxie/beego/plugins/cors"
 	"github.com/wengoldx/wing/logger"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
+	// "google.golang.org/grpc/credentials/insecure"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+)
+
+var (
+	upperDir   = GetUpperFileDir()
+	tlsKeyFile = upperDir + "/apis/%s/tls-keys/%s.key"
+	tlsPemFile = upperDir + "/apis/%s/tls-keys/%s.pem"
 )
 
 // HttpServer start and excute http server base on beego
@@ -99,7 +106,7 @@ type RegisterGrpcHandler func(svr *grpc.Server)
 //	go comm.GrpcServer(func(svr *grpc.Server) {
 //		proto.RegisterAccServer(svr, &(handler.Acc{}))
 //	})
-func GrpcServer(regfunc RegisterGrpcHandler, options ...string) {
+func GrpcServer(regfunc RegisterGrpcHandler, server string, options ...string) {
 	portkey := "nacosport"
 	if len(options) != 0 && options[0] != "" {
 		portkey = options[0]
@@ -111,7 +118,15 @@ func GrpcServer(regfunc RegisterGrpcHandler, options ...string) {
 		panic("Listen grpc server, err:" + err.Error())
 	}
 
-	svr := grpc.NewServer()
+	// TLS auth
+	pem := fmt.Sprintf(tlsPemFile, server, server)
+	key := fmt.Sprintf(tlsKeyFile, server, server)
+	cred, err := credentials.NewServerTLSFromFile(pem, key)
+	if err != nil {
+		panic("Generate new TLS, err:" + err.Error())
+	}
+
+	svr := grpc.NewServer(grpc.Creds(cred))
 	regfunc(svr)
 
 	logger.I("Grpc server runing on", port)
@@ -121,9 +136,18 @@ func GrpcServer(regfunc RegisterGrpcHandler, options ...string) {
 	}
 }
 
-func DialGrpcServer(addr string, port int) *grpc.ClientConn {
+func DialGrpcServer(addr string, port int, server string) *grpc.ClientConn {
 	domain := fmt.Sprintf("%s:%d", addr, port)
-	conn, err := grpc.Dial(domain, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	// TLS auth
+	pem := fmt.Sprintf(tlsPemFile, server, server)
+	cred, err := credentials.NewClientTLSFromFile(pem, server)
+	if err != nil {
+		logger.E("Generate new TLS, err:", err)
+		return nil
+	}
+
+	conn, err := grpc.Dial(domain, grpc.WithTransportCredentials(cred) /*insecure.NewCredentials())*/)
 	if err != nil {
 		logger.E("dial grpc address", domain, " fialed", err)
 		return nil
