@@ -146,6 +146,7 @@ func openMySQLPool(charset string, sessions []string) error {
 
 		con.SetMaxIdleConns(100)
 		con.SetMaxOpenConns(100)
+		con.SetConnMaxLifetime(28740)
 		ConnPool[session] = &WingProvider{con}
 	}
 	return nil
