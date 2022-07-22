@@ -33,8 +33,8 @@ const (
 
 // Nacos namespace string for wing/nacos
 const (
-	NS_PROD = "dunyu-server-prod"  // PROD namespace id
-	NS_DEV  = "dunyu-server-dev"   // DEV  namespace id
+	NS_PROD = "dunyu-server-prod" // PROD namespace id
+	NS_DEV  = "dunyu-server-dev"  // DEV  namespace id
 )
 
 // Nacos group string for wing/nacos
@@ -52,4 +52,5 @@ const (
 	DID_WX_AGENTS  = "dunyu.wx.agents"  // Group by BASIC, data id of wechat agents
 	DID_NTF_SENDER = "dunyu.ntf.sender" // Group by BASIC, data id of dingtalk nofitier
 	DID_MIO_PATHS  = "dunyu.mio.paths"  // Group by BASIC, data id of minio source paths
+	DID_NTF_ORDER  = "dunyu.ntf.order"  // Group by BASIC, data id of dingtalk trade order nofitier
 )
