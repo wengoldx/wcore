@@ -88,7 +88,7 @@ func accessAllowOriginBy(category int, origins string, allowCredentials bool) {
 		AllowCredentials: allowCredentials,
 		AllowOrigins:     []string{origins}, // use to set allow Origins
 		AllowMethods:     []string{"GET", "POST", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type", "Authoration", "Token"},
 		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type"},
 	}))
 }
