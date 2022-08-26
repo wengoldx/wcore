@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccClient interface {
-	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUID, error)
+	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUIDPWD, error)
 	GetProfSumms(ctx context.Context, in *UUIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	UpdateContact(ctx context.Context, in *UpdateContect, opts ...grpc.CallOption) (*EmptyRespone, error)
@@ -39,8 +39,8 @@ func NewAccClient(cc grpc.ClientConnInterface) AccClient {
 	return &accClient{cc}
 }
 
-func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUID, error) {
-	out := new(UUID)
+func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUIDPWD, error) {
+	out := new(UUIDPWD)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (c *accClient) ViaAdmin(ctx context.Context, in *ViaAdminReq, opts ...grpc.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
 type AccServer interface {
-	ViaToken(context.Context, *Token) (*UUID, error)
+	ViaToken(context.Context, *Token) (*UUIDPWD, error)
 	GetProfSumms(context.Context, *UUIDS) (*ProfSumms, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	UpdateContact(context.Context, *UpdateContect) (*EmptyRespone, error)
@@ -120,7 +120,7 @@ type AccServer interface {
 type UnimplementedAccServer struct {
 }
 
-func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*UUID, error) {
+func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*UUIDPWD, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaToken not implemented")
 }
 func (UnimplementedAccServer) GetProfSumms(context.Context, *UUIDS) (*ProfSumms, error) {

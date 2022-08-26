@@ -4,7 +4,7 @@ package proto;
 option go_package = "./proto";
 
 service Acc {
-  rpc ViaToken(Token) returns (UUID);
+  rpc ViaToken(Token) returns (UUIDPWD);
   rpc GetProfSumms(UUIDS) returns (ProfSumms);
   rpc GetProfile(UUID) returns (Profile);
   rpc UpdateContact(UpdateContect) returns (EmptyRespone);
@@ -14,6 +14,11 @@ service Acc {
 }
 
 message Token { string token = 1; }
+
+message UUIDPWD { 
+  string uuid = 1;
+  string pwd =2;
+ }
 
 message UUID { string uuid = 1; }
 
