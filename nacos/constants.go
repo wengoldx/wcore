@@ -55,4 +55,5 @@ const (
 	DID_NTF_PROPOSER = "dunyu.ntf.proposer" // Group by BASIC, data id of dingtalk suggestion nofitier
 	DID_NTF_WGPAY    = "dunyu.ntf.wgpay"    // Group by BASIC, data id of dingtalk wgpay nofitier
 	DID_NTF_ORDER    = "dunyu.ntf.order"    // Group by BASIC, data id of dingtalk trade order nofitier
+	DID_ACC_EMAIL    = "dunyu.acc.email"    // Group by BASIC, data id of email setting
 )
