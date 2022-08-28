@@ -114,6 +114,7 @@ import (
 //	    console.log('original: ' + original);
 //	    return original;
 //	}
+const AES_UTIL_DESCRIPTION = 0 /* just use for description */
 
 var (
 	// aesKeySeeds use to create secret key for ase crypto

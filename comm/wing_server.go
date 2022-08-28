@@ -32,7 +32,21 @@ var (
 	tlsPemFile = upperDir + "/apis/%s/tls-keys/%s.pem"
 )
 
-// HttpServer start and excute http server base on beego
+// Start and excute http server base on beego, by default, it just
+// support restful interface not socket.io connection, but you can
+// set allowCredentials as true to on socket.io conect function.
+//
+// `USAGE` :
+//
+//	// use for restful interface server
+//	func main() {}
+//		// comm.HttpServer(false) or
+//		comm.HttpServer()
+//
+//	// use for both restful and socket.io server
+//	func main() {
+//		comm.HttpServer(true)
+//	}
 func HttpServer(allowCredentials ...bool) {
 	ignoreSysSignalPIPE()
 	if len(allowCredentials) > 0 {
@@ -49,6 +63,11 @@ func HttpServer(allowCredentials ...bool) {
 		beego.BeeLogger.DelLogger(logs.AdapterConsole)
 	}
 	beego.Run()
+}
+
+// Start and excute both restful and socket.io server
+func Rest4SioServer() {
+	HttpServer(true)
 }
 
 // Allow cross domain access for localhost,
@@ -101,7 +120,7 @@ type RegisterGrpcHandler func(svr *grpc.Server)
 // GrpcServer start and excute grpc server, you can register grpc
 // client handler by regfunc callback as follow:
 //
-// `CODE`
+// `USAGE`
 //
 //	go comm.GrpcServer(func(svr *grpc.Server) {
 //		proto.RegisterAccServer(svr, &(handler.Acc{}))

@@ -22,63 +22,56 @@ import (
 	"os"
 )
 
-/*
- * Description :
- * (1). use secure.GenRSAKeys() to generate RSA keys, and set content bits length
- *   prikey, pubkey, err := secure.GenRSAKeys(bits)
- *
- * (2). use secure.RSAEncrypt() to encrypt original data with given public key
- *   ciphertext, err := secure.RSAEncrypt(pubkey, original)
- *
- * (3). use secure.RSADecrypt() to decrypt ciphertext with given private key
- *   original, err := secure.RSADecrypt(prikey, ciphertext)
- *
- *   [CODE:]
- *   // Use the pubkey to encrypt and use the prikey to decrypt
- *
- *   prikey, pubkey, _ := secure.GenRSAKeys(1024)
- *   logger.I("private key:", prikey)
- *   logger.I("public  key:", pubkey)
- *
- *   ciphertext, _ := secure.RSAEncrypt([]byte(pubkey), []byte("original-content"))
- *   ciphertextBase64 := secure.EncodeBase64(string(ciphertext))
- *   logger.I("ciphertext base64 string:", ciphertextBase64)
- *
- *   original, _ := secure.RSADecrypt([]byte(prikey), ciphertext)
- *   logger.I("original string:", string(original))	// print 'original-content'
- *
- *   [CODE]
- *
- * Description :
- * (1). use secure.GenRSAKeys() to generate RSA keys, and set content bits length
- *   prikey, pubkey, err := secure.GenRSAKeys(bits)
- *
- * (2). use secure.RSASign() to make digital signature with given private key
- *   signature, err := secure.RSASign(prikey, original)
- *
- * (3). use secure.RSAVerify() to verify data's integrity with given public key and digital signature
- *   err := secure.RSAVerify(pubkey, original, signature)
- *
- *   [CODE:]
- *   // Use the private key to create digital signature and use pubkey to verify it
- *
- *   prikey, pubkey, _ := secure.GenRSAKeys(1024)
- *   logger.I("private key:", prikey)
- *   logger.I("public  key:", pubkey)
- *
- *   original := []byte("original-content")
- *   signature, _ := secure.RSASign([]byte(prikey), original)
- *   logger.I("original string:", string(original))
- *   logger.I("signature string:", string(signature))
- *
- *   if err := secure.RSAVerify([]byte(pubkey), original, signature); err != nil {
- *       logger.E("Verify failed with err:", err)
- *       return
- *   }
- *   logger.I("Verify success")
- *
- *   [CODE]
- */
+// ### 1. How to encrypt and decrypt by RSA
+//
+// - (1). use secure.GenRSAKeys() to generate RSA keys, and set content bits length.
+//
+// - (2). use secure.RSAEncrypt() to encrypt original data with given public key.
+//
+// - (3). use secure.RSADecrypt() to decrypt ciphertext with given private key.
+//
+// `USAGE`
+//
+//	// Use the pubkey to encrypt and use the prikey to decrypt
+//	prikey, pubkey, _ := secure.GenRSAKeys(1024)
+//	logger.I("public  key:", pubkey, "private key:", prikey)
+//
+//	ciphertext, _ := secure.RSAEncrypt([]byte(pubkey), []byte("original-content"))
+//	ciphertextBase64 := secure.EncodeBase64(string(ciphertext))
+//	logger.I("ciphertext base64 string:", ciphertextBase64)
+//
+//	original, _ := secure.RSADecrypt([]byte(prikey), ciphertext)
+//	logger.I("original string:", string(original))	// print 'original-content'
+//
+//
+// ----
+//
+//
+// ### 2. How to digital signature and verify by RSA
+//
+// - (1). use secure.GenRSAKeys() to generate RSA keys, and set content bits length.
+//
+// - (2). use secure.RSASign() to make digital signature with given private key.`
+//
+// - (3). use secure.RSAVerify() to verify data's integrity with given public key and digital signature
+//
+// `USAGE`
+//
+//	// Use the private key to create digital signature and use pubkey to verify it
+//	prikey, pubkey, _ := secure.GenRSAKeys(1024)
+//	logger.I("public  key:", pubkey, "private key:", prikey)
+//
+//	original := []byte("original-content")
+//	signature, _ := secure.RSASign([]byte(prikey), original)
+//	logger.I("original string:", string(original))
+//	logger.I("signature string:", string(signature))
+//
+//	if err := secure.RSAVerify([]byte(pubkey), original, signature); err != nil {
+//		logger.E("Verify failed with err:", err)
+//		return
+//	}
+//	logger.I("Verify success")
+const RSA_UTIL_DESCRIPTION = 0 /* just use for description */
 
 const (
 	blockRsaPrivateKey = "RSA Private key"

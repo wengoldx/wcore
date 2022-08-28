@@ -13,8 +13,8 @@ package wing
 // package main
 
 // import (
-// 	_ "github.com/wengoldx/wing/apis/acc"
-// 	_ "github.com/wengoldx/wing/apis/mea"
+// 	_ "github.com/wengoldx/wing/apis/accservice"
+// 	_ "github.com/wengoldx/wing/apis/measure"
 // 	_ "github.com/wengoldx/wing/apis/pay"
 // 	_ "github.com/wengoldx/wing/comm"
 // 	_ "github.com/wengoldx/wing/invar"
