@@ -31,6 +31,17 @@ type clientOpt struct {
 // Socket.io connecte information, it will generate a socket server
 // and register as http Handler to listen socket signalings.
 //
+// `NOTICE` :
+//
+// - The request client MUST set header have 'Authoration' : WENGOLD and
+// no-empty auth Token as 'Token' : 'plaintext uuid or base64 formated string'.
+//
+// - DO NOT CHANGE THE go-socket.io MODULE VERSION, FIX IT IN 1.0.1 for
+// all UE4/UE5, Nodejs, python3 clients. the go-socket.io version 1.6.2
+// not matche or well support UE4/UE5 (No disconnected notify on server).
+//
+// see more [UE Socket.IO Pluge Usage](http://10.239.20.244:8090/pages/viewpage.action?pageId=7110992).
+//
 // ----
 //
 // `USAGE` :
@@ -46,13 +57,22 @@ type clientOpt struct {
 //			panic(err)
 //		}
 //	}
+//
+// You may config socket ping interval, timeout and using optinal data
+// check in app.conf file as follow:
+//
+//	[wsio]
+//	; Heartbeat ping interval, default 30 seconds
+//	interval = 30
+//
+//	; Max heartbeat ping timeout, default 60 seconds
+//	timeout = 60
+//
+//	; Using client optional data check, default false
+//	optinal = false
 type wingSIO struct {
 	// Mutex sync lock, protect client connecting
 	lock sync.Mutex
-
-	// http request pointer to client, cache datas temporary
-	// only for client authenticate-connect process.
-	caches map[uintptr]*clientOpt
 
 	// socket server
 	server *sio.Server
@@ -66,35 +86,40 @@ type wingSIO struct {
 	// socket golbal handler to execute clients disconnect actions
 	discHandler DisconnectHandler
 
+	// http request pointer to client, cache datas temporary
+	// only for client authenticate-connect process.
+	options map[uintptr]*clientOpt
+
 	// `WARNING` :
 	//
-	// the googolle/socket.io will call onConnect event duplicate times,
-	// so handle the valid first and abort the invalid second time.
+	// the go-socket.io will call onConnect duplicate times when socket.io
+	// client version not matched, so handle the valid first and abort the
+	// invalid next time.
 	//
 	//	see more : go-socket.io@v1.0.1/parse.go   > Decode() > NextReader()
 	//			 : go-socket.io@v1.0.1/socket.go  > loop() > for { onPacket }
 	//			 : go-socket.io@v1.0.1/handler.go > onPacket()
-	bunds map[uintptr]byte // http request url to 0 byte char (not used)
+	onceBunds map[uintptr]byte // http request url to 0 byte char (not used)
 }
 
 // Socket connection server
 var wsc *wingSIO
 
-// Check client option if empty when connnection is established,
-// if optinal data is empty the connect will not establish and disconnect.
-var UsingOption = false
-
 var (
 	serverPingInterval = 30 * time.Second
 	serverPingTimeout  = 60 * time.Second
 	maxConnectCount    = 200000
+
+	// Check client option if empty when connnection is established,
+	// if optinal data is empty the connect will not establish and disconnect.
+	usingOption = false
 )
 
 func init() {
 	setupWsioConfigs()
 	wsc = &wingSIO{
-		caches: make(map[uintptr]*clientOpt),
-		bunds:  make(map[uintptr]byte),
+		options:   make(map[uintptr]*clientOpt),
+		onceBunds: make(map[uintptr]byte),
 	}
 
 	// set http handler for socke.io
@@ -108,63 +133,20 @@ func init() {
 	logger.I("Initialized socket.io routers...")
 }
 
-// Set handler to execute clients authenticate, connect and disconnect.
-func SetHandlers(auth AuthHandler, conn ConnectHandler, disc DisconnectHandler) {
-	wsc.authHandler, wsc.connHandler, wsc.discHandler = auth, conn, disc
-	logger.I("Set wsio handlers...")
-}
-
-// Set adapter to register socket signaling events.
-func SetAdapter(adaptor SignalingAdaptor) error {
-	if adaptor == nil {
-		logger.W("Invalid socket event adaptor!")
-		return nil
-	}
-
-	evts := adaptor.Signalings()
-	if evts == nil || len(evts) == 0 {
-		logger.W("No signaling event keys!")
-		return nil
-	}
-
-	// register socket signaling events
-	for _, evt := range evts {
-		if evt != "" {
-			callback := adaptor.Dispatch(evt)
-			if callback != nil {
-				if err := wsc.server.On(evt, callback); err != nil {
-					return err
-				}
-				logger.I("Bind signaling event:", evt)
-			}
-		}
-	}
-	return nil
-}
-
 // read wsio configs from file
 func setupWsioConfigs() {
-	if interval, err := beego.AppConfig.Int64("wsio::interval"); err != nil {
-		logger.W("Read wsio::interval, err:", err)
-	} else if interval > 0 {
-		serverPingInterval = time.Duration(interval) * time.Second
-	}
+	interval := beego.AppConfig.DefaultInt64("wsio::interval", 30)
+	serverPingInterval = time.Duration(interval) * time.Second
 
-	if timeout, err := beego.AppConfig.Int64("wsio::timeout"); err != nil {
-		logger.W("Read wsio::timeout, err:", err)
-	} else if timeout > 0 {
-		serverPingTimeout = time.Duration(timeout) * time.Second
-	}
+	timeout := beego.AppConfig.DefaultInt64("wsio::timeout", 60)
+	serverPingTimeout = time.Duration(timeout) * time.Second
 
-	if using, err := beego.AppConfig.Bool("wsio::optinal"); err != nil {
-		logger.W("Load wsio::optinal, err:", err)
-	} else if using {
-		UsingOption = using
-	}
+	using := beego.AppConfig.DefaultBool("wsio::optinal", false)
+	usingOption = using
 
 	// logout the configs value
-	logger.I("Configs interval:", serverPingInterval,
-		"timeout:", serverPingTimeout, "optional:", UsingOption)
+	logger.I("Socket.IO server configs interval:", interval,
+		"timeout:", timeout, "optional:", using)
 }
 
 // createHandler create http handler for socket.io
@@ -176,7 +158,7 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 	cc.server = server
 
 	// set socket.io ping interval and timeout
-	logger.I("Set socket ping-pong and timeout")
+	logger.I("Set socket.io ping-pong and timeout")
 	server.SetPingInterval(serverPingInterval)
 	server.SetPingTimeout(serverPingTimeout)
 
@@ -186,7 +168,7 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 	// set auth middleware for socket.io connection
 	server.SetAllowRequest(func(req *http.Request) error {
 		if err = cc.onAuthentication(req); err != nil {
-			logger.E("Authenticate err:", err)
+			logger.E("Socket.IO authenticate err:", err)
 			return err
 		}
 		return nil
@@ -206,15 +188,12 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 	return server, nil
 }
 
-// onAuthentication event of authentication
+// Internal event of authentication, to get auth datas from request header
+// and then call outside registered authentication handler to vertify token.
 func (cc *wingSIO) onAuthentication(req *http.Request) error {
-	if err := req.ParseForm(); err != nil {
-		return err
-	}
-
-	token := req.Form.Get("token")
-	if token == "" {
-		return invar.ErrInvalidClient
+	authoration, token := req.Header.Get("Authoration"), req.Header.Get("Token")
+	if authoration == "" || token == "" {
+		return invar.ErrAuthDenied
 	}
 
 	// auth client token by handler if set Authenticate function
@@ -224,7 +203,7 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 		uid, opt, err := cc.authHandler(token)
 		if err != nil || uid == "" {
 			return invar.ErrAuthDenied
-		} else if UsingOption && opt == "" {
+		} else if usingOption && opt == "" {
 			logger.E("Empty client", uid, "option data!")
 			return invar.ErrAuthDenied
 		}
@@ -243,11 +222,11 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 func (cc *wingSIO) onConnect(sc sio.Socket) {
 	// find client uuid and unbind -> http.Request
 	h := uintptr(unsafe.Pointer(sc.Request()))
-	if _, ok := cc.bunds[h]; ok /* already bund */ {
-		logger.W("Duplicate call connect, abort for", h)
+	if _, ok := cc.onceBunds[h]; ok /* already bund */ {
+		logger.W("Duplicate onConnect, abort for", h)
 		return
 	}
-	cc.bunds[h] = 0 // cache the first time
+	cc.onceBunds[h] = 0 // cache the first time
 
 	co := cc.unbindUUIDFromHTTPLocked(h)
 	if co == nil || co.UID == "" {
@@ -287,7 +266,7 @@ func (cc *wingSIO) bindHTTP2UUIDLocked(h uintptr, uuid, opt string) {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
-	cc.caches[h] = &clientOpt{UID: uuid, Opt: opt}
+	cc.options[h] = &clientOpt{UID: uuid, Opt: opt}
 }
 
 // unbindUUIDFromHTTPLocked unbind uuid -> http request pointer on locked status
@@ -295,9 +274,9 @@ func (cc *wingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 	cc.lock.Lock()
 	defer cc.lock.Unlock()
 
-	if data, ok := cc.caches[h]; ok {
+	if data, ok := cc.options[h]; ok {
 		co := &clientOpt{UID: data.UID, Opt: data.Opt}
-		delete(cc.caches, h)
+		delete(cc.options, h)
 		return co
 	}
 	return nil
@@ -306,5 +285,5 @@ func (cc *wingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 // Clear the bind cache after 10ms
 func (cc *wingSIO) clearBundCache(h uintptr) {
 	time.Sleep(10 * time.Millisecond)
-	delete(cc.bunds, h)
+	delete(cc.onceBunds, h)
 }
