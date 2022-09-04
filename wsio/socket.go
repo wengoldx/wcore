@@ -192,7 +192,7 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 // and then call outside registered authentication handler to vertify token.
 func (cc *wingSIO) onAuthentication(req *http.Request) error {
 	authoration, token := req.Header.Get("Authoration"), req.Header.Get("Token")
-	if authoration == "" || token == "" {
+	if authoration != "WENGOLD" || token == "" {
 		return invar.ErrAuthDenied
 	}
 
