@@ -4,6 +4,8 @@ package proto;
 option go_package = "./proto";
 
 service Acc {
+  rpc AccLogin(UUIDPWD) returns (Token);
+  rpc StoreProfile(UUID) returns (ProfStore);
   rpc ViaToken(Token) returns (UUIDPWD);
   rpc GetProfSumms(UUIDS) returns (ProfSumms);
   rpc GetProfile(UUID) returns (Profile);
@@ -68,4 +70,11 @@ message ViaAdminReq {
   string uuid = 1;
   string md5pwd = 2;
   string unionid = 3;
+}
+
+message ProfStore {
+  string logourl = 1;
+  string nickname = 2;
+  string email = 3;
+  string phone = 4;
 }
