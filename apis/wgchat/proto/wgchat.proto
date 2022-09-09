@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./proto";
+
+service wgchat {
+  rpc AddStaff(StaffAddReq) returns (WgchatEmpty);
+  rpc UpOneStatus(StaffOneStatus) returns (WgchatEmpty);
+  rpc UpAllStatus(StaffComStatus) returns (WgchatEmpty);
+  rpc DelOne(StaffDelOne) returns (WgchatEmpty);
+  rpc DelAll(StaffDelAll) returns (WgchatEmpty);
+}
+
+message StaffAddReq {
+    string uuid = 1;
+    string nickname = 2;
+    string headurl = 3;
+    string staffcompany = 4;
+    string client = 5;
+}
+
+message StaffOneStatus {
+    string uuid = 1;
+    string company = 2;
+    string client = 3; 
+    bool status = 4;
+}
+
+message StaffComStatus {
+    string company = 1;
+    string client = 2; 
+    bool status = 3;
+}
+
+message StaffDelOne {
+    string uuid = 1;
+    string company = 2;
+    string client = 3; 
+}
+
+message StaffDelAll {
+    string company = 1;
+    string client = 2; 
+}
+
+message WgchatEmpty {}
