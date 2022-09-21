@@ -269,7 +269,7 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interface{}) ([]byte, error) {
 	var body io.Reader
 	if len(postdata) > 0 {
-		params, err := json.Marshal(postdata)
+		params, err := json.Marshal(postdata[0])
 		if err != nil {
 			logger.E("Marshal post data err:", err)
 			return nil, err
