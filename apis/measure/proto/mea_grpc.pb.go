@@ -23,9 +23,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MeaClient interface {
 	Measure(ctx context.Context, in *BodyAdd, opts ...grpc.CallOption) (*ReqID, error)
-	ReMeasure(ctx context.Context, in *BodyMod, opts ...grpc.CallOption) (*EmptyRespone, error)
-	Delete(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*EmptyRespone, error)
-	Capture(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*EmptyRespone, error)
+	ReMeasure(ctx context.Context, in *BodyMod, opts ...grpc.CallOption) (*Empty, error)
+	Delete(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error)
+	Capture(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error)
 	GetBody(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*BodyDetail, error)
 	GetBodys(ctx context.Context, in *ReqIDs, opts ...grpc.CallOption) (*BodyList, error)
 }
@@ -47,8 +47,8 @@ func (c *meaClient) Measure(ctx context.Context, in *BodyAdd, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *meaClient) ReMeasure(ctx context.Context, in *BodyMod, opts ...grpc.CallOption) (*EmptyRespone, error) {
-	out := new(EmptyRespone)
+func (c *meaClient) ReMeasure(ctx context.Context, in *BodyMod, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/proto.Mea/ReMeasure", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -56,8 +56,8 @@ func (c *meaClient) ReMeasure(ctx context.Context, in *BodyMod, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *meaClient) Delete(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*EmptyRespone, error) {
-	out := new(EmptyRespone)
+func (c *meaClient) Delete(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/proto.Mea/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func (c *meaClient) Delete(ctx context.Context, in *ReqID, opts ...grpc.CallOpti
 	return out, nil
 }
 
-func (c *meaClient) Capture(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*EmptyRespone, error) {
-	out := new(EmptyRespone)
+func (c *meaClient) Capture(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/proto.Mea/Capture", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -97,9 +97,9 @@ func (c *meaClient) GetBodys(ctx context.Context, in *ReqIDs, opts ...grpc.CallO
 // for forward compatibility
 type MeaServer interface {
 	Measure(context.Context, *BodyAdd) (*ReqID, error)
-	ReMeasure(context.Context, *BodyMod) (*EmptyRespone, error)
-	Delete(context.Context, *ReqID) (*EmptyRespone, error)
-	Capture(context.Context, *ReqID) (*EmptyRespone, error)
+	ReMeasure(context.Context, *BodyMod) (*Empty, error)
+	Delete(context.Context, *ReqID) (*Empty, error)
+	Capture(context.Context, *ReqID) (*Empty, error)
 	GetBody(context.Context, *ReqID) (*BodyDetail, error)
 	GetBodys(context.Context, *ReqIDs) (*BodyList, error)
 	mustEmbedUnimplementedMeaServer()
@@ -112,13 +112,13 @@ type UnimplementedMeaServer struct {
 func (UnimplementedMeaServer) Measure(context.Context, *BodyAdd) (*ReqID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Measure not implemented")
 }
-func (UnimplementedMeaServer) ReMeasure(context.Context, *BodyMod) (*EmptyRespone, error) {
+func (UnimplementedMeaServer) ReMeasure(context.Context, *BodyMod) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReMeasure not implemented")
 }
-func (UnimplementedMeaServer) Delete(context.Context, *ReqID) (*EmptyRespone, error) {
+func (UnimplementedMeaServer) Delete(context.Context, *ReqID) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
-func (UnimplementedMeaServer) Capture(context.Context, *ReqID) (*EmptyRespone, error) {
+func (UnimplementedMeaServer) Capture(context.Context, *ReqID) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Capture not implemented")
 }
 func (UnimplementedMeaServer) GetBody(context.Context, *ReqID) (*BodyDetail, error) {

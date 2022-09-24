@@ -5,9 +5,9 @@ option go_package = "./proto";
 
 service Mea {
   rpc Measure(BodyAdd) returns (ReqID);
-  rpc ReMeasure(BodyMod) returns (EmptyRespone);
-  rpc Delete(ReqID) returns (EmptyRespone);
-  rpc Capture(ReqID) returns (EmptyRespone);
+  rpc ReMeasure(BodyMod) returns (Empty);
+  rpc Delete(ReqID) returns (Empty);
+  rpc Capture(ReqID) returns (Empty);
   rpc GetBody(ReqID) returns (BodyDetail);
   rpc GetBodys(ReqIDs) returns (BodyList);
 }
@@ -43,7 +43,7 @@ message BodyMod {
   string notifyurl = 11;
 }
 
-message EmptyRespone {}
+message Empty {}
 
 message BodyBase {
   int64 bodyid = 1;
