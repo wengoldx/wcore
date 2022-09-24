@@ -5,11 +5,11 @@ option go_package = "./proto";
 
 service Mea {
   rpc Measure(BodyAdd) returns (ReqID);
-  rpc ReMeasure(BodyUpdate) returns (EmptyMessage);
-  rpc Delete(ReqID) returns (EmptyMessage);
-  rpc Capture(ReqID) returns (EmptyMessage);
-  rpc BodyDetail(ReqID) returns (BodyDetailResp);
-  rpc BodyList(ReqIDs) returns (BodyBasicResp);
+  rpc ReMeasure(BodyMod) returns (EmptyRespone);
+  rpc Delete(ReqID) returns (EmptyRespone);
+  rpc Capture(ReqID) returns (EmptyRespone);
+  rpc GetBody(ReqID) returns (BodyDetail);
+  rpc GetBodys(ReqIDs) returns (BodyList);
 }
 
 message ReqID { string reqid = 1; }
@@ -29,7 +29,7 @@ message BodyAdd {
   string notifyurl = 10;
 }
 
-message BodyUpdate {
+message BodyMod {
   string reqid = 1;
   int64 sex = 2;
   int64 height = 3;
@@ -43,53 +43,52 @@ message BodyUpdate {
   string notifyurl = 11;
 }
 
-message EmptyMessage {}
+message EmptyRespone {}
 
-message BodyBasic {
-  int64 bodyid = 1;
-  string thumbnail = 2;
-  string reqid = 3;
-  int64 sex = 4;
-  int64 status = 5;
-  repeated string captures = 6;
-  int64 createtime = 7;
-}
-
-message BodyBasicResp { repeated BodyBasic body = 1; }
-
-message BodyDetailResp {
+message BodyBase {
   int64 bodyid = 1;
   string reqid = 2;
   int64 status = 3;
   int64 sex = 4;
   string thumbnail = 5;
   repeated string captures = 6;
+  int64 createtime = 7;
+}
+
+message BodyList { repeated BodyBase body = 1; }
+
+message BodyDetail {
+  int64 bodyid = 1;
+  string reqid = 2;
+  int64 status = 3;
+  string thumbnail = 4;
+  repeated string captures = 5;
+  int64 sex = 6;
   int64 height = 7;
   int64 weight = 8;
-  int64 bust = 9;
-  int64 neck = 10;
-  int64 upperneck = 11;
-  int64 shoulder = 12;
-  int64 armlen = 13;
-  int64 armcir = 14;
-  int64 waist = 15;
-  int64 hipcir = 16;
-  int64 thighcir = 17;
-  int64 knee = 18;
+  int64 neck = 9;
+  int64 upperneck = 10;
+  int64 shoulder = 11;
+  int64 bust = 12;
+  int64 waist = 13;
+  int64 hipline = 14;
+  int64 knee = 15;
+  int64 armlen = 16;
+  int64 armcir = 17;
+  int64 thighcir = 18;
   int64 anklecir = 19;
-  int64 hipline = 20;
-  int64 wrist = 21;
-  int64 clothlen = 22;
-  int64 outsidelen = 23;
-  int64 elbowcir = 24;
-  int64 bpShoulderdis = 25;
-  int64 bellyShoulderdis = 26;
-  int64 waistShoulderdis = 27;
-  int64 bpdis = 28;
-  int64 Hipheight = 29;
-  int64 waistKneedis = 30;
-  int64 bellycir = 31;
-  int64 armscye = 32;
-  int64 createtime = 33;
-  int64 modifytime = 34;
+  int64 clothlen = 20;
+  int64 outseam = 21;
+  int64 wristcir = 22;
+  int64 elbowcir = 23;
+  int64 bellycir = 24;
+  int64 bpdis = 25;
+  int64 hipheight = 26;
+  int64 bpsdis = 27;
+  int64 bsdis = 28;
+  int64 wsdis = 29;
+  int64 wkdis = 30;
+  int64 armscye = 31;
+  int64 createtime = 32;
+  int64 modifytime = 33;
 }
