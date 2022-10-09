@@ -11,7 +11,7 @@
 package mvc
 
 import (
-	"github.com/gomodule/redigo/redis"
+	"github.com/garyburd/redigo/redis"
 	"github.com/wengoldx/wing/logger"
 )
 

@@ -13,7 +13,7 @@ package mvc
 import (
 	"fmt"
 	"github.com/astaxie/beego"
-	"github.com/gomodule/redigo/redis"
+	"github.com/garyburd/redigo/redis"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 )
