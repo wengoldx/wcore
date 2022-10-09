@@ -11,7 +11,7 @@
 package secure
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/wengoldx/wing/invar"
 	"strings"
 	"time"
