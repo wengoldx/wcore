@@ -284,6 +284,6 @@ func (cc *wingSIO) unbindUUIDFromHTTPLocked(h uintptr) *clientOpt {
 
 // Clear the bind cache after 10ms
 func (cc *wingSIO) clearBundCache(h uintptr) {
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 	delete(cc.onceBunds, h)
 }
