@@ -6,18 +6,18 @@ option go_package = "./proto";
 service Acc {
   rpc AccLogin(AccPwd) returns (Token);
   rpc ViaToken(Token) returns (AccPwd);
-  rpc ViaAdmin(Admin) returns (Empty);
+  rpc ViaAdmin(Admin) returns (AEmpty);
 
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
   rpc StoreProfile(UUID) returns (ProfStore);
 
-  rpc SetContact(Contact) returns (Empty);
+  rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
 }
 
-message Empty{}
+message AEmpty{}        // diferent other server when using together
 
 message Token {
   string token = 1;     // account request token
