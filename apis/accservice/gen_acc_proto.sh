@@ -16,6 +16,10 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-cd ./${bin}
+cd ${bin}
 protoc --go_out=. --go-grpc_out=. ./proto/acc.proto
+
+echo "Finished generat account proto files:"
+ls ./proto/*
+
 

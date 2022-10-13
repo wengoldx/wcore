@@ -65,10 +65,12 @@ message Contact {
 
 message ProfStore {
   string logourl = 1;   // store logo image url from heardurl field value of database
-  string nickname = 2;  // store name frist perfix string
-  string unionid = 5;   // wechat unionid bind with store account
+  string unionid = 2;   // wechat unionid bind with store account
   string email = 3;     // store account email address, set when account generate
   string phone = 4;     // store account phone number, set when account generate
+  string nickname = 5;  // store name frist perfix string
+  string provice = 6;   // store name middle string
+  string city = 7;      // store name the last string
 }
 
 message Secures {
