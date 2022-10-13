@@ -32,7 +32,7 @@ message UIDS {
 }
 
 message AccPwd { 
-  string uuid = 1;      // account unique id
+  string acc = 1;       // account uuid, email or phone
   string pwd =2;        // account login password enripted by RSA + Base64
 }
 
