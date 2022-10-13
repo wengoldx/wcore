@@ -53,7 +53,7 @@ message ProfSumm {
 }
 
 message ProfSumms { 
-  repeated ProfSumm profsumms = 1;
+  repeated ProfSumm summs = 1;
 }
 
 message Contact {
