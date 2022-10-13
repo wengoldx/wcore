@@ -24,12 +24,12 @@ const _ = grpc.SupportPackageIsVersion7
 type AccClient interface {
 	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
 	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error)
-	ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*Empty, error)
+	ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
-	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*Empty, error)
+	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 }
 
@@ -59,8 +59,8 @@ func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOp
 	return out, nil
 }
 
-func (c *accClient) ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *accClient) ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAdmin", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -104,8 +104,8 @@ func (c *accClient) StoreProfile(ctx context.Context, in *UUID, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *accClient) SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *accClient) SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/SetContact", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -128,12 +128,12 @@ func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.C
 type AccServer interface {
 	AccLogin(context.Context, *AccPwd) (*Token, error)
 	ViaToken(context.Context, *Token) (*AccPwd, error)
-	ViaAdmin(context.Context, *Admin) (*Empty, error)
+	ViaAdmin(context.Context, *Admin) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
-	SetContact(context.Context, *Contact) (*Empty, error)
+	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
 	mustEmbedUnimplementedAccServer()
 }
@@ -148,7 +148,7 @@ func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error)
 func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaToken not implemented")
 }
-func (UnimplementedAccServer) ViaAdmin(context.Context, *Admin) (*Empty, error) {
+func (UnimplementedAccServer) ViaAdmin(context.Context, *Admin) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaAdmin not implemented")
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
@@ -163,7 +163,7 @@ func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, erro
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
 }
-func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*Empty, error) {
+func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetContact not implemented")
 }
 func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
