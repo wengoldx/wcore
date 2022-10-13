@@ -22,15 +22,15 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccClient interface {
-	AccLogin(ctx context.Context, in *UUIDPWD, opts ...grpc.CallOption) (*Token, error)
-	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
-	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUIDPWD, error)
-	GetProfSumms(ctx context.Context, in *UUIDS, opts ...grpc.CallOption) (*ProfSumms, error)
+	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
+	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error)
+	ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*Empty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
-	UpdateContact(ctx context.Context, in *UpdateContect, opts ...grpc.CallOption) (*EmptyRespone, error)
-	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ContactInfo, error)
-	BindAccount(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*Token, error)
-	ViaAdmin(ctx context.Context, in *ViaAdminReq, opts ...grpc.CallOption) (*EmptyRespone, error)
+	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
+	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
+	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
+	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*Empty, error)
+	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 }
 
 type accClient struct {
@@ -41,7 +41,7 @@ func NewAccClient(cc grpc.ClientConnInterface) AccClient {
 	return &accClient{cc}
 }
 
-func (c *accClient) AccLogin(ctx context.Context, in *UUIDPWD, opts ...grpc.CallOption) (*Token, error) {
+func (c *accClient) AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error) {
 	out := new(Token)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AccLogin", in, out, opts...)
 	if err != nil {
@@ -50,17 +50,8 @@ func (c *accClient) AccLogin(ctx context.Context, in *UUIDPWD, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *accClient) StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error) {
-	out := new(ProfStore)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreProfile", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*UUIDPWD, error) {
-	out := new(UUIDPWD)
+func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error) {
+	out := new(AccPwd)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaToken", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -68,9 +59,9 @@ func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOp
 	return out, nil
 }
 
-func (c *accClient) GetProfSumms(ctx context.Context, in *UUIDS, opts ...grpc.CallOption) (*ProfSumms, error) {
-	out := new(ProfSumms)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetProfSumms", in, out, opts...)
+func (c *accClient) ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAdmin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -86,17 +77,17 @@ func (c *accClient) GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *accClient) UpdateContact(ctx context.Context, in *UpdateContect, opts ...grpc.CallOption) (*EmptyRespone, error) {
-	out := new(EmptyRespone)
-	err := c.cc.Invoke(ctx, "/proto.Acc/UpdateContact", in, out, opts...)
+func (c *accClient) GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error) {
+	out := new(ProfSumms)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetProfSumms", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ContactInfo, error) {
-	out := new(ContactInfo)
+func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error) {
+	out := new(Contact)
 	err := c.cc.Invoke(ctx, "/proto.Acc/GetContact", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -104,18 +95,27 @@ func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *accClient) BindAccount(ctx context.Context, in *BindReq, opts ...grpc.CallOption) (*Token, error) {
-	out := new(Token)
-	err := c.cc.Invoke(ctx, "/proto.Acc/BindAccount", in, out, opts...)
+func (c *accClient) StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error) {
+	out := new(ProfStore)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *accClient) ViaAdmin(ctx context.Context, in *ViaAdminReq, opts ...grpc.CallOption) (*EmptyRespone, error) {
-	out := new(EmptyRespone)
-	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAdmin", in, out, opts...)
+func (c *accClient) SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/SetContact", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := c.cc.Invoke(ctx, "/proto.Acc/BindAccount", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,15 +126,15 @@ func (c *accClient) ViaAdmin(ctx context.Context, in *ViaAdminReq, opts ...grpc.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
 type AccServer interface {
-	AccLogin(context.Context, *UUIDPWD) (*Token, error)
-	StoreProfile(context.Context, *UUID) (*ProfStore, error)
-	ViaToken(context.Context, *Token) (*UUIDPWD, error)
-	GetProfSumms(context.Context, *UUIDS) (*ProfSumms, error)
+	AccLogin(context.Context, *AccPwd) (*Token, error)
+	ViaToken(context.Context, *Token) (*AccPwd, error)
+	ViaAdmin(context.Context, *Admin) (*Empty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
-	UpdateContact(context.Context, *UpdateContect) (*EmptyRespone, error)
-	GetContact(context.Context, *UUID) (*ContactInfo, error)
-	BindAccount(context.Context, *BindReq) (*Token, error)
-	ViaAdmin(context.Context, *ViaAdminReq) (*EmptyRespone, error)
+	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
+	GetContact(context.Context, *UUID) (*Contact, error)
+	StoreProfile(context.Context, *UUID) (*ProfStore, error)
+	SetContact(context.Context, *Contact) (*Empty, error)
+	BindAccount(context.Context, *Secures) (*Token, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -142,32 +142,32 @@ type AccServer interface {
 type UnimplementedAccServer struct {
 }
 
-func (UnimplementedAccServer) AccLogin(context.Context, *UUIDPWD) (*Token, error) {
+func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccLogin not implemented")
 }
-func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
-}
-func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*UUIDPWD, error) {
+func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaToken not implemented")
 }
-func (UnimplementedAccServer) GetProfSumms(context.Context, *UUIDS) (*ProfSumms, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProfSumms not implemented")
+func (UnimplementedAccServer) ViaAdmin(context.Context, *Admin) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViaAdmin not implemented")
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
-func (UnimplementedAccServer) UpdateContact(context.Context, *UpdateContect) (*EmptyRespone, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateContact not implemented")
+func (UnimplementedAccServer) GetProfSumms(context.Context, *UIDS) (*ProfSumms, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfSumms not implemented")
 }
-func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*ContactInfo, error) {
+func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
 }
-func (UnimplementedAccServer) BindAccount(context.Context, *BindReq) (*Token, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
+func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
 }
-func (UnimplementedAccServer) ViaAdmin(context.Context, *ViaAdminReq) (*EmptyRespone, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ViaAdmin not implemented")
+func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetContact not implemented")
+}
+func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -183,7 +183,7 @@ func RegisterAccServer(s grpc.ServiceRegistrar, srv AccServer) {
 }
 
 func _Acc_AccLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUIDPWD)
+	in := new(AccPwd)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -195,25 +195,7 @@ func _Acc_AccLogin_Handler(srv interface{}, ctx context.Context, dec func(interf
 		FullMethod: "/proto.Acc/AccLogin",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AccLogin(ctx, req.(*UUIDPWD))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_StoreProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).StoreProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/StoreProfile",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreProfile(ctx, req.(*UUID))
+		return srv.(AccServer).AccLogin(ctx, req.(*AccPwd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -236,20 +218,20 @@ func _Acc_ViaToken_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_GetProfSumms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUIDS)
+func _Acc_ViaAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Admin)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).GetProfSumms(ctx, in)
+		return srv.(AccServer).ViaAdmin(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/GetProfSumms",
+		FullMethod: "/proto.Acc/ViaAdmin",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetProfSumms(ctx, req.(*UUIDS))
+		return srv.(AccServer).ViaAdmin(ctx, req.(*Admin))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -272,20 +254,20 @@ func _Acc_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_UpdateContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateContect)
+func _Acc_GetProfSumms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UIDS)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).UpdateContact(ctx, in)
+		return srv.(AccServer).GetProfSumms(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/UpdateContact",
+		FullMethod: "/proto.Acc/GetProfSumms",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).UpdateContact(ctx, req.(*UpdateContect))
+		return srv.(AccServer).GetProfSumms(ctx, req.(*UIDS))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -308,8 +290,44 @@ func _Acc_GetContact_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_StoreProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreProfile(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_SetContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Contact)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).SetContact(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/SetContact",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).SetContact(ctx, req.(*Contact))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BindReq)
+	in := new(Secures)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -321,25 +339,7 @@ func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/proto.Acc/BindAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).BindAccount(ctx, req.(*BindReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_ViaAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ViaAdminReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).ViaAdmin(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/ViaAdmin",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).ViaAdmin(ctx, req.(*ViaAdminReq))
+		return srv.(AccServer).BindAccount(ctx, req.(*Secures))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -356,36 +356,36 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_AccLogin_Handler,
 		},
 		{
-			MethodName: "StoreProfile",
-			Handler:    _Acc_StoreProfile_Handler,
-		},
-		{
 			MethodName: "ViaToken",
 			Handler:    _Acc_ViaToken_Handler,
 		},
 		{
-			MethodName: "GetProfSumms",
-			Handler:    _Acc_GetProfSumms_Handler,
+			MethodName: "ViaAdmin",
+			Handler:    _Acc_ViaAdmin_Handler,
 		},
 		{
 			MethodName: "GetProfile",
 			Handler:    _Acc_GetProfile_Handler,
 		},
 		{
-			MethodName: "UpdateContact",
-			Handler:    _Acc_UpdateContact_Handler,
+			MethodName: "GetProfSumms",
+			Handler:    _Acc_GetProfSumms_Handler,
 		},
 		{
 			MethodName: "GetContact",
 			Handler:    _Acc_GetContact_Handler,
 		},
 		{
-			MethodName: "BindAccount",
-			Handler:    _Acc_BindAccount_Handler,
+			MethodName: "StoreProfile",
+			Handler:    _Acc_StoreProfile_Handler,
 		},
 		{
-			MethodName: "ViaAdmin",
-			Handler:    _Acc_ViaAdmin_Handler,
+			MethodName: "SetContact",
+			Handler:    _Acc_SetContact_Handler,
+		},
+		{
+			MethodName: "BindAccount",
+			Handler:    _Acc_BindAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

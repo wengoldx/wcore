@@ -4,77 +4,82 @@ package proto;
 option go_package = "./proto";
 
 service Acc {
-  rpc AccLogin(UUIDPWD) returns (Token);
-  rpc StoreProfile(UUID) returns (ProfStore);
-  rpc ViaToken(Token) returns (UUIDPWD);
-  rpc GetProfSumms(UUIDS) returns (ProfSumms);
+  rpc AccLogin(AccPwd) returns (Token);
+  rpc ViaToken(Token) returns (AccPwd);
+  rpc ViaAdmin(Admin) returns (Empty);
+
   rpc GetProfile(UUID) returns (Profile);
-  rpc UpdateContact(UpdateContect) returns (EmptyRespone);
-  rpc GetContact(UUID) returns (ContactInfo);
-  rpc BindAccount(BindReq) returns (Token);
-  rpc ViaAdmin(ViaAdminReq) returns (EmptyRespone);
+  rpc GetProfSumms(UIDS) returns (ProfSumms);
+  rpc GetContact(UUID) returns (Contact);
+  rpc StoreProfile(UUID) returns (ProfStore);
+
+  rpc SetContact(Contact) returns (Empty);
+  rpc BindAccount(Secures) returns (Token);
 }
 
-message Token { string token = 1; }
+message Empty{}
 
-message UUIDPWD { 
-  string uuid = 1;
-  string pwd =2;
- }
+message Token {
+  string token = 1;     // account request token
+}
 
-message UUID { string uuid = 1; }
+message UUID {
+  string uuid = 1;      // account unique id
+}
 
-message UUIDS { repeated string uuids = 1; }
+message UIDS { 
+  repeated string uids = 1;
+}
 
-message EmptyRespone {}
+message AccPwd { 
+  string uuid = 1;      // account unique id
+  string pwd =2;        // account login password enripted by RSA + Base64
+}
+
+ message Profile {
+  string uuid = 1;      // account unique id
+  string nickname = 2;  // account nickname
+  string heardurl = 3;  // account heardurl, the value set from wechat avatar or manual update by userself
+  int64  sex = 4;       // account sex, 0:none, 1:male, 2:female, 3:neutral
+  string birthday = 5;  // account birthday, the value set from real-name authentication
+  bool   isverify = 6;  // status to indicate account if pass real-name autnenticated
+}
 
 message ProfSumm {
-  string uuid = 1;
-  int64 sex = 2;
-  string nickname = 3;
-  string heardurl = 4;
+  string uuid = 1;      // account unique id
+  int64  sex = 2;       // account sex, 0:none, 1:male, 2:female, 3:neutral
+  string nickname = 3;  // account nickname
+  string heardurl = 4;  // account heardurl, the value set from wechat avatar
 }
 
-message ProfSumms { repeated ProfSumm profsumms = 1; }
-
-message Profile {
-  string uuid = 1;
-  string nickname = 2;
-  string heardurl = 3;
-  int64 sex = 4;
-  string birthday = 5;
-  bool isverify = 6;
+message ProfSumms { 
+  repeated ProfSumm profsumms = 1;
 }
 
-message ContactInfo {
-  string contact = 1;
-  string email = 2;
-  string phone = 3;
-}
-
-message UpdateContect {
-  string contact = 1;
-  string email = 2;
-  string phone = 3;
-  string uuid = 4;
-}
-
-message BindReq {
-  string uuid = 1;
-  string unionid = 2;
-  string email = 3;
-  string pwd = 4;
-}
-
-message ViaAdminReq {
-  string uuid = 1;
-  string md5pwd = 2;
-  string unionid = 3;
+message Contact {
+  string uuid = 1;      // account unique id
+  string contact = 2;   // account nickname
+  string email = 3;     // account email address
+  string phone = 4;     // account email phone
 }
 
 message ProfStore {
-  string logourl = 1;
-  string nickname = 2;
-  string email = 3;
-  string phone = 4;
+  string logourl = 1;   // store logo image url from heardurl field value of database
+  string nickname = 2;  // store name frist perfix string
+  string unionid = 5;   // wechat unionid bind with store account
+  string email = 3;     // store account email address, set when account generate
+  string phone = 4;     // store account phone number, set when account generate
+}
+
+message Secures {
+  string uuid = 1;      // account unique id
+  string unionid = 2;   // wechat unionid bind with account
+  string email = 3;     // account email address
+  string pwd = 4;       // account login password enripted by RSA + Base64
+}
+
+message Admin {
+  string uuid = 1;      // account unique id
+  string md5pwd = 2;    // admin account password encode as MD5
+  string unionid = 3;   // wechat unionid bind with account
 }
