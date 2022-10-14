@@ -97,8 +97,6 @@ message RnStore {
 message WxBind {
   string uuid = 1;      // account unique id
   string unionid = 2;   // wechat unionid bind with store account
-  string nickname = 3;  // account nickname
-  string heardurl = 4;  // account heardurl, the value set from wechat avatar
 }
 
 message Secures {
