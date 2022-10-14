@@ -35,7 +35,7 @@ type AccClient interface {
 	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
-	UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
+	UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 }
 
 type accClient struct {
@@ -154,9 +154,9 @@ func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+func (c *accClient) UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindWechat", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindUnionID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ type AccServer interface {
 	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
-	UnbindWechat(context.Context, *UUID) (*AEmpty, error)
+	UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -224,8 +224,8 @@ func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*AEmpty, er
 func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
 }
-func (UnimplementedAccServer) UnbindWechat(context.Context, *UUID) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnbindWechat not implemented")
+func (UnimplementedAccServer) UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -456,20 +456,20 @@ func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_UnbindWechat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
+func _Acc_UnbindUnionID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccPwd)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).UnbindWechat(ctx, in)
+		return srv.(AccServer).UnbindUnionID(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/UnbindWechat",
+		FullMethod: "/proto.Acc/UnbindUnionID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).UnbindWechat(ctx, req.(*UUID))
+		return srv.(AccServer).UnbindUnionID(ctx, req.(*AccPwd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -530,8 +530,8 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_BindAccount_Handler,
 		},
 		{
-			MethodName: "UnbindWechat",
-			Handler:    _Acc_UnbindWechat_Handler,
+			MethodName: "UnbindUnionID",
+			Handler:    _Acc_UnbindUnionID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
