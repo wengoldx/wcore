@@ -12,7 +12,8 @@ service Acc {
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
 
-  rpc StoreRegister(UUID) returns (UUID);
+  // GRPC interface for store service
+  rpc StoreRegister(RegStore) returns (UUID);
   rpc StoreProfile(UUID) returns (ProfStore);
   rpc StoreRename(RnStore) returns (AEmpty);
   rpc StoreBindWx(WxBind) returns (AEmpty);

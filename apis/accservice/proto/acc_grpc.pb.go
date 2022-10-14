@@ -28,7 +28,8 @@ type AccClient interface {
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
-	StoreRegister(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*UUID, error)
+	// GRPC interface for store service
+	StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
 	StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
@@ -98,7 +99,7 @@ func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *accClient) StoreRegister(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*UUID, error) {
+func (c *accClient) StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error) {
 	out := new(UUID)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRegister", in, out, opts...)
 	if err != nil {
@@ -162,7 +163,8 @@ type AccServer interface {
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
-	StoreRegister(context.Context, *UUID) (*UUID, error)
+	// GRPC interface for store service
+	StoreRegister(context.Context, *RegStore) (*UUID, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
 	StoreRename(context.Context, *RnStore) (*AEmpty, error)
 	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
@@ -193,7 +195,7 @@ func (UnimplementedAccServer) GetProfSumms(context.Context, *UIDS) (*ProfSumms, 
 func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
 }
-func (UnimplementedAccServer) StoreRegister(context.Context, *UUID) (*UUID, error) {
+func (UnimplementedAccServer) StoreRegister(context.Context, *RegStore) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRegister not implemented")
 }
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
@@ -333,7 +335,7 @@ func _Acc_GetContact_Handler(srv interface{}, ctx context.Context, dec func(inte
 }
 
 func _Acc_StoreRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
+	in := new(RegStore)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -345,7 +347,7 @@ func _Acc_StoreRegister_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/proto.Acc/StoreRegister",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreRegister(ctx, req.(*UUID))
+		return srv.(AccServer).StoreRegister(ctx, req.(*RegStore))
 	}
 	return interceptor(ctx, in, info, handler)
 }
