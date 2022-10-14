@@ -12,13 +12,14 @@ package nacos
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/astaxie/beego"
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/model"
-	"github.com/nacos-group/nacos-sdk-go/vo"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/model"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/logger"
-	"strconv"
 )
 
 // -------- Auto Register Define --------
@@ -112,7 +113,7 @@ func (ss *ServerStub) ListenServers(servers []*ServerItem) {
 }
 
 // Subscribe callback called when target service address and port changed
-func (si *ServerItem) OnChanged(services []model.SubscribeService, err error) {
+func (si *ServerItem) OnChanged(services []model.Instance, err error) {
 	if err != nil {
 		logger.E("Received server", si.Name, "change, err:", err)
 		return
@@ -256,7 +257,7 @@ func parseOptions(opts ...string) (string, string) {
 func genClientParam(ns, svr string) vo.NacosClientParam {
 	sc := []constant.ServerConfig{
 		constant.ServerConfig{
-			Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 8848,
+			Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 3608,
 		},
 	}
 

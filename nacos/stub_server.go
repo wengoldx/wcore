@@ -11,13 +11,14 @@
 package nacos
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
-	"github.com/nacos-group/nacos-sdk-go/model"
-	"github.com/nacos-group/nacos-sdk-go/vo"
-	"github.com/wengoldx/wing/invar"
 	"strconv"
+
+	"github.com/astaxie/beego"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/model"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
+	"github.com/wengoldx/wing/invar"
 )
 
 // Nacos naming client stub
@@ -28,7 +29,7 @@ type ServerStub struct {
 }
 
 // Callback to listen server register status changed
-type SubscribeCallback func(services []model.SubscribeService, err error)
+type SubscribeCallback func(services []model.Instance, err error)
 
 // Generate a ServerStub instance
 //	@params ns  string server namespace id
