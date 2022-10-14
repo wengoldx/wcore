@@ -20,6 +20,7 @@ service Acc {
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
+  rpc UnbindWechat(UUID) returns (AEmpty);
 }
 
 message AEmpty{}        // diferent other server when using together
