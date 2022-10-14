@@ -11,7 +11,11 @@ service Acc {
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
+
+  rpc StoreRegister(UUID) returns (UUID);
   rpc StoreProfile(UUID) returns (ProfStore);
+  rpc StoreRename(RnStore) returns (AEmpty);
+  rpc StoreBindWx(WxBind) returns (AEmpty);
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
@@ -63,6 +67,14 @@ message Contact {
   string phone = 4;     // account email phone
 }
 
+message RegStore {
+  string nickname = 1;  // store name frist perfix string
+  string province = 2;  // store name middle string
+  string city = 3;      // store name the last string
+  string email = 4;     // store account email address, set when account generate
+  string phone = 5;     // store account phone number, set when account generate
+}
+
 message ProfStore {
   string logourl = 1;   // store logo image url from heardurl field value of database
   string unionid = 2;   // wechat unionid bind with store account
@@ -71,6 +83,20 @@ message ProfStore {
   string nickname = 5;  // store name frist perfix string
   string province = 6;  // store name middle string
   string city = 7;      // store name the last string
+}
+
+message RnStore {
+  string uuid = 1;      // account unique id
+  string nickname = 2;  // store name frist perfix string
+  string province = 3;  // store name middle string
+  string city = 4;      // store name the last string
+}
+
+message WxBind {
+  string uuid = 1;      // account unique id
+  string unionid = 2;   // wechat unionid bind with store account
+  string nickname = 3;  // account nickname
+  string heardurl = 4;  // account heardurl, the value set from wechat avatar
 }
 
 message Secures {
