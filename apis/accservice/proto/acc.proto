@@ -69,7 +69,7 @@ message ProfStore {
   string email = 3;     // store account email address, set when account generate
   string phone = 4;     // store account phone number, set when account generate
   string nickname = 5;  // store name frist perfix string
-  string provice = 6;   // store name middle string
+  string province = 6;  // store name middle string
   string city = 7;      // store name the last string
 }
 

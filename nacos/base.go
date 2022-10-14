@@ -253,7 +253,10 @@ func parseOptions(opts ...string) (string, string) {
 // 5s pingpong heartbeat and output logs on warn leven.
 //
 //	`NOTICE`
-//	The remote server must access on http://{svr}:8848/nacos
+//
+// - Remote direct nacos server need access on http://{svr}:8848/nacos
+//
+// - Nginx proxy vip server need access on http://{svr}:3608/nacos
 func genClientParam(ns, svr string) vo.NacosClientParam {
 	sc := []constant.ServerConfig{
 		constant.ServerConfig{
