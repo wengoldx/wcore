@@ -97,6 +97,7 @@ message RnStore {
 message WxBind {
   string uuid = 1;      // account unique id
   string unionid = 2;   // wechat unionid bind with store account
+  string pwd =3;        // account login password enripted by RSA + Base64
 }
 
 message Secures {
