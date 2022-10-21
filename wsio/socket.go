@@ -193,6 +193,7 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 func (cc *wingSIO) onAuthentication(req *http.Request) error {
 	authoration, token := req.Header.Get("Authoration"), req.Header.Get("Token")
 	if authoration != "WENGOLD" || token == "" {
+		logger.E("Invalid authoration:", authoration, "token:", token)
 		return invar.ErrAuthDenied
 	}
 
@@ -202,6 +203,7 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 	if cc.authHandler != nil {
 		uid, opt, err := cc.authHandler(token)
 		if err != nil || uid == "" {
+			logger.E("Invalid uid:", uid, "or case err:", err)
 			return invar.ErrAuthDenied
 		} else if usingOption && opt == "" {
 			logger.E("Empty client", uid, "option data!")
