@@ -191,10 +191,31 @@ func (cc *wingSIO) createHandler() (http.Handler, error) {
 // Internal event of authentication, to get auth datas from request header
 // and then call outside registered authentication handler to vertify token.
 func (cc *wingSIO) onAuthentication(req *http.Request) error {
-	authoration, token := req.Header.Get("Authoration"), req.Header.Get("Token")
-	if authoration != "WENGOLD" || token == "" {
-		logger.E("Invalid authoration:", authoration, "token:", token)
-		return invar.ErrAuthDenied
+	authoration, token := req.Header.Get("Authoration"), ""
+
+	/*
+	 * `NOTICE` :
+	 *
+	 * Try get Authoration from http header for Python3 and UnrealEngine client,
+	 * but React and Wechat App not support auth header as well, so use tail token
+	 * string after request connect url.
+	 */
+	if authoration != "" {
+		// Use auth header function for Python3 and UnrealEngine client
+		token = req.Header.Get("Token")
+		if authoration != "WENGOLD" || token == "" {
+			logger.E("Invalid authoration:", authoration, "token:", token)
+			return invar.ErrAuthDenied
+		}
+	} else {
+		// Use URL + token string for React and Wechat app client
+		if err := req.ParseForm(); err != nil {
+			logger.E("Parse socket.io request form, err:", err)
+			return err
+		} else if token = req.Form.Get("token"); token == "" {
+			logger.E("Failed get token from socket.io request url!")
+			return invar.ErrAuthDenied
+		}
 	}
 
 	// auth client token by handler if set Authenticate function
