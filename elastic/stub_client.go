@@ -17,7 +17,7 @@ import (
 )
 
 type ESClient struct {
-	conn *es.Client
+	Conn *es.Client
 }
 
 func CreateNewClient(address []string, user, pwd, cfp string) (*ESClient, error) {
@@ -33,6 +33,6 @@ func CreateNewClient(address []string, user, pwd, cfp string) (*ESClient, error)
 	if err != nil {
 		return nil, fmt.Errorf("dail with elastic search server err:%v", err)
 	}
-	c.conn = conn
+	c.Conn = conn
 	return c, nil
 }

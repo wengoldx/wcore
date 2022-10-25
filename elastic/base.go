@@ -54,9 +54,9 @@ mapping = `
 }`
 */
 func (e *ESClient) CreateIndexMapping(index, mapping string) error {
-	res, err := e.conn.Indices.Create(
+	res, err := e.Conn.Indices.Create(
 		index,
-		e.conn.Indices.Create.WithBody(strings.NewReader(mapping)),
+		e.Conn.Indices.Create.WithBody(strings.NewReader(mapping)),
 	)
 	if err != nil {
 		return fmt.Errorf("create index err:%v", err)
@@ -83,7 +83,7 @@ mapping := `
 }`
 */
 func (e *ESClient) UpdateIndexMapping(index []string, mapping string) error {
-	res, err := e.conn.Indices.PutMapping(
+	res, err := e.Conn.Indices.PutMapping(
 		index,
 		strings.NewReader(mapping),
 	)
@@ -118,7 +118,7 @@ func (e *ESClient) CreateIndexDoc(index string, doc interface{}, docID ...string
 		Refresh:    "wait_for",
 	}
 
-	res, err := req.Do(context.Background(), e.conn)
+	res, err := req.Do(context.Background(), e.Conn)
 	if err != nil {
 		return fmt.Errorf("create index doc err:%v", err)
 	}
@@ -141,11 +141,11 @@ doc := `
 `
 */
 func (e *ESClient) UpdateIndexDoc(index, docID, doc string) error {
-	res, err := e.conn.Update(
+	res, err := e.Conn.Update(
 		index,
 		docID,
 		strings.NewReader(doc),
-		e.conn.Update.WithRefresh("wait_for"),
+		e.Conn.Update.WithRefresh("wait_for"),
 	)
 	if err != nil {
 		return fmt.Errorf("update index doc err:%v", err)
@@ -167,11 +167,11 @@ func (e *ESClient) SearchIndex(index, query string, page int, limit ...int) (*Re
 	if len(limit) > 0 {
 		size = limit[0]
 	}
-	res, err := e.conn.Search(
-		e.conn.Search.WithIndex(index),
-		e.conn.Search.WithSize(size),
-		e.conn.Search.WithFrom(page),
-		e.conn.Search.WithBody(strings.NewReader(query)),
+	res, err := e.Conn.Search(
+		e.Conn.Search.WithIndex(index),
+		e.Conn.Search.WithSize(size),
+		e.Conn.Search.WithFrom(page),
+		e.Conn.Search.WithBody(strings.NewReader(query)),
 	)
 	defer res.Body.Close()
 	if err != nil {
@@ -195,6 +195,6 @@ func (e *ESClient) SearchIndex(index, query string, page int, limit ...int) (*Re
 
 // batch check indexs whether exist
 func (e *ESClient) IsExistIndex(index []string) bool {
-	exist, _ := e.conn.Indices.Get(index)
+	exist, _ := e.Conn.Indices.Get(index)
 	return exist.StatusCode == invar.StatusOK
 }
