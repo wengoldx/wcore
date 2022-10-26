@@ -13,10 +13,11 @@ package elastic
 import "encoding/json"
 
 type Response struct {
-	Took    int         `json:"took"`
-	TimeOut bool        `json:"timed_out"`
-	Shards  *Shards     `json:"_shards"`
-	Hits    *SearchHits `json:"hits"`
+	Took         int           `json:"took"`
+	TimeOut      bool          `json:"timed_out"`
+	Shards       *Shards       `json:"_shards"`
+	Hits         *SearchHits   `json:"hits"`
+	Aggregations *Aggregations `json:"aggregations"`
 }
 
 type Shards struct {
@@ -43,6 +44,21 @@ type SearchHit struct {
 	Score  *float64        `json:"_score,omitempty"`  // computed score
 	Source json.RawMessage `json:"_source,omitempty"` // stored document source
 
+}
+
+type Aggregations struct {
+	TopN *TopN `json:"topN"`
+}
+
+type TopN struct {
+	DocCEUB int        `json:"doc_count_error_upper_bound"`
+	SumODC  int        `json:"sum_other_doc_count"`
+	Buckets []*Buckets `json:"buckets"`
+}
+
+type Buckets struct {
+	Key      string `json:"key"`
+	DocCount string `json:"doc_count"`
 }
 
 type ErrorResp struct {
