@@ -264,13 +264,19 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 		},
 	}
 
+	// logs config
+	logcfg := &constant.ClientLogRollingConfig{
+		MaxSize: 10, MaxBackups: 10, // max 10 files and each max 10MB
+	}
+
+	// client config
 	cc := &constant.ClientConfig{
 		NamespaceId:         ns,
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
 		LogDir:              nacosDirLogs,
 		CacheDir:            nacosDirCache,
-		LogRollingConfig:    &constant.ClientLogRollingConfig{MaxSize: 10},
+		LogRollingConfig:    logcfg,
 		LogLevel:            nacosLogLevel,
 		Username:            nacosSysSecure, // secure account
 		Password:            nacosSysSecure, // secure passowrd
