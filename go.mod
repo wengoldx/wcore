@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/astaxie/beego v1.12.3
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/elastic/go-elasticsearch/v8 v8.3.0
 	github.com/go-ego/gse v0.70.2
 	github.com/go-playground/validator/v10 v10.11.1
