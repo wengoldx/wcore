@@ -12,14 +12,16 @@ package nacos
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/astaxie/beego"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/model"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/wengoldx/wing/comm"
+	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 // -------- Auto Register Define --------
@@ -48,25 +50,30 @@ type ServerCallback func(svr string, addr string, port, httpport int)
 //	nacosgp = "group.ifsc"
 //
 //	[dev]
-//	; Inner net address for dev servers access
-//	nacosaddr = "10.239.20.99"
+//	; Inner net wlan perfix for dev servers access
+//	nacosaddr = "10.239.20."
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
 //
 //	[prod]
-//	; Inner net address for prod servers access
-//	nacosaddr = "10.239.40.64"
+//	; Inner net wlan perfix for prod servers access
+//	nacosaddr = "10.239.40."
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
 func RegisterServer(opts ...string) *ServerStub {
 	svr, group := parseOptions(opts...)
 
-	// Local server listing ip
-	addr := beego.AppConfig.String(configKeyAddr)
-	if addr == "" {
-		panic("Not found local server ip to register!")
+	// Local server listing ip proxy
+	ipprefix := beego.AppConfig.String(configKeyAddr)
+	if len(strings.Split(ipprefix, ".")) < 3 {
+		panic("Invalid ip proxy prefix:" + ipprefix)
+	}
+
+	addr, err := matchProxyIP(ipprefix)
+	if err != nil {
+		panic("Find proxy local ip, err:" + err.Error())
 	}
 
 	// Server access port for grpc, it maybe same as httpport config
@@ -285,4 +292,30 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 	return vo.NacosClientParam{
 		ClientConfig: cc, ServerConfigs: sc,
 	}
+}
+
+// Parse and return the local register IP that meets the conditions
+func matchProxyIP(proxy string) (string, error) {
+	segment := `.((2((5[0-5])|([0-4]\d)))|([0-1]?\d{1,2}))`
+	condition := proxy + segment
+	reg, err := regexp.Compile(condition)
+	if err != nil {
+		logger.E("Compile regular err:", err)
+		return "", err
+	}
+
+	matchips, err := comm.GetLocalIPs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, v := range matchips {
+		// Find the first matched not-empty ip and return
+		if ip := reg.FindString(v); ip != "" {
+			return ip, nil
+		}
+	}
+
+	logger.E("Compile regular err:", err)
+	return "", invar.ErrNotFound
 }

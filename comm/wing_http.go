@@ -122,6 +122,39 @@ func GetIP(remoteaddr string) string {
 	return ip
 }
 
+// Get all the loacl IP of current deploy machine
+func GetLocalIPs() ([]string, error) {
+	netfaces, err := net.Interfaces()
+	if err != nil {
+		logger.E("Get ip interfaces err:", err)
+		return nil, err
+	}
+
+	ips := []string{}
+	for _, netface := range netfaces {
+		addrs, err := netface.Addrs()
+		if err != nil {
+			continue
+		}
+
+		for _, addr := range addrs {
+			switch v := addr.(type) {
+			case *net.IPNet:
+				if v.IP.IsGlobalUnicast() {
+					ips = append(ips, v.IP.String())
+				}
+			}
+		}
+	}
+
+	// Check the result list is empty
+	if len(ips) == 0 {
+		return nil, invar.ErrNotFound
+	}
+
+	return ips, nil
+}
+
 // EncodeUrl encode url params
 func EncodeUrl(rawurl string) string {
 	enurl, err := url.Parse(rawurl)
