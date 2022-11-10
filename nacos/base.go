@@ -51,14 +51,14 @@ type ServerCallback func(svr string, addr string, port, httpport int)
 //
 //	[dev]
 //	; Inner net wlan perfix for dev servers access
-//	nacosaddr = "10.239.20."
+//	nacosaddr = "10.239.20"
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
 //
 //	[prod]
 //	; Inner net wlan perfix for prod servers access
-//	nacosaddr = "10.239.40."
+//	nacosaddr = "10.239.40"
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
