@@ -50,15 +50,15 @@ type ServerCallback func(svr string, addr string, port, httpport int)
 //	nacosgp = "group.ifsc"
 //
 //	[dev]
-//	; Inner net wlan perfix for dev servers access
-//	nacosaddr = "10.239.20"
+//	; Inner net ideal address for dev servers access
+//	nacosaddr = "10.239.20.99"
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
 //
 //	[prod]
-//	; Inner net wlan perfix for prod servers access
-//	nacosaddr = "10.239.40"
+//	; Inner net ideal address for prod servers access
+//	nacosaddr = "10.239.40.64"
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
@@ -66,12 +66,12 @@ func RegisterServer(opts ...string) *ServerStub {
 	svr, group := parseOptions(opts...)
 
 	// Local server listing ip proxy
-	ipprefix := beego.AppConfig.String(configKeyAddr)
-	if len(strings.Split(ipprefix, ".")) < 3 {
-		panic("Invalid ip proxy prefix:" + ipprefix)
+	idealip := beego.AppConfig.String(configKeyAddr)
+	if idealip == "" {
+		panic("Not found idea server ip to register!")
 	}
 
-	addr, err := matchProxyIP(ipprefix)
+	addr, err := matchProxyIP(idealip)
 	if err != nil {
 		panic("Find proxy local ip, err:" + err.Error())
 	}
@@ -266,7 +266,7 @@ func parseOptions(opts ...string) (string, string) {
 // - Nginx proxy vip server need access on http://{svr}:3608/nacos
 func genClientParam(ns, svr string) vo.NacosClientParam {
 	sc := []constant.ServerConfig{
-		constant.ServerConfig{
+		{
 			Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 3608,
 		},
 	}
@@ -296,8 +296,14 @@ func genClientParam(ns, svr string) vo.NacosClientParam {
 
 // Parse and return the local register IP that meets the conditions
 func matchProxyIP(proxy string) (string, error) {
+	segments := strings.Split(proxy, ".")
+	if len(segments) != 4 {
+		logger.E("Invalid nocos proxy ip:", proxy)
+		return "", invar.ErrInvalidParams
+	}
+
 	segment := `.((2((5[0-5])|([0-4]\d)))|([0-1]?\d{1,2}))`
-	condition := proxy + segment
+	condition := strings.Join(segments[0:3], ".") + segment
 	reg, err := regexp.Compile(condition)
 	if err != nil {
 		logger.E("Compile regular err:", err)
@@ -309,13 +315,23 @@ func matchProxyIP(proxy string) (string, error) {
 		return "", err
 	}
 
+	satisfips := []string{}
 	for _, v := range matchips {
-		// Find the first matched not-empty ip and return
-		if ip := reg.FindString(v); ip != "" {
+		// Find ideal ip exists and return it if found
+		ip := reg.FindString(v)
+		if ip == proxy {
+			logger.I("Direct use ideal ip:", proxy)
 			return ip, nil
+		} else if ip != "" {
+			satisfips = append(satisfips, ip)
 		}
 	}
 
-	logger.E("Compile regular err:", err)
-	return "", invar.ErrNotFound
+	if len(satisfips) > 0 {
+		logger.I("Use dynamic ip:", satisfips[0])
+		return satisfips[0], nil
+	}
+
+	logger.E("Not found any local ips, just return proxy:", proxy)
+	return proxy, nil
 }
