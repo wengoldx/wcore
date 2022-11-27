@@ -59,4 +59,8 @@ const (
 	DID_NTF_ORDER    = "dunyu.ntf.order"    // Group by BASIC, data id of dingtalk trade order nofitier
 	DID_ES_AGENTS    = "dunyu.es.agents"    // Group by IFSC, data id of elastic search agents
 	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Group by IFSC, data id of mqtt agents
+	DID_OTA_STOR     = "dunyu.ota.store"    // Group by BASIC, data id of store OTA
+	DID_OTA_MAKER    = "dunyu.ota.maker"    // Group by BASIC, data id of maker OTA
+	DID_OTA_SHOW     = "dunyu.ota.show"     // Group by BASIC, data id of show OTA
+	DID_OTA_QKS      = "dunyu.ota.qks"      // Group by BASIC, data id of QKS OTA
 )
