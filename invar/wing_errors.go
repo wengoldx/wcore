@@ -87,6 +87,7 @@ var (
 	ErrUnsupportFormat     = errors.New("Unsupported format data")
 	ErrInvalidOptions      = errors.New("Invalid options")
 	ErrUnexistKey          = errors.New("Unexist key")
+	ErrInvaildExecTime     = errors.New("invaild exec time")
 )
 
 var (
