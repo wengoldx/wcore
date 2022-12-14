@@ -60,14 +60,12 @@ func (d *TimeWheel) AddDelayTask(exectime time.Duration, data interface{}, f Exe
 		return invar.ErrInvaildExecTime
 	}
 
-	cycleNum := int64(exectime / (3600 * time.Second))
-	taskIndex := int64((exectime%(3600*time.Second))/time.Second) + d.current_index
-	index := taskIndex
-	if taskIndex >= 3600 {
-		index = taskIndex % 3600
-		cycleNum += 1
+	cycleNum := int64(exectime/(3600*time.Second)) - 1
+	taskIndex := int64(d.current_index+int64(exectime/time.Second)) % 3600
+	if taskIndex == d.current_index && cycleNum != 0 {
+		cycleNum--
 	}
-	d.slots[index] = append(d.slots[index], &task{
+	d.slots[taskIndex] = append(d.slots[taskIndex], &task{
 		cycle_num: cycleNum,
 		task_info: data,
 		execfunc:  f,
