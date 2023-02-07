@@ -17,6 +17,7 @@ message StaffAddReq {
     string headurl = 3;
     string staffcompany = 4;
     string client = 5;
+    string oldcompany = 6;
 }
 
 message StaffOneStatus {
