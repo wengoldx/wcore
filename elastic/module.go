@@ -34,7 +34,7 @@ type SearchHits struct {
 }
 
 type Total struct {
-	Values   int    `json:"values"`
+	Values   int    `json:"value"`
 	Relation string `json:"relation"`
 }
 

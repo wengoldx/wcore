@@ -33,6 +33,14 @@ func (a *PayAgent) GenTrade(ticket *TradeNode) (string, error) {
 	return a.postReqString("trade", ticket)
 }
 
+// Generate a new combine trade by given payment datas, and return combine trade number
+//	@param ticket The combine ticket node of trade
+//	@return - string Combine trade transaction number
+//			- error Exception message
+func (a *PayAgent) GenCombine(ticket *CombineNode) (string, error) {
+	return a.postReqString("combine", ticket)
+}
+
 // Generate a new refund by given payment datas, and return trade number
 //	@param ticket The first ticket node of refund
 //	@return - string Refund transaction number

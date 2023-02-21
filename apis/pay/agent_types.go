@@ -60,3 +60,10 @@ type PayInfo struct {
 	WxInfo  string `json:"wxpayinfo" description:"wechat payment app information"`
 	AliInfo string `json:"alpayinfo" description:"alipay payment information"`
 }
+
+// Combine Trade ticket node
+type CombineNode struct {
+	Cashier    string       `json:"cashier"   validate:"required"        description:"cashier name who provide transaction by wgpay server"`
+	TimeExpire string       `json:"expire,omitempty"                     description:"expire time for virture products such as coupon, courtesy card, and so on"`
+	SubOrders  []*TradeNode `json:"sub_order" validate:"required,max=10" description:"the array of sub trade number"`
+}
