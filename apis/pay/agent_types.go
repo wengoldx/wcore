@@ -16,6 +16,7 @@ type PayAgent struct {
 
 // Trade ticket node
 type TradeNode struct {
+	TranNo     string `json:"trade_no,omitempty"          description:"the original trade transaction number"`
 	Cashier    string `json:"cashier" validate:"required" description:"cashier name who provide transaction by wgpay server"`
 	Payer      string `json:"parer"   validate:"required" description:"payer unique id, such as user uuid"`
 	Payee      string `json:"payee,omitempty"             description:"payee unique id, such as merchant id"`
