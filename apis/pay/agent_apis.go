@@ -119,6 +119,18 @@ func (a *PayAgent) TradeTicket(tno string) (*TradeNode, error) {
 	return resp, nil
 }
 
+// Get the latest combine trade ticket node
+//	@param ctno Combine trade transaction number
+//	@return - CombineNode Combine trade ticket node
+//			- error Exception message
+func (a *PayAgent) CombineTicket(ctno string) (*CombineNode, error) {
+	resp := &CombineNode{}
+	if err := a.getReqStruct("combine", "ctno", ctno, resp); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // Get the latest dividing ticket node
 //	@param tno Dividing transaction number
 //	@return - DiviNode Dividing ticket node
