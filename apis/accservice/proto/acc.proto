@@ -21,6 +21,9 @@ service Acc {
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
   rpc UnbindUnionID(AccPwd) returns (AEmpty);
+
+  // GRPC interface for role verification
+  rpc ViaAllow(AuthModel) returns (AuthResp);
 }
 
 message AEmpty{}        // diferent other server when using together
@@ -111,4 +114,14 @@ message Admin {
   string uuid = 1;      // account unique id
   string md5pwd = 2;    // admin account password encode as MD5
   string unionid = 3;   // wechat unionid bind with account
+}
+
+message AuthModel{
+  string subject = 1;   // verification request subject
+  string object = 2;    // verification request object
+  string action = 3;    // verification request action
+}
+
+message AuthResp {
+  bool isallow = 1;     // is subject can use object, ture is allow, false is deny
 }

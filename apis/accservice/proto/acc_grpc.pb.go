@@ -36,6 +36,8 @@ type AccClient interface {
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 	UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
+	// GRPC interface for role verification
+	ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.CallOption) (*AuthResp, error)
 }
 
 type accClient struct {
@@ -163,6 +165,15 @@ func (c *accClient) UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.
 	return out, nil
 }
 
+func (c *accClient) ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.CallOption) (*AuthResp, error) {
+	out := new(AuthResp)
+	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAllow", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -181,6 +192,8 @@ type AccServer interface {
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
 	UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error)
+	// GRPC interface for role verification
+	ViaAllow(context.Context, *AuthModel) (*AuthResp, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -226,6 +239,9 @@ func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, er
 }
 func (UnimplementedAccServer) UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID not implemented")
+}
+func (UnimplementedAccServer) ViaAllow(context.Context, *AuthModel) (*AuthResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViaAllow not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -474,6 +490,24 @@ func _Acc_UnbindUnionID_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_ViaAllow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthModel)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).ViaAllow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/ViaAllow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).ViaAllow(ctx, req.(*AuthModel))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -532,6 +566,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UnbindUnionID",
 			Handler:    _Acc_UnbindUnionID_Handler,
+		},
+		{
+			MethodName: "ViaAllow",
+			Handler:    _Acc_ViaAllow_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
