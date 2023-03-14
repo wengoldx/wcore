@@ -15,12 +15,14 @@ service Acc {
   // GRPC interface for store service
   rpc StoreRegister(RegStore) returns (UUID);
   rpc StoreProfile(UUID) returns (ProfStore);
+  rpc StoreProfiles(UIDS) returns (ProfStores);
   rpc StoreRename(RnStore) returns (AEmpty);
   rpc StoreBindWx(WxBind) returns (AEmpty);
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
   rpc UnbindUnionID(AccPwd) returns (AEmpty);
+  rpc UnbindUnionID2(UUID) returns (AEmpty);
 
   // GRPC interface for role verification
   rpc ViaAllow(AuthModel) returns (AuthResp);
@@ -45,7 +47,7 @@ message AccPwd {
   string pwd =2;        // account login password enripted by RSA + Base64
 }
 
- message Profile {
+message Profile {
   string uuid = 1;      // account unique id
   string nickname = 2;  // account nickname
   string heardurl = 3;  // account heardurl, the value set from wechat avatar or manual update by userself
@@ -88,6 +90,12 @@ message ProfStore {
   string nickname = 5;  // store name frist perfix string
   string province = 6;  // store name middle string
   string city = 7;      // store name the last string
+  string address = 8;   // store address string
+  string uuid = 9;      // uuid for the profile
+}
+
+message ProfStores { 
+  repeated ProfStore profiles = 1;
 }
 
 message RnStore {
@@ -95,6 +103,7 @@ message RnStore {
   string nickname = 2;  // store name frist perfix string
   string province = 3;  // store name middle string
   string city = 4;      // store name the last string
+  string address = 5;   // store address string
 }
 
 message WxBind {

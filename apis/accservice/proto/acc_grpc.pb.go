@@ -31,11 +31,13 @@ type AccClient interface {
 	// GRPC interface for store service
 	StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
+	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 	UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
+	UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// GRPC interface for role verification
 	ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.CallOption) (*AuthResp, error)
 }
@@ -120,6 +122,15 @@ func (c *accClient) StoreProfile(ctx context.Context, in *UUID, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *accClient) StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error) {
+	out := new(ProfStores)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreProfiles", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRename", in, out, opts...)
@@ -165,6 +176,15 @@ func (c *accClient) UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.
 	return out, nil
 }
 
+func (c *accClient) UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindUnionID2", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.CallOption) (*AuthResp, error) {
 	out := new(AuthResp)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAllow", in, out, opts...)
@@ -187,11 +207,13 @@ type AccServer interface {
 	// GRPC interface for store service
 	StoreRegister(context.Context, *RegStore) (*UUID, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
+	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	StoreRename(context.Context, *RnStore) (*AEmpty, error)
 	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
 	UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error)
+	UnbindUnionID2(context.Context, *UUID) (*AEmpty, error)
 	// GRPC interface for role verification
 	ViaAllow(context.Context, *AuthModel) (*AuthResp, error)
 	mustEmbedUnimplementedAccServer()
@@ -225,6 +247,9 @@ func (UnimplementedAccServer) StoreRegister(context.Context, *RegStore) (*UUID, 
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
 }
+func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreProfiles not implemented")
+}
 func (UnimplementedAccServer) StoreRename(context.Context, *RnStore) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRename not implemented")
 }
@@ -239,6 +264,9 @@ func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, er
 }
 func (UnimplementedAccServer) UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID not implemented")
+}
+func (UnimplementedAccServer) UnbindUnionID2(context.Context, *UUID) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID2 not implemented")
 }
 func (UnimplementedAccServer) ViaAllow(context.Context, *AuthModel) (*AuthResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaAllow not implemented")
@@ -400,6 +428,24 @@ func _Acc_StoreProfile_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_StoreProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UIDS)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreProfiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreProfiles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreProfiles(ctx, req.(*UIDS))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_StoreRename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RnStore)
 	if err := dec(in); err != nil {
@@ -490,6 +536,24 @@ func _Acc_UnbindUnionID_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_UnbindUnionID2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).UnbindUnionID2(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/UnbindUnionID2",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).UnbindUnionID2(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_ViaAllow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AuthModel)
 	if err := dec(in); err != nil {
@@ -548,6 +612,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_StoreProfile_Handler,
 		},
 		{
+			MethodName: "StoreProfiles",
+			Handler:    _Acc_StoreProfiles_Handler,
+		},
+		{
 			MethodName: "StoreRename",
 			Handler:    _Acc_StoreRename_Handler,
 		},
@@ -566,6 +634,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UnbindUnionID",
 			Handler:    _Acc_UnbindUnionID_Handler,
+		},
+		{
+			MethodName: "UnbindUnionID2",
+			Handler:    _Acc_UnbindUnionID2_Handler,
 		},
 		{
 			MethodName: "ViaAllow",
