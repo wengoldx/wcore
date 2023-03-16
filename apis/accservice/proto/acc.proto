@@ -11,6 +11,7 @@ service Acc {
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
+  rpc GetCreatetime(UUID) returns (CreateTime);
 
   // GRPC interface for store service
   rpc StoreRegister(RegStore) returns (UUID);
@@ -40,6 +41,10 @@ message UUID {
 
 message UIDS { 
   repeated string uids = 1;
+}
+
+message CreateTime{
+  string createtime = 1; // createtime of account
 }
 
 message AccPwd { 
