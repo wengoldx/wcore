@@ -44,7 +44,7 @@ message UIDS {
 }
 
 message CreateTime{
-  string createtime = 1; // createtime of account
+  int64 createtime = 1; // createtime of account
 }
 
 message AccPwd { 
