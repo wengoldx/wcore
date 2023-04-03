@@ -5,6 +5,8 @@ option go_package = "./proto";
 
 service Acc {
   rpc AccLogin(AccPwd) returns (Token);
+  rpc WxLogin(WxUserInfo) returns (UnionID);
+
   rpc ViaToken(Token) returns (AccPwd);
   rpc ViaAdmin(Admin) returns (AEmpty);
 
@@ -37,6 +39,10 @@ message Token {
 
 message UUID {
   string uuid = 1;      // account unique id
+}
+
+message UnionID {
+  string unionid = 1;   // wechat unionid
 }
 
 message UIDS { 
@@ -138,4 +144,16 @@ message AuthModel{
 
 message AuthResp {
   bool isallow = 1;     // is subject can use object, ture is allow, false is deny
+}
+
+message WxUserInfo{
+  string openid = 1;    // wechat openid
+  string nickname = 2;  // wechat user nickname
+  int64  sex = 3;       // wechat user sex
+  string province = 4;  // wechat user provice
+  string city = 5;      // wechat user city
+  string country = 6;   // wechat user country
+  string headimgurl = 7;// wechat user header photo
+  repeated string privilege = 8;  // wechat user privileges
+  string unionID = 9;   // wechat unionid
 }
