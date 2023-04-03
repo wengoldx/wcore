@@ -23,7 +23,6 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccClient interface {
 	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
-	WxLogin(ctx context.Context, in *WxUserInfo, opts ...grpc.CallOption) (*UnionID, error)
 	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error)
 	ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
@@ -55,15 +54,6 @@ func NewAccClient(cc grpc.ClientConnInterface) AccClient {
 func (c *accClient) AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error) {
 	out := new(Token)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AccLogin", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) WxLogin(ctx context.Context, in *WxUserInfo, opts ...grpc.CallOption) (*UnionID, error) {
-	out := new(UnionID)
-	err := c.cc.Invoke(ctx, "/proto.Acc/WxLogin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +209,6 @@ func (c *accClient) ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.Ca
 // for forward compatibility
 type AccServer interface {
 	AccLogin(context.Context, *AccPwd) (*Token, error)
-	WxLogin(context.Context, *WxUserInfo) (*UnionID, error)
 	ViaToken(context.Context, *Token) (*AccPwd, error)
 	ViaAdmin(context.Context, *Admin) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
@@ -247,9 +236,6 @@ type UnimplementedAccServer struct {
 
 func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccLogin not implemented")
-}
-func (UnimplementedAccServer) WxLogin(context.Context, *WxUserInfo) (*UnionID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WxLogin not implemented")
 }
 func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaToken not implemented")
@@ -326,24 +312,6 @@ func _Acc_AccLogin_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).AccLogin(ctx, req.(*AccPwd))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_WxLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WxUserInfo)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).WxLogin(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/WxLogin",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).WxLogin(ctx, req.(*WxUserInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -646,10 +614,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AccLogin",
 			Handler:    _Acc_AccLogin_Handler,
-		},
-		{
-			MethodName: "WxLogin",
-			Handler:    _Acc_WxLogin_Handler,
 		},
 		{
 			MethodName: "ViaToken",
