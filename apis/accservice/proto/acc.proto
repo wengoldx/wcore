@@ -147,13 +147,11 @@ message AuthResp {
 }
 
 message WxUserInfo{
-  string openid = 1;    // wechat openid
+  string unionid = 1;   // wechat unionid
   string nickname = 2;  // wechat user nickname
   int64  sex = 3;       // wechat user sex
   string province = 4;  // wechat user provice
   string city = 5;      // wechat user city
   string country = 6;   // wechat user country
   string headimgurl = 7;// wechat user header photo
-  repeated string privilege = 8;  // wechat user privileges
-  string unionID = 9;   // wechat unionid
 }
