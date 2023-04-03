@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "./proto";
+
+service Webss {
+    rpc DeleteFiles (DelFiles) returns (WEmpty);
+    rpc DeleteConfig (DeleteLifeConfig) returns (WEmpty);
+}
+
+message WEmpty{}       // diferent other server when using together
+
+message DelFiles {
+    string bucket = 1;
+    repeated string files = 2;
+}
+
+message DeleteLifeConfig {
+    repeated string lifecycleid = 1;
+    string bucket = 2;
+}
