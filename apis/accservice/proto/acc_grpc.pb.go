@@ -22,9 +22,14 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccClient interface {
-	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
+	// Request token access permission check
 	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error)
+	// Account role access permission check
+	ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error)
+	// @Deprecated Administrator check
 	ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*AEmpty, error)
+	// Account login by uuid/phone/email and encryptd password
+	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
@@ -39,8 +44,6 @@ type AccClient interface {
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 	UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
-	// GRPC interface for role verification
-	ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.CallOption) (*AuthResp, error)
 }
 
 type accClient struct {
@@ -49,15 +52,6 @@ type accClient struct {
 
 func NewAccClient(cc grpc.ClientConnInterface) AccClient {
 	return &accClient{cc}
-}
-
-func (c *accClient) AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error) {
-	out := new(Token)
-	err := c.cc.Invoke(ctx, "/proto.Acc/AccLogin", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error) {
@@ -69,9 +63,27 @@ func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOp
 	return out, nil
 }
 
+func (c *accClient) ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/proto.Acc/ViaRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) ViaAdmin(ctx context.Context, in *Admin, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := c.cc.Invoke(ctx, "/proto.Acc/AccLogin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -195,22 +207,18 @@ func (c *accClient) UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) ViaAllow(ctx context.Context, in *AuthModel, opts ...grpc.CallOption) (*AuthResp, error) {
-	out := new(AuthResp)
-	err := c.cc.Invoke(ctx, "/proto.Acc/ViaAllow", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
 type AccServer interface {
-	AccLogin(context.Context, *AccPwd) (*Token, error)
+	// Request token access permission check
 	ViaToken(context.Context, *Token) (*AccPwd, error)
+	// Account role access permission check
+	ViaRole(context.Context, *Role) (*Result, error)
+	// @Deprecated Administrator check
 	ViaAdmin(context.Context, *Admin) (*AEmpty, error)
+	// Account login by uuid/phone/email and encryptd password
+	AccLogin(context.Context, *AccPwd) (*Token, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
@@ -225,8 +233,6 @@ type AccServer interface {
 	BindAccount(context.Context, *Secures) (*Token, error)
 	UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error)
 	UnbindUnionID2(context.Context, *UUID) (*AEmpty, error)
-	// GRPC interface for role verification
-	ViaAllow(context.Context, *AuthModel) (*AuthResp, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -234,14 +240,17 @@ type AccServer interface {
 type UnimplementedAccServer struct {
 }
 
-func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AccLogin not implemented")
-}
 func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaToken not implemented")
 }
+func (UnimplementedAccServer) ViaRole(context.Context, *Role) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ViaRole not implemented")
+}
 func (UnimplementedAccServer) ViaAdmin(context.Context, *Admin) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaAdmin not implemented")
+}
+func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AccLogin not implemented")
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
@@ -282,9 +291,6 @@ func (UnimplementedAccServer) UnbindUnionID(context.Context, *AccPwd) (*AEmpty, 
 func (UnimplementedAccServer) UnbindUnionID2(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID2 not implemented")
 }
-func (UnimplementedAccServer) ViaAllow(context.Context, *AuthModel) (*AuthResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ViaAllow not implemented")
-}
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
 // UnsafeAccServer may be embedded to opt out of forward compatibility for this service.
@@ -296,24 +302,6 @@ type UnsafeAccServer interface {
 
 func RegisterAccServer(s grpc.ServiceRegistrar, srv AccServer) {
 	s.RegisterService(&Acc_ServiceDesc, srv)
-}
-
-func _Acc_AccLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccPwd)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).AccLogin(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/AccLogin",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AccLogin(ctx, req.(*AccPwd))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _Acc_ViaToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -334,6 +322,24 @@ func _Acc_ViaToken_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_ViaRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Role)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).ViaRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/ViaRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).ViaRole(ctx, req.(*Role))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_ViaAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Admin)
 	if err := dec(in); err != nil {
@@ -348,6 +354,24 @@ func _Acc_ViaAdmin_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).ViaAdmin(ctx, req.(*Admin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_AccLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccPwd)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).AccLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/AccLogin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).AccLogin(ctx, req.(*AccPwd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -586,24 +610,6 @@ func _Acc_UnbindUnionID2_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_ViaAllow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthModel)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).ViaAllow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/ViaAllow",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).ViaAllow(ctx, req.(*AuthModel))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -612,16 +618,20 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AccServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AccLogin",
-			Handler:    _Acc_AccLogin_Handler,
-		},
-		{
 			MethodName: "ViaToken",
 			Handler:    _Acc_ViaToken_Handler,
 		},
 		{
+			MethodName: "ViaRole",
+			Handler:    _Acc_ViaRole_Handler,
+		},
+		{
 			MethodName: "ViaAdmin",
 			Handler:    _Acc_ViaAdmin_Handler,
+		},
+		{
+			MethodName: "AccLogin",
+			Handler:    _Acc_AccLogin_Handler,
 		},
 		{
 			MethodName: "GetProfile",
@@ -674,10 +684,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UnbindUnionID2",
 			Handler:    _Acc_UnbindUnionID2_Handler,
-		},
-		{
-			MethodName: "ViaAllow",
-			Handler:    _Acc_ViaAllow_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

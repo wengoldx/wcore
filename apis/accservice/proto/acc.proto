@@ -4,9 +4,17 @@ package proto;
 option go_package = "./proto";
 
 service Acc {
-  rpc AccLogin(AccPwd) returns (Token);
+  // Request token access permission check
   rpc ViaToken(Token) returns (AccPwd);
+
+  // Account role access permission check
+  rpc ViaRole(Role) returns (Result);
+
+  // @Deprecated Administrator check
   rpc ViaAdmin(Admin) returns (AEmpty);
+
+  // Account login by uuid/phone/email and encryptd password 
+  rpc AccLogin(AccPwd) returns (Token);
 
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
@@ -24,9 +32,6 @@ service Acc {
   rpc BindAccount(Secures) returns (Token);
   rpc UnbindUnionID(AccPwd) returns (AEmpty);
   rpc UnbindUnionID2(UUID) returns (AEmpty);
-
-  // GRPC interface for role verification
-  rpc ViaAllow(AuthModel) returns (AuthResp);
 }
 
 message AEmpty{}        // diferent other server when using together
@@ -130,12 +135,12 @@ message Admin {
   string unionid = 3;   // wechat unionid bind with account
 }
 
-message AuthModel{
-  string subject = 1;   // verification request subject
-  string object = 2;    // verification request object
-  string action = 3;    // verification request action
+message Role{
+  string uuid = 1;      // verification request account id
+  string router = 2;    // verification request API router
+  string method = 3;    // verification request http method
 }
 
-message AuthResp {
-  bool isallow = 1;     // is subject can use object, ture is allow, false is deny
+message Result {
+  bool pass = 1;        // if account enable access router, ture is allow, false denied
 }
