@@ -112,11 +112,17 @@ type WAuthController struct {
 // NextFunc2 do action after input params validated, it decode token to get account uuid.
 type NextFunc2 func(uuid, pwd string) (int, interface{})
 
-// AuthFunc auth request token from http header and returen account secures.
+// AuthHandlerFunc auth request token from http header and returen account secures.
 type AuthHandlerFunc func(token string) (string, string)
+
+// RoleHandlerFunc verify role access permission from account service.
+type RoleHandlerFunc func(sub, obj, act string) bool
 
 // Global handler function to auth token from http header
 var GAuthHandlerFunc AuthHandlerFunc
+
+// Global handler function to verify role from http header
+var GRoleHandlerFunc RoleHandlerFunc
 
 // Get authoration and token from http header, than verify it and return account secures.
 func (c *WAuthController) AuthRequestHeader() (string, string) {
@@ -127,7 +133,7 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 
 	// check authoration secure key
 	authoration := strings.ToUpper(c.Ctx.Request.Header.Get("Authoration"))
-	if authoration != "WENGOLD" {
+	if !strings.HasPrefix(authoration, "WENGOLD") {
 		c.E401Unauthed("Invalid header authoration: " + authoration)
 		return "", ""
 	}
@@ -135,6 +141,19 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 	// get token from header and verify it
 	if token := c.Ctx.Request.Header.Get("Token"); token != "" {
 		if uuid, pwd := GAuthHandlerFunc(token); uuid != "" {
+			// verify role permisson if authoration upgraded
+			if authoration == "WENGOLD-V1.1" {
+				if GRoleHandlerFunc == nil {
+					c.E403Denind("Controller not set global role hander!")
+					return "", ""
+				}
+
+				if !GRoleHandlerFunc(uuid, c.Ctx.Input.URL(), c.Ctx.Request.Method) {
+					c.E401Unauthed("Role permission denied for " + uuid)
+					return "", ""
+				}
+			}
+
 			logger.D("Authenticated account:", uuid)
 			return uuid, pwd
 		}
