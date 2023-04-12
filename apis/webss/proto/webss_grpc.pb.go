@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type WebssClient interface {
 	DeleteFiles(ctx context.Context, in *DelFiles, opts ...grpc.CallOption) (*WEmpty, error)
 	DeleteConfig(ctx context.Context, in *DeleteLifeConfig, opts ...grpc.CallOption) (*WEmpty, error)
+	AddConfig(ctx context.Context, in *LifeConfig, opts ...grpc.CallOption) (*ID, error)
+	AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
 }
 
 type webssClient struct {
@@ -52,12 +54,32 @@ func (c *webssClient) DeleteConfig(ctx context.Context, in *DeleteLifeConfig, op
 	return out, nil
 }
 
+func (c *webssClient) AddConfig(ctx context.Context, in *LifeConfig, opts ...grpc.CallOption) (*ID, error) {
+	out := new(ID)
+	err := c.cc.Invoke(ctx, "/proto.Webss/AddConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webssClient) AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error) {
+	out := new(WEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Webss/AddTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebssServer is the server API for Webss service.
 // All implementations must embed UnimplementedWebssServer
 // for forward compatibility
 type WebssServer interface {
 	DeleteFiles(context.Context, *DelFiles) (*WEmpty, error)
 	DeleteConfig(context.Context, *DeleteLifeConfig) (*WEmpty, error)
+	AddConfig(context.Context, *LifeConfig) (*ID, error)
+	AddTag(context.Context, *Tag) (*WEmpty, error)
 	mustEmbedUnimplementedWebssServer()
 }
 
@@ -70,6 +92,12 @@ func (UnimplementedWebssServer) DeleteFiles(context.Context, *DelFiles) (*WEmpty
 }
 func (UnimplementedWebssServer) DeleteConfig(context.Context, *DeleteLifeConfig) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteConfig not implemented")
+}
+func (UnimplementedWebssServer) AddConfig(context.Context, *LifeConfig) (*ID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddConfig not implemented")
+}
+func (UnimplementedWebssServer) AddTag(context.Context, *Tag) (*WEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTag not implemented")
 }
 func (UnimplementedWebssServer) mustEmbedUnimplementedWebssServer() {}
 
@@ -120,6 +148,42 @@ func _Webss_DeleteConfig_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Webss_AddConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LifeConfig)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebssServer).AddConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Webss/AddConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebssServer).AddConfig(ctx, req.(*LifeConfig))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Webss_AddTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Tag)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebssServer).AddTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Webss/AddTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebssServer).AddTag(ctx, req.(*Tag))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Webss_ServiceDesc is the grpc.ServiceDesc for Webss service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +198,14 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteConfig",
 			Handler:    _Webss_DeleteConfig_Handler,
+		},
+		{
+			MethodName: "AddConfig",
+			Handler:    _Webss_AddConfig_Handler,
+		},
+		{
+			MethodName: "AddTag",
+			Handler:    _Webss_AddTag_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

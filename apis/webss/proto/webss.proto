@@ -6,9 +6,15 @@ option go_package = "./proto";
 service Webss {
     rpc DeleteFiles (DelFiles) returns (WEmpty);
     rpc DeleteConfig (DeleteLifeConfig) returns (WEmpty);
+    rpc AddConfig (LifeConfig) returns (ID);
+    rpc AddTag (Tag) returns (WEmpty);
 }
 
 message WEmpty{}       // diferent other server when using together
+
+message ID {
+    string id =1;
+}
 
 message DelFiles {
     string bucket = 1;
@@ -18,4 +24,18 @@ message DelFiles {
 message DeleteLifeConfig {
     repeated string lifecycleid = 1;
     string bucket = 2;
+}
+
+message LifeConfig {
+    string id = 1;
+    string bucket = 2;
+    string key = 3;
+    string value = 4;
+}
+
+message Tag {
+    string bucket = 1;
+    repeated string path = 2;
+    string key = 3;
+    string value = 4;
 }
