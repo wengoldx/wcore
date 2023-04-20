@@ -68,3 +68,38 @@ const (
 	DID_CERTK_WSS  = "dunyu.cert.wss.key"  // Group by BASIC, data id of cert key of webss for grpc
 	DID_CERTP_WSS  = "dunyu.cert.wss.pem"  // Group by BASIC, data id of cert pem of webss for grpc
 )
+
+/* -------------------------- */
+/* Export Configs defines     */
+/* -------------------------- */
+
+// Nacos config for data id DID_ACC_CONFIGS
+type AccConfs struct {
+
+	// Email sender service
+	Email struct {
+		Host     string `json:"host"`
+		Port     int    `json:"port"`
+		User     string `json:"user"`
+		Pwd      string `json:"pwd"`
+		Identity string `json:"identity"`
+	} `json:"email"`
+
+	// SMS sender service
+	Sms struct {
+		Secret    string `json:"secret"`
+		KeyID     string `json:"keyid"`
+		URLFormat string `json:"urlformat"`
+	} `json:"sms"`
+
+	// Account secure settings
+	Secures struct {
+		SecureSalt   string `json:"secureSalt"`   // Secure salt key to decode account login token
+		ApiTaxCode   string `json:"apiTaxCode"`   // Auth code to access API of check company tax code
+		ApiIDViaCode string `json:"apiIDViaCode"` // Auth code to access API of identification check
+		PageLimits   int    `json:"pageLimits"`   // One times to get list item counts on a page
+	} `json:"secure"`
+
+	// Administrators to allow login SysMgr
+	Admins []string `json:"admin"`
+}
