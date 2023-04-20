@@ -115,7 +115,7 @@ type OTAInfo struct {
 
 // Nacos config for DingTalk notify sender
 type DTalkSender struct {
-	WebHook   string `json:"webhook"`   // DingTalk group chat session webhook
-	Secure    string `json:"secure"`    // DingTalk group chat senssion secure key
-	Receivers string `json:"receivers"` // The target @ user
+	WebHook   string   `json:"webhook"`   // DingTalk group chat session webhook
+	Secure    string   `json:"secure"`    // DingTalk group chat senssion secure key
+	Receivers []string `json:"receivers"` // The target @ users
 }
