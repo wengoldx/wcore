@@ -112,3 +112,10 @@ type OTAInfo struct {
 	UpdateDate   string `json:"UpdateDate"   description:"Bin file update date"`
 	HashSums     string `json:"HashSums"     description:"Bin file hash sums"`
 }
+
+// Nacos config for DingTalk notify sender
+type DTalkSender struct {
+	WebHook   string `json:"webhook"`   // DingTalk group chat session webhook
+	Secure    string `json:"secure"`    // DingTalk group chat senssion secure key
+	Receivers string `json:"receivers"` // The target @ user
+}
