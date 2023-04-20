@@ -57,10 +57,23 @@ const (
 	DID_NTF_PROPOSER = "dunyu.ntf.proposer" // Group by BASIC, data id of dingtalk suggestion nofitier
 	DID_NTF_WGPAY    = "dunyu.ntf.wgpay"    // Group by BASIC, data id of dingtalk wgpay nofitier
 	DID_NTF_ORDER    = "dunyu.ntf.order"    // Group by BASIC, data id of dingtalk trade order nofitier
-	DID_ES_AGENTS    = "dunyu.es.agents"    // Group by IFSC, data id of elastic search agents
-	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Group by IFSC, data id of mqtt agents
-	DID_OTA_STOR     = "dunyu.ota.store"    // Group by BASIC, data id of store OTA
-	DID_OTA_MAKER    = "dunyu.ota.maker"    // Group by BASIC, data id of maker OTA
-	DID_OTA_SHOW     = "dunyu.ota.show"     // Group by BASIC, data id of show OTA
-	DID_OTA_QKS      = "dunyu.ota.qks"      // Group by BASIC, data id of QKS OTA
+	DID_ES_AGENTS    = "dunyu.es.agents"    // Group by IFSC,  data id of elastic search agents
+	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Group by IFSC,  data id of mqtt agents
+	DID_OTA_BUILDS   = "dunyu.ota.builds"   // Group by BASIC, data id of all projects OTA informations
+
+	// For GRPC certs content data ids
+	DID_CERTK_ACC  = "dunyu.cert.acc.key"  // Group by BASIC, data id of cert key of accservice for grpc
+	DID_CERTP_ACC  = "dunyu.cert.acc.pem"  // Group by BASIC, data id of cert pem of accservice for grpc
+	DID_CERTK_MEA  = "dunyu.cert.mea.key"  // Group by BASIC, data id of cert key of measure for grpc
+	DID_CERTP_MEA  = "dunyu.cert.mea.pem"  // Group by BASIC, data id of cert pem of measure for grpc
+	DID_CERTK_PAY  = "dunyu.cert.pay.key"  // Group by BASIC, data id of cert key of wgpay for grpc
+	DID_CERTP_PAY  = "dunyu.cert.pay.pem"  // Group by BASIC, data id of cert pem of wgpay for grpc
+	DID_CERTK_CHAT = "dunyu.cert.chat.key" // Group by BASIC, data id of cert key of wgchat for grpc
+	DID_CERTP_CHAT = "dunyu.cert.chat.pem" // Group by BASIC, data id of cert pem of wgchat for grpc
+
+	// @DEPRECATED use DID_OTA_BUILDS insted
+	DID_OTA_STOR  = "dunyu.ota.store" // Group by BASIC, data id of store OTA
+	DID_OTA_MAKER = "dunyu.ota.maker" // Group by BASIC, data id of maker OTA
+	DID_OTA_SHOW  = "dunyu.ota.show"  // Group by BASIC, data id of show OTA
+	DID_OTA_QKS   = "dunyu.ota.qks"   // Group by BASIC, data id of QKS OTA
 )
