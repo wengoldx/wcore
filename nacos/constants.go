@@ -108,3 +108,15 @@ type DTalkSender struct {
 	Secure    string   `json:"secure"`    // DingTalk group chat senssion secure key
 	Receivers []string `json:"receivers"` // The target @ users
 }
+
+// Nacos config for GRPC cert content
+type GrpcCert struct {
+	Svr string `xml:"Server"` // GRPC cert server name
+	Key string `xml:"Key"`    // GRPC cert key data
+	Pem string `xml:"Pem"`    // GRPC cert pem data
+}
+
+// Nacos config for GRPC certs
+type GrpcCerts struct {
+	Certs []GrpcCert `xml:"Cert"` // GRPC certs
+}

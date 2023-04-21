@@ -50,7 +50,7 @@ type clientOpt struct {
 //	import "github.com/wengoldx/wing/wsio"
 //
 //	init() {
-//		// set socket io hander and signalings
+//		// set socket io handler and signalings
 //		wsio.SetHandlers(ctrl.Authenticate, nil, nil)
 //		adaptor := &ctrl.DefSioAdaptor{}
 //		if err := wsio.SetAdapter(adaptor); err != nil {

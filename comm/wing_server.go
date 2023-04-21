@@ -12,6 +12,8 @@
 package comm
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
@@ -19,18 +21,15 @@ import (
 	"github.com/wengoldx/wing/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	// "google.golang.org/grpc/credentials/insecure"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-var (
-	upperDir   = GetUpperFileDir()
-	tlsKeyFile = upperDir + "/apis/%s/tls-keys/%s.key"
-	tlsPemFile = upperDir + "/apis/%s/tls-keys/%s.pem"
-)
+// ===========================
+// For setup HTTP Server
+// ===========================
 
 // Start and excute http server base on beego, by default, it just
 // support restful interface not socket.io connection, but you can
@@ -112,20 +111,29 @@ func accessAllowOriginBy(category int, origins string, allowCredentials bool) {
 	}))
 }
 
-// ----------------
+// ===========================
+// For GRPC Client and Server
+// ===========================
 
-// Callback to register Grpc client handler to server
-type RegisterGrpcHandler func(svr *grpc.Server)
+// GrpcHandlerFunc register grpc client handler to server
+type GrpcHandlerFunc func(svr *grpc.Server)
 
-// GrpcServer start and excute grpc server, you can register grpc
-// client handler by regfunc callback as follow:
+// Global handler function to register caller server as grpc server
+var GGrpcHandlerFunc GrpcHandlerFunc
+
+// GrpcServer start and excute grpc server, you can setup global grpc
+// register handler first as follow, it maybe throw panic when case error.
 //
 // `USAGE`
 //
-//	go comm.GrpcServer(func(svr *grpc.Server) {
+//	GGrpcHandlerFunc = func(svr *grpc.Server) {
 //		proto.RegisterAccServer(svr, &(handler.Acc{}))
-//	})
-func GrpcServer(regfunc RegisterGrpcHandler, server string, options ...string) {
+//	}
+func GrpcServer(certkey, certpem string, options ...string) {
+	if GGrpcHandlerFunc == nil {
+		panic("Not setup global grpc handler!")
+	}
+
 	portkey := "nacosport"
 	if len(options) != 0 && options[0] != "" {
 		portkey = options[0]
@@ -137,16 +145,16 @@ func GrpcServer(regfunc RegisterGrpcHandler, server string, options ...string) {
 		panic("Listen grpc server, err:" + err.Error())
 	}
 
-	// TLS auth
-	pem := fmt.Sprintf(tlsPemFile, server, server)
-	key := fmt.Sprintf(tlsKeyFile, server, server)
-	cred, err := credentials.NewServerTLSFromFile(pem, key)
+	// generate TLS cert from pem datas
+	cert, err := tls.X509KeyPair([]byte(certpem), []byte(certkey))
 	if err != nil {
-		panic("Generate new TLS, err:" + err.Error())
+		panic("Gen grpc server cert, err:" + err.Error())
 	}
 
+	// generate grpc server handler with TLS secure
+	cred := credentials.NewServerTLSFromCert(&cert)
 	svr := grpc.NewServer(grpc.Creds(cred))
-	regfunc(svr)
+	GGrpcHandlerFunc(svr)
 
 	logger.I("Grpc server runing on", port)
 	if err := svr.Serve(lis); err != nil {
@@ -155,18 +163,19 @@ func GrpcServer(regfunc RegisterGrpcHandler, server string, options ...string) {
 	}
 }
 
-func DialGrpcServer(addr string, port int, server string) *grpc.ClientConn {
-	domain := fmt.Sprintf("%s:%d", addr, port)
-
-	// TLS auth
-	pem := fmt.Sprintf(tlsPemFile, server, server)
-	cred, err := credentials.NewClientTLSFromFile(pem, server)
-	if err != nil {
-		logger.E("Generate new TLS, err:", err)
+// Generate grpc client handler
+func GrpcClient(addr string, port int, server, certpem string) *grpc.ClientConn {
+	// generate TLS cert from pem datas
+	cp := x509.NewCertPool()
+	if !cp.AppendCertsFromPEM([]byte(certpem)) {
+		logger.E("Failed generate grpc cert!")
 		return nil
 	}
 
-	conn, err := grpc.Dial(domain, grpc.WithTransportCredentials(cred) /*insecure.NewCredentials())*/)
+	// generate grpc client handler with TLS secure
+	domain := fmt.Sprintf("%s:%d", addr, port)
+	cred := credentials.NewClientTLSFromCert(cp, server)
+	conn, err := grpc.Dial(domain, grpc.WithTransportCredentials(cred))
 	if err != nil {
 		logger.E("dial grpc address", domain, " fialed", err)
 		return nil

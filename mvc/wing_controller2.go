@@ -127,7 +127,7 @@ var GRoleHandlerFunc RoleHandlerFunc
 // Get authoration and token from http header, than verify it and return account secures.
 func (c *WAuthController) AuthRequestHeader() (string, string) {
 	if GAuthHandlerFunc == nil {
-		c.E403Denind("Controller not set global auth hander!")
+		c.E403Denind("Controller not set global auth handler!")
 		return "", ""
 	}
 
@@ -144,7 +144,7 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 			// verify role permisson if authoration upgraded
 			if authoration == "WENGOLD-V1.1" {
 				if GRoleHandlerFunc == nil {
-					c.E403Denind("Controller not set global role hander!")
+					c.E403Denind("Controller not set global role handler!")
 					return "", ""
 				}
 
