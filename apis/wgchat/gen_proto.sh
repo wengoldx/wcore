@@ -5,8 +5,6 @@
 # Author      : yangping
 # Email       : ping.yang@wengold.net
 # Version     : 1.0.0
-# Description :
-#   Generate account rgpc server and client.
 #
 # Prismy.No | Date       | Modified by. | Description
 # -------------------------------------------------------------------
@@ -17,9 +15,9 @@ bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
 cd ${bin}
-protoc --go_out=. --go-grpc_out=. ./proto/acc.proto
+rm -rf ./proto/*.pb.go
+protoc --go_out=. --go-grpc_out=. ./proto/wgchat.proto
 
-echo "Finished generat account proto files:"
+echo "Finished generat wgchat proto files:"
 ls ./proto/*
-
 

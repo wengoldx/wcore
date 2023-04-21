@@ -5,8 +5,6 @@
 # Author      : yangping
 # Email       : ping.yang@wengold.net
 # Version     : 1.0.0
-# Description :
-#   Generate measure rgpc server and client.
 #
 # Prismy.No | Date       | Modified by. | Description
 # -------------------------------------------------------------------
@@ -17,8 +15,10 @@ bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
 cd ${bin}
-protoc --go_out=. --go-grpc_out=. ./proto/mea.proto
+rm -rf ./proto/*.pb.go
+protoc --go_out=. --go-grpc_out=. ./proto/acc.proto
 
-echo "Finished generat measure proto files:"
+echo "Finished generat account proto files:"
 ls ./proto/*
+
 

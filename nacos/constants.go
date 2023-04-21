@@ -51,22 +51,11 @@ const (
 	DID_API_ROUTERS  = "dunyu.api.routers"  // Group by BASIC, data id of swagger restful routers
 	DID_DTALK_NTFERS = "dunyu.dtalk.ntfers" // Group by BASIC, data id of dingtalk notifiers
 	DID_ES_AGENTS    = "dunyu.es.agents"    // Group by IFSC,  data id of elastic search agents
+	DID_GRPC_CERTS   = "dunyu.grpc.certs"   // Group by BASIC, data id of grpc certs, the data format as xml
 	DID_MIO_PATHS    = "dunyu.mio.paths"    // Group by BASIC, data id of minio source paths
 	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Group by IFSC,  data id of mqtt agents
 	DID_OTA_BUILDS   = "dunyu.ota.builds"   // Group by BASIC, data id of all projects OTA informations
 	DID_WX_AGENTS    = "dunyu.wx.agents"    // Group by BASIC, data id of wechat agents
-
-	// For GRPC certs content data ids
-	DID_CERTK_ACC  = "dunyu.cert.acc.key"  // Group by BASIC, data id of cert key of accservice for grpc
-	DID_CERTP_ACC  = "dunyu.cert.acc.pem"  // Group by BASIC, data id of cert pem of accservice for grpc
-	DID_CERTK_CHAT = "dunyu.cert.chat.key" // Group by BASIC, data id of cert key of wgchat for grpc
-	DID_CERTP_CHAT = "dunyu.cert.chat.pem" // Group by BASIC, data id of cert pem of wgchat for grpc
-	DID_CERTK_MEA  = "dunyu.cert.mea.key"  // Group by BASIC, data id of cert key of measure for grpc
-	DID_CERTP_MEA  = "dunyu.cert.mea.pem"  // Group by BASIC, data id of cert pem of measure for grpc
-	DID_CERTK_PAY  = "dunyu.cert.pay.key"  // Group by BASIC, data id of cert key of wgpay for grpc
-	DID_CERTP_PAY  = "dunyu.cert.pay.pem"  // Group by BASIC, data id of cert pem of wgpay for grpc
-	DID_CERTK_WSS  = "dunyu.cert.wss.key"  // Group by BASIC, data id of cert key of webss for grpc
-	DID_CERTP_WSS  = "dunyu.cert.wss.pem"  // Group by BASIC, data id of cert pem of webss for grpc
 )
 
 /* -------------------------- */
