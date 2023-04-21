@@ -14,13 +14,13 @@ package wing
 
 // import (
 // 	_ "github.com/wengoldx/wing/comm"
-// 	_ "github.com/wengoldx/wing/grpc"
 // 	_ "github.com/wengoldx/wing/invar"
 // 	_ "github.com/wengoldx/wing/logger"
 // 	_ "github.com/wengoldx/wing/mvc"
 // 	_ "github.com/wengoldx/wing/nacos"
 // 	_ "github.com/wengoldx/wing/secure"
 // 	_ "github.com/wengoldx/wing/wechat"
+// 	_ "github.com/wengoldx/wing/wrpc"
 // 	_ "github.com/wengoldx/wing/wsio"
 // )
 

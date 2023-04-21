@@ -9,7 +9,7 @@
 // 00002       2019/06/30   zhaixing       Add function from godfs
 // -------------------------------------------------------------------
 
-package grpc
+package wrpc
 
 import (
 	"crypto/tls"
