@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"net"
+	"strings"
 )
 
 const (
@@ -70,12 +71,16 @@ func Singleton() *GrpcStub {
 // `USAGE`
 //
 //	// set grpc server register handler
-//	grpc.Singleton().SvrHandlerFunc = func(svr *grpc.Server) {
+//	stub := wrpc.Singleton()
+//	stub.SvrHandlerFunc = func(svr *grpc.Server) {
 //		proto.RegisterAccServer(svr, &(handler.Acc{}))
 //	}
 //
+//	// parse grps certs before register
+//	stub.ParseCerts(data)
+//
 //	// register local server as grpc server
-//	go grpc.Singleton().RegistServer()
+//	go stub.RegistServer()
 func (stub *GrpcStub) RegistServer() {
 	if stub.SvrHandlerFunc == nil {
 		logger.E("Not setup global grpc handler!")
@@ -153,8 +158,10 @@ func (stub *GrpcStub) ParseCerts(data string) {
 		return
 	}
 
+	svrs := []string{}
 	for _, cert := range certs.Certs {
-		logger.D("Update grpc cert for", cert.Svr)
+		svrs = append(svrs, cert.Svr)
 		stub.Certs[cert.Svr] = &cert
 	}
+	logger.D("Update grpc certs for:", strings.Join(svrs, ","))
 }
