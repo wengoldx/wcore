@@ -194,7 +194,9 @@ func (stub *GrpcStub) ParseCerts(data string) error {
 
 	for _, cert := range certs.Certs {
 		logger.D("Update", cert.Svr, "grpc cert")
-		stub.Certs[cert.Svr] = &cert
+		stub.Certs[cert.Svr] = &nacos.GrpcCert{
+			Svr: cert.Svr, Key: cert.Key, Pem: cert.Pem,
+		}
 	}
 	return nil
 }
