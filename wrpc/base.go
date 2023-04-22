@@ -22,7 +22,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"net"
-	"strings"
 )
 
 const (
@@ -89,9 +88,12 @@ func (stub *GrpcStub) RegistServer() {
 		return // drop the duplicate registry
 	}
 
-	secure, ok := stub.Certs[beego.BConfig.AppName]
+	svrname := beego.BConfig.AppName
+	logger.I(">> Start Register Grpc server:", svrname)
+
+	secure, ok := stub.Certs[svrname]
 	if !ok || secure.Key == "" || secure.Pem == "" {
-		logger.E("Not found grpc cert, abort register", beego.BConfig.AppName)
+		logger.E("Not found grpc cert for server:", svrname, "abort register!")
 		return
 	}
 
@@ -106,7 +108,7 @@ func (stub *GrpcStub) RegistServer() {
 	// generate TLS cert from pem datas
 	cert, err := tls.X509KeyPair([]byte(secure.Pem), []byte(secure.Key))
 	if err != nil {
-		logger.E("Gen grpc cert, err:", err)
+		logger.E("Create grpc cert, err:", err)
 		return
 	}
 
@@ -114,7 +116,7 @@ func (stub *GrpcStub) RegistServer() {
 	cred := credentials.NewServerTLSFromCert(&cert)
 	svr := grpc.NewServer(grpc.Creds(cred))
 	stub.SvrHandlerFunc(svr)
-	logger.I("Grpc server runing on", port)
+	logger.I(">> Runding Grpc server:", svrname, "on port", port)
 
 	stub.isRegistried = true
 	defer func(stub *GrpcStub) { stub.isRegistried = false }(stub)
@@ -158,10 +160,8 @@ func (stub *GrpcStub) ParseCerts(data string) {
 		return
 	}
 
-	svrs := []string{}
 	for _, cert := range certs.Certs {
-		svrs = append(svrs, cert.Svr)
+		logger.D("Update", cert.Svr, "grpc cert")
 		stub.Certs[cert.Svr] = &cert
 	}
-	logger.D("Update grpc certs for:", strings.Join(svrs, ","))
 }
