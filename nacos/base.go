@@ -34,7 +34,7 @@ type ServerItem struct {
 }
 
 // Callback to listen server address and port changes
-type ServerCallback func(svr string, addr string, port, httpport int)
+type ServerCallback func(svr, addr string, port, httpport int)
 
 // Register current server to nacos, you must set configs in app.conf
 //	@return - *ServerStub nacos server stub instance

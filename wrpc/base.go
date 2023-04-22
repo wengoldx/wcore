@@ -19,6 +19,11 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/wengoldx/wing/logger"
 	"github.com/wengoldx/wing/nacos"
+	acc "github.com/wengoldx/wing/wrpc/accservice/proto"
+	mea "github.com/wengoldx/wing/wrpc/measure/proto"
+	webss "github.com/wengoldx/wing/wrpc/webss/proto"
+	chat "github.com/wengoldx/wing/wrpc/wgchat/proto"
+	pay "github.com/wengoldx/wing/wrpc/wgpay/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"net"
@@ -34,9 +39,6 @@ const (
 
 // GrpcHandlerFunc grpc server handler for register
 type GrpcHandlerFunc func(svr *grpc.Server)
-
-// ConnHandlerFunc grpc client handler for connect
-type ConnHandlerFunc func(conn *grpc.ClientConn) interface{}
 
 type GrpcStub struct {
 	Certs   map[string]*nacos.GrpcCert // Grpc handler certs
@@ -64,7 +66,7 @@ func Singleton() *GrpcStub {
 	return grpcStub
 }
 
-// RegistServer start and excute grpc server, you numst setup global grpc
+// Start and excute grpc server, you numst setup global grpc
 // register handler first as follow.
 //
 // `USAGE`
@@ -79,8 +81,8 @@ func Singleton() *GrpcStub {
 //	stub.ParseCerts(data)
 //
 //	// register local server as grpc server
-//	go stub.RegistServer()
-func (stub *GrpcStub) RegistServer() {
+//	go stub.StartGrpcServer()
+func (stub *GrpcStub) StartGrpcServer() {
 	if stub.SvrHandlerFunc == nil {
 		logger.E("Not setup global grpc handler!")
 		return
@@ -89,11 +91,11 @@ func (stub *GrpcStub) RegistServer() {
 	}
 
 	svrname := beego.BConfig.AppName
-	logger.I(">> Start Register Grpc server:", svrname)
+	logger.I(">> Register Grpc server:", svrname)
 
 	secure, ok := stub.Certs[svrname]
 	if !ok || secure.Key == "" || secure.Pem == "" {
-		logger.E("Not found grpc cert for server:", svrname, "abort register!")
+		logger.E("Not found", svrname, "grpc cert, abort register!")
 		return
 	}
 
@@ -125,10 +127,28 @@ func (stub *GrpcStub) RegistServer() {
 	}
 }
 
+// Parse grpc certs from nacos configs and register local server
+// as grpc server handler, then start and listen.
+func (stub *GrpcStub) ParseAndStart(data string) error {
+	if err := stub.ParseCerts(data); err != nil {
+		return err
+	}
+
+	go stub.StartGrpcServer()
+	return nil
+}
+
 // Generate grpc client handler
-func (stub *GrpcStub) GenClient(svrkey, addr string, port int, cb ConnHandlerFunc) {
+func (stub *GrpcStub) GenClient(svrkey, addr string, port int) {
+	if svrkey != SvrAcc && svrkey != SvrMea && svrkey != SvrWss &&
+		svrkey != SvrChat && svrkey != SvrPay {
+		logger.E("Invaoid target grpc server:", svrkey)
+		return
+	}
+
 	secure, ok := stub.Certs[svrkey]
 	if !ok || secure.Key == "" || secure.Pem == "" {
+		logger.E("Not found target grpc cert of", svrkey)
 		return
 	}
 
@@ -140,28 +160,85 @@ func (stub *GrpcStub) GenClient(svrkey, addr string, port int, cb ConnHandlerFun
 	}
 
 	// generate grpc client handler with TLS secure
-	domain := fmt.Sprintf("%s:%d", addr, port)
+	grpcsvr := fmt.Sprintf("%s:%d", addr, port)
 	cred := credentials.NewClientTLSFromCert(cp, svrkey)
-	conn, err := grpc.Dial(domain, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.Dial(grpcsvr, grpc.WithTransportCredentials(cred))
 	if err != nil {
-		logger.E("dial grpc address", domain, " fialed", err)
+		logger.E("dial grpc address", grpcsvr, " fialed", err)
 		return
 	}
 
-	logger.I("Connectd grpc server", domain)
-	stub.Clients[svrkey] = cb(conn)
+	// content grpc client by server name
+	logger.I("Grpc client:", svrkey, "connect", grpcsvr)
+	switch svrkey {
+	case SvrAcc:
+		stub.Clients[svrkey] = acc.NewAccClient(conn)
+	case SvrMea:
+		stub.Clients[svrkey] = mea.NewMeaClient(conn)
+	case SvrWss:
+		stub.Clients[svrkey] = webss.NewWebssClient(conn)
+	case SvrChat:
+		stub.Clients[svrkey] = chat.NewWgchatClient(conn)
+	case SvrPay:
+		stub.Clients[svrkey] = pay.NewWgpayClient(conn)
+	}
 }
 
 // Parse all grpc certs from nacos config data, and cache to certs map
-func (stub *GrpcStub) ParseCerts(data string) {
+func (stub *GrpcStub) ParseCerts(data string) error {
 	certs := nacos.GrpcCerts{}
 	if err := xml.Unmarshal([]byte(data), &certs); err != nil {
 		logger.E("Parse grpc certs, err:", err)
-		return
+		return err
 	}
 
 	for _, cert := range certs.Certs {
 		logger.D("Update", cert.Svr, "grpc cert")
 		stub.Certs[cert.Svr] = &cert
 	}
+	return nil
+}
+
+// ======================
+// Functions for clients
+// ======================
+
+// Return AccService grpc client, maybe null if not generate first
+func (stub *GrpcStub) Acc() acc.AccClient {
+	if client, ok := stub.Clients[SvrAcc]; ok {
+		return client.(acc.AccClient)
+	}
+	return nil
+}
+
+// Return Measure grpc client, maybe null if not generate first
+func (stub *GrpcStub) Mea() mea.MeaClient {
+	if client, ok := stub.Clients[SvrMea]; ok {
+		return client.(mea.MeaClient)
+	}
+	return nil
+}
+
+// Return Webss grpc client, maybe null if not generate first
+func (stub *GrpcStub) Webss() webss.WebssClient {
+	if client, ok := stub.Clients[SvrWss]; ok {
+		return client.(webss.WebssClient)
+	}
+	return nil
+}
+
+// Return Wgchat grpc client, maybe null if not generate first
+func (stub *GrpcStub) Chat() chat.WgchatClient {
+	if client, ok := stub.Clients[SvrChat]; ok {
+		return client.(chat.WgchatClient)
+	}
+	return nil
+}
+
+// Return Wgpay grpc client, maybe null if not generate first
+func (stub *GrpcStub) Pay() pay.WgpayClient {
+	if client, ok := stub.Clients[SvrPay]; ok {
+		return client.(pay.WgpayClient)
+	}
+	return nil
 }

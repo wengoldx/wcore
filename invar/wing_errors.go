@@ -87,7 +87,7 @@ var (
 	ErrUnsupportFormat     = errors.New("Unsupported format data")
 	ErrInvalidOptions      = errors.New("Invalid options")
 	ErrUnexistKey          = errors.New("Unexist key")
-	ErrInvaildExecTime     = errors.New("invaild exec time")
+	ErrInvaildExecTime     = errors.New("Invaild execute time")
 )
 
 var (
@@ -154,4 +154,8 @@ var (
 	WErrInvalidRedisOptions = &WingErr{0x103C, ErrInvalidRedisOptions}
 	WErrUnexistRedisKey     = &WingErr{0x103D, ErrUnexistRedisKey}
 	WErrNoAssociatedExpire  = &WingErr{0x103E, ErrNoAssociatedExpire}
+	WErrUnsupportFormat     = &WingErr{0x1040, ErrUnsupportFormat}
+	WErrInvalidOptions      = &WingErr{0x1041, ErrInvalidOptions}
+	WErrUnexistKey          = &WingErr{0x1042, ErrUnexistKey}
+	WErrInvaildExecTime     = &WingErr{0x1043, ErrInvaildExecTime}
 )
