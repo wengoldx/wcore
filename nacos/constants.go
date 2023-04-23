@@ -37,13 +37,8 @@ const (
 	NS_DEV  = "dunyu-server-dev"  // DEV  namespace id
 )
 
-// Nacos group string for wing/nacos
-const (
-	GP_BASIC = "group.basic" // BASIC group name
-	GP_IFSC  = "group.ifsc"  // IFSC  group name
-	GP_DTE   = "group.dte"   // DTE   group name
-	GP_CWS   = "group.cws"   // CWS   group name
-)
+// Fixed all registered servers and configs named 'wengold' group
+const GP_WENGOLD = "group.wengold"
 
 // Nacos data id for wing/nacos
 const (

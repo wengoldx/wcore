@@ -29,12 +29,11 @@ import (
 // Server register informations
 type ServerItem struct {
 	Name     string         // Server name, same as beego app name
-	Group    string         // Server group, range in [GP_BASIC, GP_IFSC, GP_DTE, GP_CWS]
 	Callback ServerCallback // Server register datas changed callback
 }
 
 // Callback to listen server address and port changes
-type ServerCallback func(svr, addr string, port, httpport int)
+type ServerCallback func(svr, addr string, gport, hport int)
 
 // Register current server to nacos, you must set configs in app.conf
 //	@return - *ServerStub nacos server stub instance
@@ -45,9 +44,6 @@ type ServerCallback func(svr, addr string, port, httpport int)
 //
 //	; Nacos remote server host
 //	nacossvr = "10.239.40.24"
-//
-//	; Server nacos group name
-//	nacosgp = "group.ifsc"
 //
 //	[dev]
 //	; Inner net ideal address for dev servers access
@@ -62,18 +58,16 @@ type ServerCallback func(svr, addr string, port, httpport int)
 //
 //	; Inner net port for grpc access
 //	nacosport = 3000
-func RegisterServer(opts ...string) *ServerStub {
-	svr, group := parseOptions(opts...)
+func RegisterServer() *ServerStub {
+	svr := beego.AppConfig.String(configKeySvr)
+	if svr == "" {
+		panic("Not found nacos server host!")
+	}
 
 	// Local server listing ip proxy
 	idealip := beego.AppConfig.String(configKeyAddr)
 	if idealip == "" {
 		panic("Not found idea server ip to register!")
-	}
-
-	addr, err := matchProxyIP(idealip)
-	if err != nil {
-		panic("Find proxy local ip, err:" + err.Error())
 	}
 
 	// Server access port for grpc, it maybe same as httpport config
@@ -83,8 +77,12 @@ func RegisterServer(opts ...string) *ServerStub {
 		panic("Not found port number or less 3000!")
 	}
 
-	// Namespace id of local server
+	// Namespace id of local server, and parse local ip
 	ns := comm.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
+	addr, err := matchProxyIP(idealip)
+	if err != nil {
+		panic("Find proxy local ip, err:" + err.Error())
+	}
 
 	// Generate nacos server stub and setup it
 	stub := NewServerStub(ns, svr)
@@ -97,8 +95,9 @@ func RegisterServer(opts ...string) *ServerStub {
 	// becase it maybe support either grpc or http hanlder to accesse.
 	//
 	// And here not use cluster name, please keep it empty!
-	app := beego.BConfig.AppName
-	if err := stub.Register(app, addr, uint64(port), group); err != nil {
+	// And last FIX the group name as 'group.wengold'.
+	app, gp := beego.BConfig.AppName, GP_WENGOLD
+	if err := stub.Register(app, addr, uint64(port), gp); err != nil {
 		panic(err)
 	}
 
@@ -113,7 +112,7 @@ func RegisterServer(opts ...string) *ServerStub {
 //	@params servers []*ServerItem target server registry informations
 func (ss *ServerStub) ListenServers(servers []*ServerItem) {
 	for _, s := range servers {
-		if err := ss.Subscribe(s.Name, s.OnChanged, s.Group); err != nil {
+		if err := ss.Subscribe(s.Name, s.OnChanged, GP_WENGOLD); err != nil {
 			panic("Subscribe server " + s.Name + " err:" + err.Error())
 		}
 	}
@@ -147,7 +146,6 @@ func (si *ServerItem) OnChanged(services []model.Instance, err error) {
 
 // Meta config informations
 type MetaConfig struct {
-	Group     string                        // Server group, range in [GP_BASIC, GP_IFSC, GP_DTE, GP_CWS]
 	Stub      *ConfigStub                   // Nacos config client instance
 	Callbacks map[string]MetaConfigCallback // Meta config changed callback maps, key is dataid
 }
@@ -164,11 +162,11 @@ type MetaConfigCallback func(dataId, data string)
 //
 //	; Nacos remote server host
 //	nacossvr = "10.239.40.24"
-//
-//	; Server nacos group name
-//	nacosgp = "group.ifsc"
-func GenMetaConfig(opts ...string) *MetaConfig {
-	svr, group := parseOptions(opts...)
+func GenMetaConfig() *MetaConfig {
+	svr := beego.AppConfig.String(configKeySvr)
+	if svr == "" {
+		panic("Not found nacos server host!")
+	}
 
 	// Namespace id of meta configs
 	ns := comm.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
@@ -179,10 +177,28 @@ func GenMetaConfig(opts ...string) *MetaConfig {
 		panic("Gen config stub, err:" + err.Error())
 	}
 
+	// Fix the all config group as wengold
 	cbs := make(map[string]MetaConfigCallback)
 	return &MetaConfig{
-		Group: group, Stub: stub, Callbacks: cbs,
+		Stub: stub, Callbacks: cbs,
 	}
+}
+
+// Get and listing the config of indicated dataId
+func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
+	mc.Callbacks[dataId] = cb // cache callback
+	gp := GP_WENGOLD
+
+	// get config first before listing
+	data, err := mc.Stub.GetString(dataId, gp)
+	if err != nil {
+		panic("Get config " + dataId + "err: " + err.Error())
+	}
+	cb(dataId, data)
+
+	// listing config changes
+	logger.I("Start listing config dateId:", dataId)
+	mc.Stub.Listen(dataId, gp, mc.OnChanged)
 }
 
 // Get and listing the configs of indicated dataIds
@@ -195,26 +211,10 @@ func (mc *MetaConfig) ListenConfigs(dataIds []string, cb MetaConfigCallback) {
 	}
 }
 
-// Get and listing the config of indicated dataId
-func (mc *MetaConfig) ListenConfig(dataId string, cb MetaConfigCallback) {
-	mc.Callbacks[dataId] = cb // cache callback
-
-	// get config first before listing
-	data, err := mc.Stub.GetString(dataId, mc.Group)
-	if err != nil {
-		panic("Get config " + dataId + "err: " + err.Error())
-	}
-	cb(dataId, data)
-
-	// listing config changes
-	logger.I("Start listing config { dataId:", dataId, "group:", mc.Group, "}")
-	mc.Stub.Listen(dataId, mc.Group, mc.OnChanged)
-}
-
 // Listing callback called when target configs changed
 func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
-	if (namespace != NS_DEV && namespace != NS_PROD) || group != mc.Group {
-		logger.E("Invalid meta config ns:", namespace, "or group:", group)
+	if namespace != NS_DEV && namespace != NS_PROD {
+		logger.E("Invalid meta config ns:", namespace)
 		return
 	}
 
@@ -225,35 +225,6 @@ func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
 }
 
 // ---------------------------------------
-
-// Get and check register server's nacos informations
-//	@return - string nacos remote server ip
-//			- string group name of local server
-func NacosSvrConfigs() (string, string) {
-	svr := beego.AppConfig.String(configKeySvr)
-	if svr == "" {
-		panic("Not found nacos server host!")
-	}
-
-	gp := beego.AppConfig.String(configKeyGroup)
-	if !(gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS) {
-		panic("Invalid register cluster group!")
-	}
-	return svr, gp
-}
-
-// Parse input params and check server and group names
-func parseOptions(opts ...string) (string, string) {
-	if cnt := len(opts); cnt >= 2 /* 0:server, 1:group */ {
-		svr, gp := opts[0], opts[1]
-		validgp := (gp == GP_BASIC || gp == GP_IFSC || gp == GP_DTE || gp == GP_CWS)
-		if svr == "" || !validgp {
-			panic("Invalid svr or group params!")
-		}
-		return svr, gp
-	}
-	return NacosSvrConfigs()
-}
 
 // Generate nacos client config, contain nacos remote server and
 // current business servers configs, this client keep alive with
@@ -266,9 +237,7 @@ func parseOptions(opts ...string) (string, string) {
 // - Nginx proxy vip server need access on http://{svr}:3608/nacos
 func genClientParam(ns, svr string) vo.NacosClientParam {
 	sc := []constant.ServerConfig{
-		{
-			Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 3608,
-		},
+		{Scheme: "http", ContextPath: "/nacos", IpAddr: svr, Port: 3608},
 	}
 
 	// logs config
