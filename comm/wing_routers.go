@@ -111,7 +111,7 @@ func LoadSwaggerRouters() (*Routers, error) {
 				}
 
 				// append the router into routers array
-				logger.D("> Parsed ["+router.Method+"]\tpath:", path, "\tdesc:", router.EnDesc)
+				// logger.D("> Parsed ["+router.Method+"]\tpath:", path, "\tdesc:", router.EnDesc)
 				out.Routers = append(out.Routers, router)
 			}
 		}
@@ -134,13 +134,15 @@ func LoadSwaggerRouters() (*Routers, error) {
 					gp.EnDesc = strings.TrimRight(gpd.(string), "\n")
 				}
 
-				logger.D("# Parsed group ["+gp.Name+"] \t desc:", gp.EnDesc)
+				// append the group into groups array
+				// logger.D("# Parsed group ["+gp.Name+"] \t desc:", gp.EnDesc)
 				out.Groups = append(out.Groups, gp)
 			}
 		}
 	}
 
-	logger.I("Finished parse, out:", out)
+	logger.I("Finish parsed local routers")
+	// logger.I("Finished parse, out:", out)
 	return out, nil
 }
 
@@ -176,7 +178,7 @@ func FetchChineseFields(src *Routers, dest *Routers) {
 	if len(dest.Routers) > 0 {
 		for _, router := range src.Routers {
 			if router.CnDesc != "" {
-				logger.D("- Cached router ["+router.Router+"]\tchinese desc:", router.CnDesc)
+				// logger.D("- Cached router ["+router.Router+"]\tchinese desc:", router.CnDesc)
 				routers[router.Router] = router.CnDesc
 			}
 		}
@@ -196,7 +198,7 @@ func FetchChineseFields(src *Routers, dest *Routers) {
 	if len(dest.Groups) > 0 {
 		for _, group := range src.Groups {
 			if group.CnDesc != "" {
-				logger.D("= Cached group ["+group.Name+"]\tchinese desc:", group.CnDesc)
+				// logger.D("= Cached group ["+group.Name+"]\tchinese desc:", group.CnDesc)
 				groups[group.Name] = group.CnDesc
 			}
 		}
