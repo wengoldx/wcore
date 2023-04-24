@@ -148,9 +148,11 @@ func LoadSwaggerRouters() (*Routers, error) {
 // routers map and local server swagger routers
 func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
 	routers := make(map[string]*Routers)
-	if err := json.Unmarshal([]byte(data), &routers); err != nil {
-		logger.E("Unmarshal swagger routers, err:", err)
-		return nil, nil
+	if data != "" && data != "{}" { // check data if empty
+		if err := json.Unmarshal([]byte(data), &routers); err != nil {
+			logger.E("Unmarshal swagger routers, err:", err)
+			return nil, nil
+		}
 	}
 
 	svr := beego.BConfig.AppName
