@@ -144,6 +144,25 @@ func LoadSwaggerRouters() (*Routers, error) {
 	return out, nil
 }
 
+// Parse servers routers from nacos config data, then return all backend services
+// routers map and local server swagger routers
+func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
+	routers := make(map[string]*Routers)
+	if err := json.Unmarshal([]byte(data), &routers); err != nil {
+		logger.E("Unmarshal swagger routers, err:", err)
+		return nil, nil
+	}
+
+	svr := beego.BConfig.AppName
+	if rs, ok := routers[svr]; ok {
+		logger.D("Parsed routers and found", svr)
+		return routers, rs
+	}
+
+	logger.D("Parsed routers, but unexist", svr)
+	return routers, nil
+}
+
 // Fetch the given routers and groups from src param and set chinese description to dest fileds.
 func FetchChineseFields(src *Routers, dest *Routers) {
 	dest.CnName = Condition(src.CnName != "", src.CnName, dest.CnName).(string)
@@ -152,10 +171,12 @@ func FetchChineseFields(src *Routers, dest *Routers) {
 	/* cache router chinese description */
 	/* -------------------------------- */
 	routers := make(map[string]string)
-	for _, router := range src.Routers {
-		if router.CnDesc != "" {
-			logger.D("- Cached router ["+router.Router+"]\tchinese desc:", router.CnDesc)
-			routers[router.Router] = router.CnDesc
+	if len(dest.Routers) > 0 {
+		for _, router := range src.Routers {
+			if router.CnDesc != "" {
+				logger.D("- Cached router ["+router.Router+"]\tchinese desc:", router.CnDesc)
+				routers[router.Router] = router.CnDesc
+			}
 		}
 	}
 
@@ -170,10 +191,12 @@ func FetchChineseFields(src *Routers, dest *Routers) {
 	/* cache groups chinese description */
 	/* -------------------------------- */
 	groups := make(map[string]string)
-	for _, group := range src.Groups {
-		if group.CnDesc != "" {
-			logger.D("= Cached group ["+group.Name+"]\tchinese desc:", group.CnDesc)
-			groups[group.Name] = group.CnDesc
+	if len(dest.Groups) > 0 {
+		for _, group := range src.Groups {
+			if group.CnDesc != "" {
+				logger.D("= Cached group ["+group.Name+"]\tchinese desc:", group.CnDesc)
+				groups[group.Name] = group.CnDesc
+			}
 		}
 	}
 
@@ -185,21 +208,34 @@ func FetchChineseFields(src *Routers, dest *Routers) {
 	}
 }
 
-// Parse servers routers from nacos config data, then return all backend services
-// routers map and local server swagger routers
-func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
-	routers := make(map[string]*Routers)
-	if err := json.Unmarshal([]byte(data), &routers); err != nil {
-		logger.E("Unmarshal swagger routers, err:", err)
-		return nil, nil
+// Parse total routers and update description on chinese for local server routers,
+// then marshal to string and push to nacos config server.
+func UpdateRouters(data string) (string, error) {
+	routers, err := LoadSwaggerRouters()
+	if err != nil {
+		logger.E("Load local swagger, err:", err)
+		return "", err
+	}
+
+	rsmap, nrs := ParseNacosRouters(data)
+	if nrs != nil {
+		FetchChineseFields(nrs, routers)
 	}
 
 	svr := beego.BConfig.AppName
-	if rs, ok := routers[svr]; ok {
-		logger.D("Parsed routers, and router:", svr)
-		return routers, rs
+	if rsmap != nil {
+		rsmap[svr] = routers
+	} else {
+		rsmap = make(map[string]*Routers)
+		rsmap[svr] = routers
 	}
 
-	logger.D("Parsed routers, but unexist", svr)
-	return routers, nil
+	swagger, err := json.Marshal(rsmap)
+	if err != nil {
+		logger.E("Marshal routers, err:", err)
+		return "", err
+	}
+
+	logger.D("Updated routers apis for", svr)
+	return string(swagger), nil
 }
