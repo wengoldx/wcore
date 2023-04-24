@@ -72,9 +72,9 @@ func (c *ConfigStub) Publish(did, group string, config interface{}) error {
 	}
 
 	content := ""
-	switch config.(type) {
+	switch config := config.(type) {
 	case string:
-		content = config.(string)
+		content = config
 	default:
 		cfg, err := json.Marshal(config)
 		if err != nil {
