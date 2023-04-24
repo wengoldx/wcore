@@ -224,6 +224,16 @@ func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
 	}
 }
 
+// Get config data from nacos server by given data id
+func (mc *MetaConfig) GetConfig(dataId string) (string, error) {
+	return mc.Stub.GetString(GP_WENGOLD, dataId)
+}
+
+// Push config data to indicated nacos config
+func (mc *MetaConfig) PushConfig(dataId, data string) error {
+	return mc.Stub.Publish(dataId, GP_WENGOLD, data)
+}
+
 // ---------------------------------------
 
 // Generate nacos client config, contain nacos remote server and
