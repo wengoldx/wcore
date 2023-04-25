@@ -226,7 +226,7 @@ func (mc *MetaConfig) OnChanged(namespace, group, dataId, data string) {
 
 // Get config data from nacos server by given data id
 func (mc *MetaConfig) GetConfig(dataId string) (string, error) {
-	return mc.Stub.GetString(GP_WENGOLD, dataId)
+	return mc.Stub.GetString(dataId, GP_WENGOLD)
 }
 
 // Push config data to indicated nacos config

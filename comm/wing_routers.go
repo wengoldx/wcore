@@ -152,18 +152,22 @@ func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
 	routers := make(map[string]*Routers)
 	if data != "" && data != "{}" { // check data if empty
 		if err := json.Unmarshal([]byte(data), &routers); err != nil {
-			logger.E("Unmarshal swagger routers, err:", err)
+			logger.E("Unmarshal nacos routers, err:", err)
 			return nil, nil
 		}
 	}
 
-	svr := beego.BConfig.AppName
-	if rs, ok := routers[svr]; ok {
-		logger.D("Parsed routers and found", svr)
-		return routers, rs
+	if len(routers) > 0 {
+		svr := beego.BConfig.AppName
+		if rs, ok := routers[svr]; ok {
+			logger.D("Parsed nacos routers, found", svr)
+			return routers, rs
+		}
+		logger.D("Parsed nacos routers, unexist", svr)
+		return routers, nil
 	}
 
-	logger.D("Unexist svr:", svr, "in", routers)
+	logger.D("Empty nacos routers, data:", data)
 	return routers, nil
 }
 
