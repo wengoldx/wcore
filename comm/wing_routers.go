@@ -72,12 +72,12 @@ func LoadSwaggerRouters() (*Routers, error) {
 		logger.E("Unmarshal swagger routers err:", err)
 		return nil, err
 	}
-	logger.I("Make routers, and unmarshal swagger json")
+	logger.I("Loaded swagger json, start parse routers")
 
 	out := &Routers{}
 	if basePath, ok := routers[sfServerName]; ok && basePath != nil {
 		out.Server = strings.TrimLeft(basePath.(string), "/") // parse server name
-		logger.I("Parsed server name:", out.Server)
+		logger.D("Local server name:", out.Server)
 
 		// parse routers by path keyword
 		if ps, ok := routers[sfPathName]; ok && ps != nil {
@@ -142,7 +142,6 @@ func LoadSwaggerRouters() (*Routers, error) {
 	}
 
 	logger.I("Finish parsed swagger routers")
-	// logger.I("Finished parse, out:", out)
 	return out, nil
 }
 

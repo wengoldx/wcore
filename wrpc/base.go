@@ -91,7 +91,7 @@ func (stub *GrpcStub) StartGrpcServer() {
 	}
 
 	svrname := beego.BConfig.AppName
-	logger.I(">> Register Grpc server:", svrname)
+	logger.I("Register Grpc server:", svrname)
 
 	secure, ok := stub.Certs[svrname]
 	if !ok || secure.Key == "" || secure.Pem == "" {
@@ -118,7 +118,7 @@ func (stub *GrpcStub) StartGrpcServer() {
 	cred := credentials.NewServerTLSFromCert(&cert)
 	svr := grpc.NewServer(grpc.Creds(cred))
 	stub.SvrHandlerFunc(svr)
-	logger.I(">> Runding Grpc server:", svrname, "on port", port)
+	logger.I("Running Grpc server:", svrname, "on port", port)
 
 	stub.isRegistried = true
 	defer func(stub *GrpcStub) { stub.isRegistried = false }(stub)
