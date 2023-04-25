@@ -26,6 +26,8 @@ type WebssClient interface {
 	DeleteConfig(ctx context.Context, in *DeleteLifeConfig, opts ...grpc.CallOption) (*WEmpty, error)
 	AddConfig(ctx context.Context, in *LifeConfig, opts ...grpc.CallOption) (*ID, error)
 	AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
+	GetPreSigUrl(ctx context.Context, in *PerSigUrlReq, opts ...grpc.CallOption) (*PreSigUrl, error)
+	GetMultiUrls(ctx context.Context, in *PerSigUrlsReq, opts ...grpc.CallOption) (*PreSigUrls, error)
 }
 
 type webssClient struct {
@@ -72,6 +74,24 @@ func (c *webssClient) AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOpti
 	return out, nil
 }
 
+func (c *webssClient) GetPreSigUrl(ctx context.Context, in *PerSigUrlReq, opts ...grpc.CallOption) (*PreSigUrl, error) {
+	out := new(PreSigUrl)
+	err := c.cc.Invoke(ctx, "/proto.Webss/GetPreSigUrl", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *webssClient) GetMultiUrls(ctx context.Context, in *PerSigUrlsReq, opts ...grpc.CallOption) (*PreSigUrls, error) {
+	out := new(PreSigUrls)
+	err := c.cc.Invoke(ctx, "/proto.Webss/GetMultiUrls", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebssServer is the server API for Webss service.
 // All implementations must embed UnimplementedWebssServer
 // for forward compatibility
@@ -80,6 +100,8 @@ type WebssServer interface {
 	DeleteConfig(context.Context, *DeleteLifeConfig) (*WEmpty, error)
 	AddConfig(context.Context, *LifeConfig) (*ID, error)
 	AddTag(context.Context, *Tag) (*WEmpty, error)
+	GetPreSigUrl(context.Context, *PerSigUrlReq) (*PreSigUrl, error)
+	GetMultiUrls(context.Context, *PerSigUrlsReq) (*PreSigUrls, error)
 	mustEmbedUnimplementedWebssServer()
 }
 
@@ -98,6 +120,12 @@ func (UnimplementedWebssServer) AddConfig(context.Context, *LifeConfig) (*ID, er
 }
 func (UnimplementedWebssServer) AddTag(context.Context, *Tag) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddTag not implemented")
+}
+func (UnimplementedWebssServer) GetPreSigUrl(context.Context, *PerSigUrlReq) (*PreSigUrl, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPreSigUrl not implemented")
+}
+func (UnimplementedWebssServer) GetMultiUrls(context.Context, *PerSigUrlsReq) (*PreSigUrls, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMultiUrls not implemented")
 }
 func (UnimplementedWebssServer) mustEmbedUnimplementedWebssServer() {}
 
@@ -184,6 +212,42 @@ func _Webss_AddTag_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Webss_GetPreSigUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PerSigUrlReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebssServer).GetPreSigUrl(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Webss/GetPreSigUrl",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebssServer).GetPreSigUrl(ctx, req.(*PerSigUrlReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Webss_GetMultiUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PerSigUrlsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebssServer).GetMultiUrls(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Webss/GetMultiUrls",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebssServer).GetMultiUrls(ctx, req.(*PerSigUrlsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Webss_ServiceDesc is the grpc.ServiceDesc for Webss service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +270,14 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddTag",
 			Handler:    _Webss_AddTag_Handler,
+		},
+		{
+			MethodName: "GetPreSigUrl",
+			Handler:    _Webss_GetPreSigUrl_Handler,
+		},
+		{
+			MethodName: "GetMultiUrls",
+			Handler:    _Webss_GetMultiUrls_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
