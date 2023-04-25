@@ -8,6 +8,8 @@ service Webss {
     rpc DeleteConfig (DeleteLifeConfig) returns (WEmpty);
     rpc AddConfig (LifeConfig) returns (ID);
     rpc AddTag (Tag) returns (WEmpty);
+    rpc GetPreSigUrl (PerSigUrlReq) returns (PreSigUrl);
+    rpc GetMultiUrls (PerSigUrlsReq) returns (PreSigUrls);
 }
 
 message WEmpty{}       // diferent other server when using together
@@ -38,4 +40,25 @@ message Tag {
     repeated string path = 2;
     string key = 3;
     string value = 4;
+}
+
+message PerSigUrlReq {
+    string res = 1;
+    string add = 2;
+    string suffix = 3;
+}
+
+message PerSigUrlsReq {
+    string res = 1;
+    string add = 2;
+    repeated string suffix = 3;
+}
+
+message PreSigUrls {
+    repeated PreSigUrl PreSigUrls = 1;
+}
+
+message PreSigUrl {
+    string url = 1;
+    string path = 2;
 }
