@@ -234,6 +234,40 @@ func (mc *MetaConfig) PushConfig(dataId, data string) error {
 	return mc.Stub.Publish(dataId, GP_WENGOLD, data)
 }
 
+// Parse local server swagger and upload routers to nacos
+func (mc *MetaConfig) UploadRouters() error {
+	nrouters, err := mc.GetConfig(DID_API_ROUTERS)
+	if err != nil {
+		logger.E("Pull nacos routers, err:", err)
+		return err
+	}
+
+	// update local server swagger routers
+	if routers, err := comm.UpdateRouters(nrouters); err == nil {
+		mc.PushConfig(DID_API_ROUTERS, routers)
+	}
+	return nil
+}
+
+// Update routers chinese descriptions and upload to nacos
+func (mc *MetaConfig) UpdateChineses(descs []*comm.SvrDesc) error {
+	nrouters, err := mc.GetConfig(DID_API_ROUTERS)
+	if err != nil {
+		logger.E("Pull nacos routers, err:", err)
+		return err
+	}
+
+	// update routers chineses descriptions
+	routers, err := comm.UpdateChineses(nrouters, descs)
+	if err != nil {
+		logger.E("Update routers chineses, err:", err)
+		return err
+	}
+
+	mc.PushConfig(DID_API_ROUTERS, routers)
+	return nil
+}
+
 // ---------------------------------------
 
 // Generate nacos client config, contain nacos remote server and

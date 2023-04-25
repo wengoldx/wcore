@@ -13,6 +13,7 @@ package comm
 import (
 	"encoding/json"
 	"github.com/astaxie/beego"
+	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 	"io/ioutil"
 	"reflect"
@@ -26,7 +27,6 @@ import (
 //	DO NOT CHANGE THEME IF YOU KNOWE HOW TO CHANGE IT!
 const (
 	swaggerFile  = "./swagger/swagger.json"
-	sfServerName = "basePath"
 	sfPathName   = "paths"
 	sfMethodGet  = "get"
 	sfMethodPost = "post"
@@ -53,14 +53,107 @@ type Group struct {
 
 // All routers of one server
 type Routers struct {
-	Server  string    `json:"server"`  // backend server name
-	CnName  string    `json:"cnanem"`  // server name of chinese
+	CnName  string    `json:"cnname"`  // backend server chinese name
 	Groups  []*Group  `json:"groups"`  // groups as swagger controllers
 	Routers []*Router `json:"routers"` // routers parsed from swagger.json file
 }
 
+type SvrDesc struct {
+	Server  string            `json:"server"`  // backend server english name
+	CnName  string            `json:"cnname"`  // backend server chinese name
+	Groups  map[string]string `json:"groups"`  // groups  chinese description
+	Routers map[string]string `json:"routers"` // routers chinese description
+}
+
+// Parse total routers and update description on chinese for local server routers,
+// then marshal to string for next to push to nacos config server.
+func UpdateRouters(data string) (string, error) {
+	routers, err := loadSwaggerRouters()
+	if err != nil {
+		logger.E("Load local swagger, err:", err)
+		return "", err
+	}
+
+	rsmap, nrs := parseNacosRouters(data)
+	if nrs != nil {
+		fetchChineseFields(nrs, routers)
+	}
+
+	svr := beego.BConfig.AppName
+	if rsmap != nil {
+		rsmap[svr] = routers
+	} else {
+		rsmap = make(map[string]*Routers)
+		rsmap[svr] = routers
+	}
+
+	swagger, err := json.Marshal(rsmap)
+	if err != nil {
+		logger.E("Marshal routers, err:", err)
+		return "", err
+	}
+
+	logger.D("Updated routers apis for", svr)
+	return string(swagger), nil
+}
+
+// Parse total routers and update description on chinese for local server routers,
+// then marshal to string for next to push to nacos config server.
+func UpdateChineses(data string, descs []*SvrDesc) (string, error) {
+	rsmap := make(map[string]*Routers)
+	if err := json.Unmarshal([]byte(data), &rsmap); err != nil {
+		return "", err
+	}
+
+	// check total routers map and input chinese values
+	if len(rsmap) == 0 || len(descs) == 0 {
+		return "", invar.ErrEmptyData
+	}
+
+	// fetch all routers and update chinese
+	changed := false
+	for _, svr := range descs {
+		if routers, ok := rsmap[svr.Server]; ok {
+			if routers.CnName != svr.CnName {
+				routers.CnName, changed = svr.CnName, true
+			}
+
+			// update groups chinese descriptions
+			for _, group := range routers.Groups {
+				if cnname, ok := svr.Groups[group.Name]; ok {
+					if group.CnDesc != cnname {
+						group.CnDesc, changed = cnname, true
+					}
+				}
+			}
+
+			// update routers chinese descriptions
+			for _, router := range routers.Routers {
+				if cnname, ok := svr.Routers[router.Router]; ok {
+					router.CnDesc, changed = cnname, true
+				}
+			}
+		}
+	}
+
+	// check if exist chinese updated
+	if !changed {
+		return "", invar.ErrNotChanged
+	}
+
+	swagger, err := json.Marshal(rsmap)
+	if err != nil {
+		return "", err
+	}
+
+	logger.D("Updated routers chineses")
+	return string(swagger), nil
+}
+
+// --------------------------------------------
+
 // Load local server routers from swagger.json file.
-func LoadSwaggerRouters() (*Routers, error) {
+func loadSwaggerRouters() (*Routers, error) {
 	buff, err := ioutil.ReadFile(swaggerFile)
 	if err != nil {
 		logger.E("Load swagger routers, err:", err)
@@ -73,71 +166,66 @@ func LoadSwaggerRouters() (*Routers, error) {
 		return nil, err
 	}
 	logger.I("Loaded swagger json, start parse routers")
-
 	out := &Routers{}
-	if basePath, ok := routers[sfServerName]; ok && basePath != nil {
-		out.Server = strings.TrimLeft(basePath.(string), "/") // parse server name
-		logger.D("Local server name:", out.Server)
 
-		// parse routers by path keyword
-		if ps, ok := routers[sfPathName]; ok && ps != nil {
-			paths := ps.(map[string]interface{})
+	// parse routers by path keyword
+	if ps, ok := routers[sfPathName]; ok && ps != nil {
+		paths := ps.(map[string]interface{})
 
-			for path, pathvals := range paths {
-				router := &Router{Router: path} // parse router path
+		for path, pathvals := range paths {
+			router := &Router{Router: path} // parse router path
 
-				// parse http method, HERE only support GET or POST methods
-				var mvs interface{}
-				pvs := pathvals.(map[string]interface{})
-				if pmg, ok := pvs[sfMethodGet]; ok && pmg != nil {
-					router.Method, mvs = "GET", pmg
-				} else if pmp, ok := pvs[sfMethodPost]; ok && pmp != nil {
-					router.Method, mvs = "POST", pmp
-				} else {
-					logger.W("Invalid method of path:", path)
-					continue
-				}
-
-				// parse beego controller group name
-				method := mvs.(map[string]interface{})
-				if gps, ok := method[sfGroupTags]; ok && gps != nil {
-					groups := reflect.ValueOf(gps)
-					router.Group = groups.Index(0).Interface().(string)
-				}
-
-				// parse router path english description
-				if desc, ok := method[sfEnDescName]; ok && desc != nil {
-					router.EnDesc = desc.(string)
-				}
-
-				// append the router into routers array
-				// logger.D("> Parsed ["+router.Method+"]\tpath:", path, "\tdesc:", router.EnDesc)
-				out.Routers = append(out.Routers, router)
+			// parse http method, HERE only support GET or POST methods
+			var mvs interface{}
+			pvs := pathvals.(map[string]interface{})
+			if pmg, ok := pvs[sfMethodGet]; ok && pmg != nil {
+				router.Method, mvs = "GET", pmg
+			} else if pmp, ok := pvs[sfMethodPost]; ok && pmp != nil {
+				router.Method, mvs = "POST", pmp
+			} else {
+				logger.W("Invalid method of path:", path)
+				continue
 			}
+
+			// parse beego controller group name
+			method := mvs.(map[string]interface{})
+			if gps, ok := method[sfGroupTags]; ok && gps != nil {
+				groups := reflect.ValueOf(gps)
+				router.Group = groups.Index(0).Interface().(string)
+			}
+
+			// parse router path english description
+			if desc, ok := method[sfEnDescName]; ok && desc != nil {
+				router.EnDesc = desc.(string)
+			}
+
+			// append the router into routers array
+			// logger.D("> Parsed ["+router.Method+"]\tpath:", path, "\tdesc:", router.EnDesc)
+			out.Routers = append(out.Routers, router)
 		}
+	}
 
-		// parse groups by tags keyword
-		if gps, ok := routers[sfGroupTags]; ok && gps != nil {
-			groups := gps.([]interface{}) // parse all group array
+	// parse groups by tags keyword
+	if gps, ok := routers[sfGroupTags]; ok && gps != nil {
+		groups := gps.([]interface{}) // parse all group array
 
-			for _, group := range groups {
-				t := group.(map[string]interface{})
-				gp := &Group{}
+		for _, group := range groups {
+			t := group.(map[string]interface{})
+			gp := &Group{}
 
-				// parse group name value
-				if gpn, ok := t[sfGroupName]; ok && gpn != nil {
-					gp.Name = gpn.(string)
-				}
-
-				// parse group english description
-				if gpd, ok := t[sfEnDescName]; ok && gpd != nil {
-					gp.EnDesc = strings.TrimRight(gpd.(string), "\n")
-				}
-
-				// append the group into groups array
-				// logger.D("# Parsed group ["+gp.Name+"] \t desc:", gp.EnDesc)
-				out.Groups = append(out.Groups, gp)
+			// parse group name value
+			if gpn, ok := t[sfGroupName]; ok && gpn != nil {
+				gp.Name = gpn.(string)
 			}
+
+			// parse group english description
+			if gpd, ok := t[sfEnDescName]; ok && gpd != nil {
+				gp.EnDesc = strings.TrimRight(gpd.(string), "\n")
+			}
+
+			// append the group into groups array
+			// logger.D("# Parsed group ["+gp.Name+"] \t desc:", gp.EnDesc)
+			out.Groups = append(out.Groups, gp)
 		}
 	}
 
@@ -147,7 +235,7 @@ func LoadSwaggerRouters() (*Routers, error) {
 
 // Parse servers routers from nacos config data, then return all backend services
 // routers map and local server swagger routers
-func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
+func parseNacosRouters(data string) (map[string]*Routers, *Routers) {
 	routers := make(map[string]*Routers)
 	if data != "" && data != "{}" { // check data if empty
 		if err := json.Unmarshal([]byte(data), &routers); err != nil {
@@ -171,7 +259,7 @@ func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
 }
 
 // Fetch the given routers and groups from src param and set chinese description to dest fileds.
-func FetchChineseFields(src *Routers, dest *Routers) {
+func fetchChineseFields(src *Routers, dest *Routers) {
 	dest.CnName = Condition(src.CnName != "", src.CnName, dest.CnName).(string)
 
 	/* -------------------------------- */
@@ -213,36 +301,4 @@ func FetchChineseFields(src *Routers, dest *Routers) {
 			group.CnDesc = groups[group.Name]
 		}
 	}
-}
-
-// Parse total routers and update description on chinese for local server routers,
-// then marshal to string and push to nacos config server.
-func UpdateRouters(data string) (string, error) {
-	routers, err := LoadSwaggerRouters()
-	if err != nil {
-		logger.E("Load local swagger, err:", err)
-		return "", err
-	}
-
-	rsmap, nrs := ParseNacosRouters(data)
-	if nrs != nil {
-		FetchChineseFields(nrs, routers)
-	}
-
-	svr := beego.BConfig.AppName
-	if rsmap != nil {
-		rsmap[svr] = routers
-	} else {
-		rsmap = make(map[string]*Routers)
-		rsmap[svr] = routers
-	}
-
-	swagger, err := json.Marshal(rsmap)
-	if err != nil {
-		logger.E("Marshal routers, err:", err)
-		return "", err
-	}
-
-	logger.D("Updated routers apis for", svr)
-	return string(swagger), nil
 }
