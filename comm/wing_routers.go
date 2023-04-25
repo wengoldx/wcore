@@ -76,7 +76,7 @@ func LoadSwaggerRouters() (*Routers, error) {
 
 	out := &Routers{}
 	if basePath, ok := routers[sfServerName]; ok && basePath != nil {
-		out.Server = basePath.(string) // parse server name
+		out.Server = strings.TrimLeft(basePath.(string), "/") // parse server name
 		logger.I("Parsed server name:", out.Server)
 
 		// parse routers by path keyword
@@ -141,7 +141,7 @@ func LoadSwaggerRouters() (*Routers, error) {
 		}
 	}
 
-	logger.I("Finish parsed local routers")
+	logger.I("Finish parsed swagger routers")
 	// logger.I("Finished parse, out:", out)
 	return out, nil
 }
@@ -163,7 +163,7 @@ func ParseNacosRouters(data string) (map[string]*Routers, *Routers) {
 		return routers, rs
 	}
 
-	logger.D("Parsed routers, but unexist", svr)
+	logger.D("Unexist svr:", svr, "in", routers)
 	return routers, nil
 }
 
