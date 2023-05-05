@@ -27,6 +27,7 @@ const (
 	E410Gone             = http.StatusGone
 	E412InvalidState     = http.StatusPreconditionFailed
 	E424Locked           = http.StatusLocked
+	E426UpgradeRequired  = http.StatusUpgradeRequired
 )
 
 var statusText = map[int]string{
@@ -42,6 +43,7 @@ var statusText = map[int]string{
 	E410Gone:             "Gone",
 	E412InvalidState:     "Invalid State",
 	E424Locked:           "Resource Locked",
+	E426UpgradeRequired:  "Upgrade Header Required",
 }
 
 // StatusText returns a text for the HTTP status code. It returns the empty

@@ -260,13 +260,11 @@ func HttpPostStruct(tagurl string, postdata, out interface{}, contentType ...str
 //
 // ---
 //
-//	comm.HttpClientGet(tagurl, func(req *http.Request) (bool, error) {
-//			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-//			req.SetBasicAuth("username", "password") // set auther header
-//			return true, nil  // true is ignore TLS verify of https url
-//		}, "same-params") ([]byte, error) {
-//		// TODO do samething
-//	}
+//	resp, err := comm.HttpClientGet(tagurl, func(req *http.Request) (bool, error) {
+//		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+//		req.SetBasicAuth("username", "password") // set auther header
+//		return true, nil  // true is ignore TLS verify of https url
+//	}, "same-params");
 func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface{}) ([]byte, error) {
 	if len(params) > 0 {
 		tagurl = fmt.Sprintf(tagurl, params...)
@@ -292,13 +290,11 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 //
 // ---
 //
-//	comm.HttpClientPost(tagurl, func(req *http.Request) (bool, error) {
-//			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-//			req.SetBasicAuth("username", "password") // set auther header
-//			return true, nil  // true is ignore TLS verify of https url
-//		}, "post-data") ([]byte, error) {
-//		// TODO do samething
-//	}
+//	resp, err := comm.HttpClientPost(tagurl, func(req *http.Request) (bool, error) {
+//		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+//		req.SetBasicAuth("username", "password") // set auther header
+//		return true, nil  // true is ignore TLS verify of https url
+//	}, "post-data")
 func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interface{}) ([]byte, error) {
 	var body io.Reader
 	if len(postdata) > 0 {

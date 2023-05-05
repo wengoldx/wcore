@@ -244,6 +244,11 @@ func (c *WingController) E410Gone(err ...string) {
 	c.ErrorState(invar.E410Gone, err...)
 }
 
+// E426UpgradeRequired response 426 upgrade required error state to client
+func (c *WingController) E426UpgradeRequired(err ...string) {
+	c.ErrorState(invar.E426UpgradeRequired, err...)
+}
+
 // ClientFrom return client ip from who requested
 func (c *WingController) ClientFrom() string {
 	return c.Ctx.Request.RemoteAddr

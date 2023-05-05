@@ -126,32 +126,32 @@ var GRoleHandlerFunc RoleHandlerFunc
 
 // Get authoration and token from http header, than verify it and return account secures.
 func (c *WAuthController) AuthRequestHeader() (string, string) {
-	if GAuthHandlerFunc == nil {
-		c.E403Denind("Controller not set global auth handler!")
+	if GAuthHandlerFunc == nil || GRoleHandlerFunc == nil {
+		c.E403Denind("Controller not set global handlers!")
 		return "", ""
 	}
 
 	// check authoration secure key
 	authoration := strings.ToUpper(c.Ctx.Request.Header.Get("Authoration"))
-	if !strings.HasPrefix(authoration, "WENGOLD") {
-		c.E401Unauthed("Invalid header authoration: " + authoration)
+	if authoration != "WENGOLD-V1.1" {
+		if strings.HasPrefix(authoration, "WENGOLD") {
+			c.E426UpgradeRequired("Upgrade required to WENGOLD-V1.1, not " + authoration)
+			return "", ""
+		}
+
+		c.E401Unauthed("Unsupport authoration: " + authoration)
 		return "", ""
 	}
 
-	// get token from header and verify it
+	// get token from header and verify it and user role
 	if token := c.Ctx.Request.Header.Get("Token"); token != "" {
-		if uuid, pwd := GAuthHandlerFunc(token); uuid != "" {
-			// verify role permisson if authoration upgraded
-			if authoration == "WENGOLD-V1.1" {
-				if GRoleHandlerFunc == nil {
-					c.E403Denind("Controller not set global role handler!")
-					return "", ""
-				}
-
-				if !GRoleHandlerFunc(uuid, c.Ctx.Input.URL(), c.Ctx.Request.Method) {
-					c.E401Unauthed("Role permission denied for " + uuid)
-					return "", ""
-				}
+		if uuid, pwd := GAuthHandlerFunc(token); uuid == "" {
+			c.E401Unauthed("Unauthed header token!")
+			return "", ""
+		} else {
+			if !GRoleHandlerFunc(uuid, c.Ctx.Input.URL(), c.Ctx.Request.Method) {
+				c.E401Unauthed("Role permission denied for " + uuid)
+				return "", ""
 			}
 
 			logger.D("Authenticated account:", uuid)
