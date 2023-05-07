@@ -12,6 +12,7 @@
 package wrpc
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/xml"
@@ -201,9 +202,9 @@ func (stub *GrpcStub) ParseCerts(data string) error {
 	return nil
 }
 
-// ======================
-// Functions for clients
-// ======================
+// ------------------------------------------------------------
+// Get Singleton Instanced GRPC Clients
+// ------------------------------------------------------------
 
 // Return AccService grpc client, maybe null if not generate first
 func (stub *GrpcStub) Acc() acc.AccClient {
@@ -243,4 +244,42 @@ func (stub *GrpcStub) Pay() pay.WgpayClient {
 		return client.(pay.WgpayClient)
 	}
 	return nil
+}
+
+// ------------------------------------------------------------
+// Account Authentications Request
+// ------------------------------------------------------------
+
+// Auth header token and return account uuid and password
+func (stub *GrpcStub) AuthHeaderToken(token string) (string, string) {
+	if accGRPC := stub.Acc(); accGRPC == nil {
+		logger.E("Acc RPC instance not inited!")
+		return "", ""
+	} else {
+		param := &acc.Token{Token: token}
+		resp, err := accGRPC.ViaToken(context.Background(), param)
+		if err != nil {
+			logger.E("RPC auth token, err:", err)
+			return "", ""
+		}
+
+		return resp.Acc /* uuid */, ""
+	}
+}
+
+// Auth account role from http header
+func (stub *GrpcStub) AuthHeaderRole(uuid, url, method string) bool {
+	if accGRPC := stub.Acc(); accGRPC == nil {
+		logger.E("Acc RPC instance not inited!")
+		return false
+	} else {
+		param := &acc.Role{Uuid: uuid, Router: url, Method: method}
+		resp, err := accGRPC.ViaRole(context.Background(), param)
+		if err != nil {
+			logger.E("RPC auth", uuid, "role, err:", err)
+			return false
+		}
+
+		return resp.Pass
+	}
 }

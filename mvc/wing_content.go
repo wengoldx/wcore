@@ -451,24 +451,23 @@ func (w *WingProvider) FormatSets(updates interface{}) string {
 		}
 
 		value := values.Field(i).Interface()
-		switch value.(type) {
+		switch tv := value.(type) {
 		case bool:
-			sets = append(sets, fmt.Sprintf(name+"=%v", value))
+			sets = append(sets, fmt.Sprintf(name+"=%v", tv))
 		case invar.Bool:
-			boolvalue := value.(invar.Bool)
-			if boolvalue != invar.BNone {
-				truevalue := (boolvalue == invar.BTrue)
+			if tv != invar.BNone {
+				truevalue := (tv == invar.BTrue)
 				sets = append(sets, fmt.Sprintf(name+"=%v", truevalue))
 			}
 		case string:
-			trimvalue := strings.Trim(value.(string), " ")
+			trimvalue := strings.Trim(tv, " ")
 			if trimvalue != "" { // filter empty string fields
 				sets = append(sets, fmt.Sprintf(name+"='%s'", trimvalue))
 			}
 		case int, int8, int16, int32, int64, float32, float64,
 			invar.Status, invar.Box, invar.Role, invar.Limit, invar.Lang, invar.Kind:
-			if fmt.Sprintf("%v", value) != "0" { // filter 0 fields
-				sets = append(sets, fmt.Sprintf(name+"=%v", value))
+			if fmt.Sprintf("%v", tv) != "0" { // filter 0 fields
+				sets = append(sets, fmt.Sprintf(name+"=%v", tv))
 			}
 		}
 	}
