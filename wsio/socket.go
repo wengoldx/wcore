@@ -17,6 +17,7 @@ import (
 	"github.com/wengoldx/wing/logger"
 	"github.com/wengoldx/wing/wsio/clients"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 	"unsafe"
@@ -196,19 +197,22 @@ func (cc *wingSIO) onAuthentication(req *http.Request) error {
 	/*
 	 * `NOTICE` :
 	 *
-	 * Try get Authoration from http header for Python3 and UnrealEngine client,
-	 * but React and Wechat App not support auth header as well, so use tail token
-	 * string after request connect url.
+	 * (1). Try get Authoration from http header for Python3 and Unreal client;
+	 *      but React frontend and Wechat App not support auth header as well,
+	 *      so tail token string after request connect url for them.
+	 *
+	 * (2). Auth header 'WENGOLD' may upgraded to upper versions, so need just
+	 *      check the perfix better than total match.
 	 */
 	if authoration != "" {
-		// Use auth header function for Python3 and UnrealEngine client
+		// Use auth header function for Python3 and Unreal client
 		token = req.Header.Get("Token")
-		if authoration != "WENGOLD" || token == "" {
+		if !strings.HasPrefix(authoration, "WENGOLD") || token == "" {
 			logger.E("Invalid authoration:", authoration, "token:", token)
 			return invar.ErrAuthDenied
 		}
 	} else {
-		// Use URL + token string for React and Wechat app client
+		// Use URL + token string for React frontend and Wechat app client
 		if err := req.ParseForm(); err != nil {
 			logger.E("Parse socket.io request form, err:", err)
 			return err
