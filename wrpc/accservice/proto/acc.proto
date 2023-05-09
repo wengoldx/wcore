@@ -20,7 +20,7 @@ service Acc {
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
   rpc GetCreatetime(UUID) returns (CreateTime);
-  rpc RoleProfiles(UserRole) returns (ProfSumms);
+  rpc RoleProfiles(UserRole) returns (RoleProfs);
 
   // GRPC interface for store service
   rpc StoreRegister(RegStore) returns (UUID);

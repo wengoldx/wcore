@@ -34,7 +34,7 @@ type AccClient interface {
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
 	GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error)
-	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*ProfSumms, error)
+	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error)
 	// GRPC interface for store service
 	StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
@@ -128,8 +128,8 @@ func (c *accClient) GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*ProfSumms, error) {
-	out := new(ProfSumms)
+func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error) {
+	out := new(RoleProfs)
 	err := c.cc.Invoke(ctx, "/proto.Acc/RoleProfiles", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -243,7 +243,7 @@ type AccServer interface {
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
 	GetCreatetime(context.Context, *UUID) (*CreateTime, error)
-	RoleProfiles(context.Context, *UserRole) (*ProfSumms, error)
+	RoleProfiles(context.Context, *UserRole) (*RoleProfs, error)
 	// GRPC interface for store service
 	StoreRegister(context.Context, *RegStore) (*UUID, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
@@ -286,7 +286,7 @@ func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, erro
 func (UnimplementedAccServer) GetCreatetime(context.Context, *UUID) (*CreateTime, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCreatetime not implemented")
 }
-func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*ProfSumms, error) {
+func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RoleProfiles not implemented")
 }
 func (UnimplementedAccServer) StoreRegister(context.Context, *RegStore) (*UUID, error) {
