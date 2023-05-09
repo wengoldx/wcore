@@ -219,6 +219,20 @@ func Select(session string) *WingProvider {
 	return ConnPool[session]
 }
 
+// Bind default global db connection with current provider
+func Bind(tag interface{}) interface{} {
+	tag.(*WingProvider).Conn = WingHelper.Conn
+	return tag
+}
+
+// Set given global db connection with current provider
+func Set(tag interface{}, session string) interface{} {
+	if provider := Select(session); provider != nil {
+		tag.(*WingProvider).Conn = WingHelper.Conn
+	}
+	return tag
+}
+
 // OpenMssql connect mssql database and check ping result,
 // the connections holded by mvc.MssqlHelper object,
 // the charset maybe 'utf8' or 'utf8mb4' same as database set.
@@ -300,20 +314,6 @@ func SetLimitPageItems(limit int) {
 // Stub return content provider connection
 func (w *WingProvider) Stub() *sql.DB {
 	return w.Conn
-}
-
-// Bind default global db connection with current provider
-func (w *WingProvider) Bind() interface{} {
-	w.Conn = WingHelper.Conn
-	return w
-}
-
-// Set given global db connection with current provider
-func (w *WingProvider) Set(session string) interface{} {
-	if provider := Select(session); provider != nil {
-		w.Conn = provider.Conn
-	}
-	return w
 }
 
 // Query call sql.Query()
