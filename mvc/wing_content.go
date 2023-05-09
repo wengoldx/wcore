@@ -302,6 +302,20 @@ func (w *WingProvider) Stub() *sql.DB {
 	return w.Conn
 }
 
+// Bind default global db connection with current provider
+func (w *WingProvider) Bind() *WingProvider {
+	w.Conn = WingHelper.Conn
+	return w
+}
+
+// Set given global db connection with current provider
+func (w *WingProvider) Set(session string) *WingProvider {
+	if provider := Select(session); provider != nil {
+		w.Conn = provider.Conn
+	}
+	return w
+}
+
 // Query call sql.Query()
 func (w *WingProvider) Query(query string, args ...interface{}) (*sql.Rows, error) {
 	return w.Conn.Query(query, args...)
