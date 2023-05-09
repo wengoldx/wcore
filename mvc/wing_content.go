@@ -303,13 +303,13 @@ func (w *WingProvider) Stub() *sql.DB {
 }
 
 // Bind default global db connection with current provider
-func (w *WingProvider) Bind() *WingProvider {
+func (w *WingProvider) Bind() interface{} {
 	w.Conn = WingHelper.Conn
 	return w
 }
 
 // Set given global db connection with current provider
-func (w *WingProvider) Set(session string) *WingProvider {
+func (w *WingProvider) Set(session string) interface{} {
 	if provider := Select(session); provider != nil {
 		w.Conn = provider.Conn
 	}
