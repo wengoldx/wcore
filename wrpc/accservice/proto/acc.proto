@@ -20,6 +20,7 @@ service Acc {
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
   rpc GetCreatetime(UUID) returns (CreateTime);
+  rpc RoleProfiles(UserRole) returns (ProfSumms);
 
   // GRPC interface for store service
   rpc StoreRegister(RegStore) returns (UUID);
@@ -27,6 +28,7 @@ service Acc {
   rpc StoreProfiles(UIDS) returns (ProfStores);
   rpc StoreRename(RnStore) returns (AEmpty);
   rpc StoreBindWx(WxBind) returns (AEmpty);
+  rpc StoreAccAdd(AddStore) returns (AEmpty);
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
@@ -143,4 +145,26 @@ message Role{
 
 message Result {
   bool pass = 1;        // if account enable access router, ture is allow, false denied
+}
+
+message UserRole {
+  int64 role = 1;      // traget role
+}
+
+message AddStore {
+  string email = 1;     // store account email address, set when account generate
+  string nickname = 2;  // store name frist perfix string
+  int64 role = 3;      // store role, such as store-comp and store-machine
+}
+
+message RoleProf{
+  string uuid = 1;      // uuid for the profile
+  string email = 2;     // account email
+  string phone = 3;     // account phone
+  string nickname = 4;  // account nickname
+  string heardurl = 5;  // account heardurl, the value set from wechat avatar  
+}
+
+message RoleProfs {
+  repeated RoleProf profiles = 1;
 }
