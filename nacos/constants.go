@@ -95,6 +95,7 @@ type OTAInfo struct {
 	DownloadUrl  string `json:"DownloadUrl"  description:"Bin file download url"`
 	UpdateDate   string `json:"UpdateDate"   description:"Bin file update date"`
 	HashSums     string `json:"HashSums"     description:"Bin file hash sums"`
+	BinSizes     int    `json:"BinSizes"     description:"Bin file sizes in KB"`
 }
 
 // Nacos config for DingTalk notify sender
