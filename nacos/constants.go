@@ -90,12 +90,12 @@ type AccConfs struct {
 
 // Nacos config for OTA upgrade by using DID_OTA_BUILDS data id
 type OTAInfo struct {
-	BuildVersion string `json:"BuildVersion" description:"Build version string"`
-	BuildNumber  int    `json:"BuildNumber"  description:"Build number, pase form BuildVersion string as version = major*10000 + middle*100 + minor"`
-	DownloadUrl  string `json:"DownloadUrl"  description:"Bin file download url"`
-	UpdateDate   string `json:"UpdateDate"   description:"Bin file update date"`
-	HashSums     string `json:"HashSums"     description:"Bin file hash sums"`
-	BinSizes     int    `json:"BinSizes"     description:"Bin file sizes in KB"`
+	BuildVersion string  `json:"BuildVersion" description:"Build version string"`
+	BuildNumber  int     `json:"BuildNumber"  description:"Build number, pase form BuildVersion string as version = major*10000 + middle*100 + minor"`
+	DownloadUrl  string  `json:"DownloadUrl"  description:"Bin file download url"`
+	UpdateDate   string  `json:"UpdateDate"   description:"Bin file update date"`
+	HashSums     string  `json:"HashSums"     description:"Bin file hash sums"`
+	BinSizes     float64 `json:"BinSizes"     description:"Bin file sizes in MB"`
 }
 
 // Nacos config for DingTalk notify sender
