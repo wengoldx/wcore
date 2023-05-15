@@ -16,7 +16,6 @@ import (
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 	"io/ioutil"
-	"reflect"
 	"strings"
 )
 
@@ -27,22 +26,10 @@ import (
 //	DO NOT CHANGE THEME IF YOU KNOWE HOW TO CHANGE IT!
 const (
 	swaggerFile  = "./swagger/swagger.json"
-	sfPathName   = "paths"
-	sfMethodGet  = "get"
-	sfMethodPost = "post"
 	sfEnDescName = "description"
 	sfGroupTags  = "tags"
 	sfGroupName  = "name"
 )
-
-// A router informations
-type Router struct {
-	Router string `json:"router"` // restful router full path start /
-	Method string `json:"method"` // restful router http method, such as GET, POST...
-	Group  string `json:"group"`  // beego controller keyworld
-	EnDesc string `json:"endesc"` // english description of router from swagger
-	CnDesc string `json:"cndesc"` // chinese description of router manual update by user
-}
 
 // A group informations
 type Group struct {
@@ -53,16 +40,14 @@ type Group struct {
 
 // All routers of one server
 type Routers struct {
-	CnName  string    `json:"cnname"`  // backend server chinese name
-	Groups  []*Group  `json:"groups"`  // groups as swagger controllers
-	Routers []*Router `json:"routers"` // routers parsed from swagger.json file
+	CnName string   `json:"cnname"` // backend server chinese name
+	Groups []*Group `json:"groups"` // groups as swagger controllers
 }
 
 type SvrDesc struct {
-	Server  string            `json:"server"`  // backend server english name
-	CnName  string            `json:"cnname"`  // backend server chinese name
-	Groups  map[string]string `json:"groups"`  // groups  chinese description
-	Routers map[string]string `json:"routers"` // routers chinese description
+	Server string            `json:"server"` // backend server english name
+	CnName string            `json:"cnname"` // backend server chinese name
+	Groups map[string]string `json:"groups"` // groups  chinese description
 }
 
 // Parse total routers and update description on chinese for local server routers,
@@ -126,13 +111,6 @@ func UpdateChineses(data string, descs []*SvrDesc) (string, error) {
 					}
 				}
 			}
-
-			// update routers chinese descriptions
-			for _, router := range routers.Routers {
-				if cnname, ok := svr.Routers[router.Router]; ok {
-					router.CnDesc, changed = cnname, true
-				}
-			}
 		}
 	}
 
@@ -167,43 +145,6 @@ func loadSwaggerRouters() (*Routers, error) {
 	}
 	logger.I("Loaded swagger json, start parse routers")
 	out := &Routers{}
-
-	// parse routers by path keyword
-	if ps, ok := routers[sfPathName]; ok && ps != nil {
-		paths := ps.(map[string]interface{})
-
-		for path, pathvals := range paths {
-			router := &Router{Router: path} // parse router path
-
-			// parse http method, HERE only support GET or POST methods
-			var mvs interface{}
-			pvs := pathvals.(map[string]interface{})
-			if pmg, ok := pvs[sfMethodGet]; ok && pmg != nil {
-				router.Method, mvs = "GET", pmg
-			} else if pmp, ok := pvs[sfMethodPost]; ok && pmp != nil {
-				router.Method, mvs = "POST", pmp
-			} else {
-				logger.W("Invalid method of path:", path)
-				continue
-			}
-
-			// parse beego controller group name
-			method := mvs.(map[string]interface{})
-			if gps, ok := method[sfGroupTags]; ok && gps != nil {
-				groups := reflect.ValueOf(gps)
-				router.Group = groups.Index(0).Interface().(string)
-			}
-
-			// parse router path english description
-			if desc, ok := method[sfEnDescName]; ok && desc != nil {
-				router.EnDesc = desc.(string)
-			}
-
-			// append the router into routers array
-			// logger.D("> Parsed ["+router.Method+"]\tpath:", path, "\tdesc:", router.EnDesc)
-			out.Routers = append(out.Routers, router)
-		}
-	}
 
 	// parse groups by tags keyword
 	if gps, ok := routers[sfGroupTags]; ok && gps != nil {
@@ -262,29 +203,6 @@ func parseNacosRouters(data string) (map[string]*Routers, *Routers) {
 func fetchChineseFields(src *Routers, dest *Routers) {
 	dest.CnName = Condition(src.CnName != "", src.CnName, dest.CnName).(string)
 
-	/* -------------------------------- */
-	/* cache router chinese description */
-	/* -------------------------------- */
-	routers := make(map[string]string)
-	if len(dest.Routers) > 0 {
-		for _, router := range src.Routers {
-			if router.CnDesc != "" {
-				// logger.D("- Cached router ["+router.Router+"]\tchinese desc:", router.CnDesc)
-				routers[router.Router] = router.CnDesc
-			}
-		}
-	}
-
-	// set chinese description to dest routers
-	if len(routers) > 0 {
-		for _, router := range dest.Routers {
-			router.CnDesc = routers[router.Router]
-		}
-	}
-
-	/* -------------------------------- */
-	/* cache groups chinese description */
-	/* -------------------------------- */
 	groups := make(map[string]string)
 	if len(dest.Groups) > 0 {
 		for _, group := range src.Groups {
