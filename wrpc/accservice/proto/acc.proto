@@ -15,6 +15,7 @@ service Acc {
 
   // Account login by uuid/phone/email and encryptd password 
   rpc AccLogin(AccPwd) returns (Token);
+  rpc AccSearchInRole(RoleSearch) returns (RoleProfs);
 
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
@@ -28,7 +29,8 @@ service Acc {
   rpc StoreProfiles(UIDS) returns (ProfStores);
   rpc StoreRename(RnStore) returns (AEmpty);
   rpc StoreBindWx(WxBind) returns (AEmpty);
-  rpc StoreAccAdd(AddStore) returns (AEmpty);
+  rpc StoreAccAdd(AddStore) returns (UUID);
+  rpc StoreAccDel(UIDS) returns (AEmpty);
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
@@ -154,7 +156,7 @@ message UserRole {
 message AddStore {
   string email = 1;     // store account email address, set when account generate
   string nickname = 2;  // store name frist perfix string
-  int64 role = 3;      // store role, such as store-comp and store-machine
+  int64  role = 3;      // store role, such as store-comp and store-machine
 }
 
 message RoleProf{
@@ -167,4 +169,10 @@ message RoleProf{
 
 message RoleProfs {
   repeated RoleProf profiles = 1;
+}
+
+message RoleSearch{
+  int64  category = 1;
+  string keyword = 2;
+  int64  role = 3;
 }
