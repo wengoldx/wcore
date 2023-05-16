@@ -4,12 +4,12 @@ package proto;
 option go_package = "./proto";
 
 service Webss {
-    rpc DeleteFiles (DelFiles) returns (WEmpty);
-    rpc DeleteConfig (DeleteLifeConfig) returns (WEmpty);
-    rpc AddConfig (LifeConfig) returns (ID);
+    rpc DeleteFiles (Files) returns (WEmpty);
+    rpc SetLifeCycle (LifeCycle) returns (ID);
+    rpc DelLifeCycle (LifeCycles) returns (WEmpty);
     rpc AddTag (Tag) returns (WEmpty);
-    rpc GetPreSigUrl (PerSigUrlReq) returns (PreSigUrl);
-    rpc GetMultiUrls (PerSigUrlsReq) returns (PreSigUrls);
+    rpc GetUrl (Sign) returns (SignUrl);
+    rpc GetUrls (Signs) returns (SignUrls);
 }
 
 message WEmpty{}       // diferent other server when using together
@@ -18,21 +18,21 @@ message ID {
     string id =1;
 }
 
-message DelFiles {
+message Files {
     string bucket = 1;
     repeated string files = 2;
 }
 
-message DeleteLifeConfig {
-    repeated string lifecycleid = 1;
-    string bucket = 2;
-}
-
-message LifeConfig {
+message LifeCycle {
     string id = 1;
     string bucket = 2;
     string key = 3;
     string value = 4;
+}
+
+message LifeCycles {
+    repeated string lifecycleid = 1;
+    string bucket = 2;
 }
 
 message Tag {
@@ -42,23 +42,23 @@ message Tag {
     string value = 4;
 }
 
-message PerSigUrlReq {
+message Sign {
     string res = 1;
     string add = 2;
     string suffix = 3;
 }
 
-message PerSigUrlsReq {
+message Signs {
     string res = 1;
     string add = 2;
     repeated string suffix = 3;
 }
 
-message PreSigUrls {
-    repeated PreSigUrl PreSigUrls = 1;
-}
-
-message PreSigUrl {
+message SignUrl {
     string url = 1;
     string path = 2;
+}
+
+message SignUrls {
+    repeated SignUrl PreSigUrls = 1;
 }

@@ -22,12 +22,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebssClient interface {
-	DeleteFiles(ctx context.Context, in *DelFiles, opts ...grpc.CallOption) (*WEmpty, error)
-	DeleteConfig(ctx context.Context, in *DeleteLifeConfig, opts ...grpc.CallOption) (*WEmpty, error)
-	AddConfig(ctx context.Context, in *LifeConfig, opts ...grpc.CallOption) (*ID, error)
+	DeleteFiles(ctx context.Context, in *Files, opts ...grpc.CallOption) (*WEmpty, error)
+	SetLifeCycle(ctx context.Context, in *LifeCycle, opts ...grpc.CallOption) (*ID, error)
+	DelLifeCycle(ctx context.Context, in *LifeCycles, opts ...grpc.CallOption) (*WEmpty, error)
 	AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
-	GetPreSigUrl(ctx context.Context, in *PerSigUrlReq, opts ...grpc.CallOption) (*PreSigUrl, error)
-	GetMultiUrls(ctx context.Context, in *PerSigUrlsReq, opts ...grpc.CallOption) (*PreSigUrls, error)
+	GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
+	GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error)
 }
 
 type webssClient struct {
@@ -38,7 +38,7 @@ func NewWebssClient(cc grpc.ClientConnInterface) WebssClient {
 	return &webssClient{cc}
 }
 
-func (c *webssClient) DeleteFiles(ctx context.Context, in *DelFiles, opts ...grpc.CallOption) (*WEmpty, error) {
+func (c *webssClient) DeleteFiles(ctx context.Context, in *Files, opts ...grpc.CallOption) (*WEmpty, error) {
 	out := new(WEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Webss/DeleteFiles", in, out, opts...)
 	if err != nil {
@@ -47,18 +47,18 @@ func (c *webssClient) DeleteFiles(ctx context.Context, in *DelFiles, opts ...grp
 	return out, nil
 }
 
-func (c *webssClient) DeleteConfig(ctx context.Context, in *DeleteLifeConfig, opts ...grpc.CallOption) (*WEmpty, error) {
-	out := new(WEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Webss/DeleteConfig", in, out, opts...)
+func (c *webssClient) SetLifeCycle(ctx context.Context, in *LifeCycle, opts ...grpc.CallOption) (*ID, error) {
+	out := new(ID)
+	err := c.cc.Invoke(ctx, "/proto.Webss/SetLifeCycle", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) AddConfig(ctx context.Context, in *LifeConfig, opts ...grpc.CallOption) (*ID, error) {
-	out := new(ID)
-	err := c.cc.Invoke(ctx, "/proto.Webss/AddConfig", in, out, opts...)
+func (c *webssClient) DelLifeCycle(ctx context.Context, in *LifeCycles, opts ...grpc.CallOption) (*WEmpty, error) {
+	out := new(WEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Webss/DelLifeCycle", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,18 +74,18 @@ func (c *webssClient) AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOpti
 	return out, nil
 }
 
-func (c *webssClient) GetPreSigUrl(ctx context.Context, in *PerSigUrlReq, opts ...grpc.CallOption) (*PreSigUrl, error) {
-	out := new(PreSigUrl)
-	err := c.cc.Invoke(ctx, "/proto.Webss/GetPreSigUrl", in, out, opts...)
+func (c *webssClient) GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error) {
+	out := new(SignUrl)
+	err := c.cc.Invoke(ctx, "/proto.Webss/GetUrl", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) GetMultiUrls(ctx context.Context, in *PerSigUrlsReq, opts ...grpc.CallOption) (*PreSigUrls, error) {
-	out := new(PreSigUrls)
-	err := c.cc.Invoke(ctx, "/proto.Webss/GetMultiUrls", in, out, opts...)
+func (c *webssClient) GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error) {
+	out := new(SignUrls)
+	err := c.cc.Invoke(ctx, "/proto.Webss/GetUrls", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,12 +96,12 @@ func (c *webssClient) GetMultiUrls(ctx context.Context, in *PerSigUrlsReq, opts 
 // All implementations must embed UnimplementedWebssServer
 // for forward compatibility
 type WebssServer interface {
-	DeleteFiles(context.Context, *DelFiles) (*WEmpty, error)
-	DeleteConfig(context.Context, *DeleteLifeConfig) (*WEmpty, error)
-	AddConfig(context.Context, *LifeConfig) (*ID, error)
+	DeleteFiles(context.Context, *Files) (*WEmpty, error)
+	SetLifeCycle(context.Context, *LifeCycle) (*ID, error)
+	DelLifeCycle(context.Context, *LifeCycles) (*WEmpty, error)
 	AddTag(context.Context, *Tag) (*WEmpty, error)
-	GetPreSigUrl(context.Context, *PerSigUrlReq) (*PreSigUrl, error)
-	GetMultiUrls(context.Context, *PerSigUrlsReq) (*PreSigUrls, error)
+	GetUrl(context.Context, *Sign) (*SignUrl, error)
+	GetUrls(context.Context, *Signs) (*SignUrls, error)
 	mustEmbedUnimplementedWebssServer()
 }
 
@@ -109,23 +109,23 @@ type WebssServer interface {
 type UnimplementedWebssServer struct {
 }
 
-func (UnimplementedWebssServer) DeleteFiles(context.Context, *DelFiles) (*WEmpty, error) {
+func (UnimplementedWebssServer) DeleteFiles(context.Context, *Files) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFiles not implemented")
 }
-func (UnimplementedWebssServer) DeleteConfig(context.Context, *DeleteLifeConfig) (*WEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteConfig not implemented")
+func (UnimplementedWebssServer) SetLifeCycle(context.Context, *LifeCycle) (*ID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetLifeCycle not implemented")
 }
-func (UnimplementedWebssServer) AddConfig(context.Context, *LifeConfig) (*ID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddConfig not implemented")
+func (UnimplementedWebssServer) DelLifeCycle(context.Context, *LifeCycles) (*WEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelLifeCycle not implemented")
 }
 func (UnimplementedWebssServer) AddTag(context.Context, *Tag) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddTag not implemented")
 }
-func (UnimplementedWebssServer) GetPreSigUrl(context.Context, *PerSigUrlReq) (*PreSigUrl, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPreSigUrl not implemented")
+func (UnimplementedWebssServer) GetUrl(context.Context, *Sign) (*SignUrl, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUrl not implemented")
 }
-func (UnimplementedWebssServer) GetMultiUrls(context.Context, *PerSigUrlsReq) (*PreSigUrls, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMultiUrls not implemented")
+func (UnimplementedWebssServer) GetUrls(context.Context, *Signs) (*SignUrls, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUrls not implemented")
 }
 func (UnimplementedWebssServer) mustEmbedUnimplementedWebssServer() {}
 
@@ -141,7 +141,7 @@ func RegisterWebssServer(s grpc.ServiceRegistrar, srv WebssServer) {
 }
 
 func _Webss_DeleteFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DelFiles)
+	in := new(Files)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -153,43 +153,43 @@ func _Webss_DeleteFiles_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/proto.Webss/DeleteFiles",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).DeleteFiles(ctx, req.(*DelFiles))
+		return srv.(WebssServer).DeleteFiles(ctx, req.(*Files))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_DeleteConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteLifeConfig)
+func _Webss_SetLifeCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LifeCycle)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).DeleteConfig(ctx, in)
+		return srv.(WebssServer).SetLifeCycle(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/DeleteConfig",
+		FullMethod: "/proto.Webss/SetLifeCycle",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).DeleteConfig(ctx, req.(*DeleteLifeConfig))
+		return srv.(WebssServer).SetLifeCycle(ctx, req.(*LifeCycle))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_AddConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LifeConfig)
+func _Webss_DelLifeCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LifeCycles)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).AddConfig(ctx, in)
+		return srv.(WebssServer).DelLifeCycle(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/AddConfig",
+		FullMethod: "/proto.Webss/DelLifeCycle",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).AddConfig(ctx, req.(*LifeConfig))
+		return srv.(WebssServer).DelLifeCycle(ctx, req.(*LifeCycles))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -212,38 +212,38 @@ func _Webss_AddTag_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_GetPreSigUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PerSigUrlReq)
+func _Webss_GetUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Sign)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).GetPreSigUrl(ctx, in)
+		return srv.(WebssServer).GetUrl(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/GetPreSigUrl",
+		FullMethod: "/proto.Webss/GetUrl",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).GetPreSigUrl(ctx, req.(*PerSigUrlReq))
+		return srv.(WebssServer).GetUrl(ctx, req.(*Sign))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_GetMultiUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PerSigUrlsReq)
+func _Webss_GetUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Signs)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).GetMultiUrls(ctx, in)
+		return srv.(WebssServer).GetUrls(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/GetMultiUrls",
+		FullMethod: "/proto.Webss/GetUrls",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).GetMultiUrls(ctx, req.(*PerSigUrlsReq))
+		return srv.(WebssServer).GetUrls(ctx, req.(*Signs))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -260,24 +260,24 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Webss_DeleteFiles_Handler,
 		},
 		{
-			MethodName: "DeleteConfig",
-			Handler:    _Webss_DeleteConfig_Handler,
+			MethodName: "SetLifeCycle",
+			Handler:    _Webss_SetLifeCycle_Handler,
 		},
 		{
-			MethodName: "AddConfig",
-			Handler:    _Webss_AddConfig_Handler,
+			MethodName: "DelLifeCycle",
+			Handler:    _Webss_DelLifeCycle_Handler,
 		},
 		{
 			MethodName: "AddTag",
 			Handler:    _Webss_AddTag_Handler,
 		},
 		{
-			MethodName: "GetPreSigUrl",
-			Handler:    _Webss_GetPreSigUrl_Handler,
+			MethodName: "GetUrl",
+			Handler:    _Webss_GetUrl_Handler,
 		},
 		{
-			MethodName: "GetMultiUrls",
-			Handler:    _Webss_GetMultiUrls_Handler,
+			MethodName: "GetUrls",
+			Handler:    _Webss_GetUrls_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
