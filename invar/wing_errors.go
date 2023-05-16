@@ -12,6 +12,7 @@ package invar
 
 import (
 	"errors"
+	"strings"
 )
 
 // WingErr const error with code
@@ -88,6 +89,7 @@ var (
 	ErrInvalidOptions      = errors.New("Invalid options")
 	ErrUnexistKey          = errors.New("Unexist key")
 	ErrInvaildExecTime     = errors.New("Invaild execute time")
+	ErrLifecycleUnexist    = errors.New("The lifecycle configuration does not exist")
 )
 
 var (
@@ -158,4 +160,30 @@ var (
 	WErrInvalidOptions      = &WingErr{0x1041, ErrInvalidOptions}
 	WErrUnexistKey          = &WingErr{0x1042, ErrUnexistKey}
 	WErrInvaildExecTime     = &WingErr{0x1043, ErrInvaildExecTime}
+	WErrLifecycleUnexist    = &WingErr{0x1044, ErrLifecycleUnexist}
 )
+
+// Equal tow error if message same on char case
+func EqualError(a, b error) bool {
+	return a.Error() == b.Error()
+}
+
+// Equal tow error if message same ignoral char case
+func EqualErrorFold(a, b error) bool {
+	return strings.EqualFold(a.Error(), b.Error())
+}
+
+// Check if error message contain given string
+func ErrorContain(s, sub error) bool {
+	return strings.Contains(s.Error(), sub.Error())
+}
+
+// Check if error message start given perfix
+func ErrorStart(s, sub error) bool {
+	return strings.HasPrefix(s.Error(), sub.Error())
+}
+
+// Check if error message start given perfix
+func ErrorEnd(s, sub error) bool {
+	return strings.HasSuffix(s.Error(), sub.Error())
+}
