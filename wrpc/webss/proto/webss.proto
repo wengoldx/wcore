@@ -31,13 +31,13 @@ message Lifecycle {
 }
 
 message Lifecycles {
-    repeated string lifecycleid = 1;
+    repeated string ids = 1;
     string bucket = 2;
 }
 
 message Tag {
     string bucket = 1;
-    repeated string path = 2;
+    repeated string paths = 2;
     string key = 3;
     string value = 4;
 }
@@ -51,7 +51,7 @@ message Sign {
 message Signs {
     string res = 1;
     string add = 2;
-    repeated string suffix = 3;
+    repeated string suffixes = 3;
 }
 
 message SignUrl {
@@ -60,5 +60,5 @@ message SignUrl {
 }
 
 message SignUrls {
-    repeated SignUrl PreSigUrls = 1;
+    repeated SignUrl urls = 1;
 }
