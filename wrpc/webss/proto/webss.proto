@@ -5,8 +5,8 @@ option go_package = "./proto";
 
 service Webss {
     rpc DeleteFiles (Files) returns (WEmpty);
-    rpc SetLifeCycle (LifeCycle) returns (ID);
-    rpc DelLifeCycle (LifeCycles) returns (WEmpty);
+    rpc SetLifecycle (Lifecycle) returns (ID);
+    rpc DelLifecycle (Lifecycles) returns (WEmpty);
     rpc AddTag (Tag) returns (WEmpty);
     rpc GetUrl (Sign) returns (SignUrl);
     rpc GetUrls (Signs) returns (SignUrls);
@@ -23,14 +23,14 @@ message Files {
     repeated string files = 2;
 }
 
-message LifeCycle {
+message Lifecycle {
     string id = 1;
     string bucket = 2;
     string key = 3;
     string value = 4;
 }
 
-message LifeCycles {
+message Lifecycles {
     repeated string lifecycleid = 1;
     string bucket = 2;
 }

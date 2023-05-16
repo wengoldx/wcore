@@ -23,8 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebssClient interface {
 	DeleteFiles(ctx context.Context, in *Files, opts ...grpc.CallOption) (*WEmpty, error)
-	SetLifeCycle(ctx context.Context, in *LifeCycle, opts ...grpc.CallOption) (*ID, error)
-	DelLifeCycle(ctx context.Context, in *LifeCycles, opts ...grpc.CallOption) (*WEmpty, error)
+	SetLifecycle(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error)
+	DelLifecycle(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error)
 	AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
 	GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
 	GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error)
@@ -47,18 +47,18 @@ func (c *webssClient) DeleteFiles(ctx context.Context, in *Files, opts ...grpc.C
 	return out, nil
 }
 
-func (c *webssClient) SetLifeCycle(ctx context.Context, in *LifeCycle, opts ...grpc.CallOption) (*ID, error) {
+func (c *webssClient) SetLifecycle(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error) {
 	out := new(ID)
-	err := c.cc.Invoke(ctx, "/proto.Webss/SetLifeCycle", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/SetLifecycle", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) DelLifeCycle(ctx context.Context, in *LifeCycles, opts ...grpc.CallOption) (*WEmpty, error) {
+func (c *webssClient) DelLifecycle(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error) {
 	out := new(WEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Webss/DelLifeCycle", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/DelLifecycle", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +97,8 @@ func (c *webssClient) GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallO
 // for forward compatibility
 type WebssServer interface {
 	DeleteFiles(context.Context, *Files) (*WEmpty, error)
-	SetLifeCycle(context.Context, *LifeCycle) (*ID, error)
-	DelLifeCycle(context.Context, *LifeCycles) (*WEmpty, error)
+	SetLifecycle(context.Context, *Lifecycle) (*ID, error)
+	DelLifecycle(context.Context, *Lifecycles) (*WEmpty, error)
 	AddTag(context.Context, *Tag) (*WEmpty, error)
 	GetUrl(context.Context, *Sign) (*SignUrl, error)
 	GetUrls(context.Context, *Signs) (*SignUrls, error)
@@ -112,11 +112,11 @@ type UnimplementedWebssServer struct {
 func (UnimplementedWebssServer) DeleteFiles(context.Context, *Files) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFiles not implemented")
 }
-func (UnimplementedWebssServer) SetLifeCycle(context.Context, *LifeCycle) (*ID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetLifeCycle not implemented")
+func (UnimplementedWebssServer) SetLifecycle(context.Context, *Lifecycle) (*ID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetLifecycle not implemented")
 }
-func (UnimplementedWebssServer) DelLifeCycle(context.Context, *LifeCycles) (*WEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelLifeCycle not implemented")
+func (UnimplementedWebssServer) DelLifecycle(context.Context, *Lifecycles) (*WEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelLifecycle not implemented")
 }
 func (UnimplementedWebssServer) AddTag(context.Context, *Tag) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddTag not implemented")
@@ -158,38 +158,38 @@ func _Webss_DeleteFiles_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_SetLifeCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LifeCycle)
+func _Webss_SetLifecycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Lifecycle)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).SetLifeCycle(ctx, in)
+		return srv.(WebssServer).SetLifecycle(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/SetLifeCycle",
+		FullMethod: "/proto.Webss/SetLifecycle",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).SetLifeCycle(ctx, req.(*LifeCycle))
+		return srv.(WebssServer).SetLifecycle(ctx, req.(*Lifecycle))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_DelLifeCycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LifeCycles)
+func _Webss_DelLifecycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Lifecycles)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).DelLifeCycle(ctx, in)
+		return srv.(WebssServer).DelLifecycle(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/DelLifeCycle",
+		FullMethod: "/proto.Webss/DelLifecycle",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).DelLifeCycle(ctx, req.(*LifeCycles))
+		return srv.(WebssServer).DelLifecycle(ctx, req.(*Lifecycles))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -260,12 +260,12 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Webss_DeleteFiles_Handler,
 		},
 		{
-			MethodName: "SetLifeCycle",
-			Handler:    _Webss_SetLifeCycle_Handler,
+			MethodName: "SetLifecycle",
+			Handler:    _Webss_SetLifecycle_Handler,
 		},
 		{
-			MethodName: "DelLifeCycle",
-			Handler:    _Webss_DelLifeCycle_Handler,
+			MethodName: "DelLifecycle",
+			Handler:    _Webss_DelLifecycle_Handler,
 		},
 		{
 			MethodName: "AddTag",
