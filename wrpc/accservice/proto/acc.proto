@@ -150,13 +150,13 @@ message Result {
 }
 
 message UserRole {
-  int64 role = 1;      // traget role
+  string role = 1;      // traget role
 }
 
 message AddStore {
   string email = 1;     // store account email address, set when account generate
   string nickname = 2;  // store name frist perfix string
-  int64  role = 3;      // store role, such as store-comp and store-machine
+  string role = 3;      // store role, such as store-comp and store-machine
 }
 
 message RoleProf{
@@ -174,5 +174,5 @@ message RoleProfs {
 message RoleSearch{
   int64  category = 1;
   string keyword = 2;
-  int64  role = 3;
+  string role = 3;
 }
