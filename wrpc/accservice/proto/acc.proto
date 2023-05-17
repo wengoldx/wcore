@@ -10,9 +10,6 @@ service Acc {
   // Account role access permission check
   rpc ViaRole(Role) returns (Result);
 
-  // @Deprecated Administrator check
-  rpc ViaAdmin(Admin) returns (AEmpty);
-
   // Account login by uuid/phone/email and encryptd password 
   rpc AccLogin(AccPwd) returns (Token);
   rpc AccSearchInRole(RoleSearch) returns (RoleProfs);
@@ -131,12 +128,6 @@ message Secures {
   string unionid = 2;   // wechat unionid bind with account
   string email = 3;     // account email address
   string pwd = 4;       // account login password enripted by RSA + Base64
-}
-
-message Admin {
-  string uuid = 1;      // account unique id
-  string md5pwd = 2;    // admin account password encode as MD5
-  string unionid = 3;   // wechat unionid bind with account
 }
 
 message Role{
