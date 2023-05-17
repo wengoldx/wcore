@@ -215,3 +215,15 @@ const (
 	// StatusFullConnectionPool [4],status instance id exist
 	StatusInstanceIdExist
 )
+
+// RBAC role string
+const (
+	WRoleSuper     = "super-admin"   // Super admin, auto add
+	WRoleAdmin     = "admin"         // Normal admin, same time as super admin permissions
+	WRoleUser      = "user"          // Default normal user
+	WRoleMComp     = "mall-comp"     // Mall composer account
+	WRoleMDesigner = "mall-designer" // Mall designer account
+	WRoleSComp     = "store-comp"    // Store composer account
+	WRoleSMachine  = "store-machine" // Store machine account
+	WRoleQKPartner = "qk-partner"    // QKS partner account
+)
