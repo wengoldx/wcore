@@ -28,6 +28,7 @@ service Acc {
   rpc StoreBindWx(WxBind) returns (AEmpty);
   rpc StoreAccAdd(AddStore) returns (UUID);
   rpc StoreAccDel(UIDS) returns (AEmpty);
+  rpc StoreRePwd(RePwd) returns (AEmpty);
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
@@ -117,6 +118,13 @@ message RnStore {
   string address = 5;   // store address string
 }
 
+message RePwd {
+  string uuid = 1;      // account unique id
+  string nickname = 2;  // account nickname, maybe the company name
+  string pwd = 3;       // account password
+  string role = 4;      // account for role, store-comp or store-machine
+}
+
 message WxBind {
   string uuid = 1;      // account unique id
   string unionid = 2;   // wechat unionid bind with store account
@@ -163,7 +171,7 @@ message RoleProfs {
 }
 
 message RoleSearch{
-  int64  category = 1;
-  string keyword = 2;
-  string role = 3;
+  int64  category = 1;  // category for search
+  string keyword = 2;   // search keyword
+  string role = 3;      // target role
 }
