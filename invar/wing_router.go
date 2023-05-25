@@ -33,8 +33,9 @@ const (
 	WRGroupPartner  = "part"
 )
 
-// Return role router key by given role
-func RoleRouterKey(role string) string {
+// Return role router key by given role, it maybe just return
+// role string when not found from defined roles
+func GetRouterKey(role string) string {
 	switch role {
 	case WRoleSuper, WRoleAdmin:
 		return WRGroupAdmin
@@ -49,5 +50,5 @@ func RoleRouterKey(role string) string {
 	case WRoleQKPartner:
 		return WRGroupPartner
 	}
-	return ""
+	return role
 }
