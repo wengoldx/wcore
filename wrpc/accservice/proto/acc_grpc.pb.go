@@ -29,6 +29,7 @@ type AccClient interface {
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
 	AccSearchInRole(ctx context.Context, in *RoleSearch, opts ...grpc.CallOption) (*RoleProfs, error)
+	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
@@ -87,6 +88,15 @@ func (c *accClient) AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallO
 func (c *accClient) AccSearchInRole(ctx context.Context, in *RoleSearch, opts ...grpc.CallOption) (*RoleProfs, error) {
 	out := new(RoleProfs)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AccSearchInRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/AccActivate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -257,6 +267,7 @@ type AccServer interface {
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(context.Context, *AccPwd) (*Token, error)
 	AccSearchInRole(context.Context, *RoleSearch) (*RoleProfs, error)
+	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
@@ -293,6 +304,9 @@ func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error)
 }
 func (UnimplementedAccServer) AccSearchInRole(context.Context, *RoleSearch) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccSearchInRole not implemented")
+}
+func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
@@ -426,6 +440,24 @@ func _Acc_AccSearchInRole_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).AccSearchInRole(ctx, req.(*RoleSearch))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_AccActivate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).AccActivate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/AccActivate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).AccActivate(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -758,6 +790,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AccSearchInRole",
 			Handler:    _Acc_AccSearchInRole_Handler,
+		},
+		{
+			MethodName: "AccActivate",
+			Handler:    _Acc_AccActivate_Handler,
 		},
 		{
 			MethodName: "GetProfile",

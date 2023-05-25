@@ -13,6 +13,7 @@ service Acc {
   // Account login by uuid/phone/email and encryptd password 
   rpc AccLogin(AccPwd) returns (Token);
   rpc AccSearchInRole(RoleSearch) returns (RoleProfs);
+  rpc AccActivate (UUID) returns (AEmpty);
 
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
@@ -104,6 +105,7 @@ message ProfStore {
   string city = 7;      // store name the last string
   string address = 8;   // store address string
   string uuid = 9;      // uuid for the profile
+  bool   activate = 10; // is account activate
 }
 
 message ProfStores { 
