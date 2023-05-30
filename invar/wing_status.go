@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	StatusOK             = http.StatusOK
+	StatusOK             = http.StatusOK       // success status
+	StatusExError        = http.StatusAccepted // response extend error datas by 202 code
 	E400ParseParams      = http.StatusBadRequest
 	E401Unauthorized     = http.StatusUnauthorized
 	E403PermissionDenied = http.StatusForbidden
@@ -32,6 +33,7 @@ const (
 
 var statusText = map[int]string{
 	StatusOK:             "OK",
+	StatusExError:        "Response Extend Error",
 	E400ParseParams:      "Parse Input Params Error",
 	E401Unauthorized:     "Unauthorized",
 	E403PermissionDenied: "Permission Denied",

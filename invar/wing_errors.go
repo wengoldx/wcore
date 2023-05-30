@@ -21,6 +21,12 @@ type WingErr struct {
 	Err  error
 }
 
+// WingErr const error with code
+type WExErr struct {
+	Code    int    `json:"code"    description:"Extend error code"`
+	Message string `json:"message" description:"Extend error message"`
+}
+
 var (
 	ErrNotFound            = errors.New("Not fount")
 	ErrInvalidNum          = errors.New("Invalid number")
@@ -210,4 +216,14 @@ func ErrorEnd(s, sub error) bool {
 func IsError(e error, s string) bool {
 	esu, su := strings.ToLower(e.Error()), strings.ToLower(s)
 	return strings.Contains(esu, su)
+}
+
+// Create a custom extend error from given code and message
+func GenWExErr(code int, message string) WExErr {
+	return WExErr{Code: code, Message: message}
+}
+
+// Transform a WingErr to extend error
+func ToWExErr(we WingErr) WExErr {
+	return WExErr{Code: we.Code, Message: we.Err.Error()}
 }
