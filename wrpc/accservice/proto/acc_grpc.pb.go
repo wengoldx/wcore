@@ -36,9 +36,8 @@ type AccClient interface {
 	GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error)
 	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error)
 	// GRPC interface for store service
-	StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*UUID, error)
+	StoreAddMach(ctx context.Context, in *Email, opts ...grpc.CallOption) (*UUID, error)
 	StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error)
-	StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error)
@@ -149,7 +148,7 @@ func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc
 	return out, nil
 }
 
-func (c *accClient) StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*UUID, error) {
+func (c *accClient) StoreAddMach(ctx context.Context, in *Email, opts ...grpc.CallOption) (*UUID, error) {
 	out := new(UUID)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddMach", in, out, opts...)
 	if err != nil {
@@ -161,15 +160,6 @@ func (c *accClient) StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.
 func (c *accClient) StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error) {
 	out := new(UUID)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddComp", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error) {
-	out := new(UUID)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRegister", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -284,9 +274,8 @@ type AccServer interface {
 	GetCreatetime(context.Context, *UUID) (*CreateTime, error)
 	RoleProfiles(context.Context, *UserRole) (*RoleProfs, error)
 	// GRPC interface for store service
-	StoreAddMach(context.Context, *Machine) (*UUID, error)
+	StoreAddMach(context.Context, *Email) (*UUID, error)
 	StoreAddComp(context.Context, *Composer) (*UUID, error)
-	StoreRegister(context.Context, *RegStore) (*UUID, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	StoreRename(context.Context, *RnStore) (*AEmpty, error)
@@ -334,14 +323,11 @@ func (UnimplementedAccServer) GetCreatetime(context.Context, *UUID) (*CreateTime
 func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RoleProfiles not implemented")
 }
-func (UnimplementedAccServer) StoreAddMach(context.Context, *Machine) (*UUID, error) {
+func (UnimplementedAccServer) StoreAddMach(context.Context, *Email) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAddMach not implemented")
 }
 func (UnimplementedAccServer) StoreAddComp(context.Context, *Composer) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAddComp not implemented")
-}
-func (UnimplementedAccServer) StoreRegister(context.Context, *RegStore) (*UUID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreRegister not implemented")
 }
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
@@ -567,7 +553,7 @@ func _Acc_RoleProfiles_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Acc_StoreAddMach_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Machine)
+	in := new(Email)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -579,7 +565,7 @@ func _Acc_StoreAddMach_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/proto.Acc/StoreAddMach",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreAddMach(ctx, req.(*Machine))
+		return srv.(AccServer).StoreAddMach(ctx, req.(*Email))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -598,24 +584,6 @@ func _Acc_StoreAddComp_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).StoreAddComp(ctx, req.(*Composer))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_StoreRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RegStore)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).StoreRegister(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/StoreRegister",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreRegister(ctx, req.(*RegStore))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -854,10 +822,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreAddComp",
 			Handler:    _Acc_StoreAddComp_Handler,
-		},
-		{
-			MethodName: "StoreRegister",
-			Handler:    _Acc_StoreRegister_Handler,
 		},
 		{
 			MethodName: "StoreProfile",
