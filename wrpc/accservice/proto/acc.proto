@@ -12,22 +12,23 @@ service Acc {
 
   // Account login by uuid/phone/email and encryptd password 
   rpc AccLogin(AccPwd) returns (Token);
-  rpc AccSearchInRole(RoleSearch) returns (RoleProfs);
+  rpc SearchInRole(Search) returns (RoleProfs);
   rpc AccActivate (UUID) returns (AEmpty);
 
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
-  rpc GetCreatetime(UUID) returns (CreateTime);
   rpc RoleProfiles(UserRole) returns (RoleProfs);
 
   // GRPC interface for store service
+  rpc StoreAddMach(Machine) returns (RegResult);
+  rpc StoreAddComp(Composer) returns (UUID);
+
   rpc StoreRegister(RegStore) returns (UUID);
   rpc StoreProfile(UUID) returns (ProfStore);
   rpc StoreProfiles(UIDS) returns (ProfStores);
   rpc StoreRename(RnStore) returns (AEmpty);
   rpc StoreBindWx(WxBind) returns (AEmpty);
-  rpc StoreAccAdd(AddStore) returns (UUID);
   rpc StoreAccDel(UIDS) returns (AEmpty);
   rpc StoreRePwd(RePwd) returns (AEmpty);
 
@@ -51,13 +52,14 @@ message UIDS {
   repeated string uids = 1;
 }
 
-message CreateTime{
-  int64 createtime = 1; // createtime of account
-}
-
 message AccPwd { 
   string acc = 1;       // account uuid, email or phone
   string pwd =2;        // account login password enripted by RSA + Base64
+}
+
+message RegResult {
+  string uuid = 1;      // account unique id
+  int64  createtime = 2;// createtime of account
 }
 
 message Profile {
@@ -154,13 +156,17 @@ message UserRole {
   string role = 1;      // traget role
 }
 
-message AddStore {
-  string email = 1;     // store account email address, set when account generate
-  string nickname = 2;  // store name frist perfix string
-  string role = 3;      // store role, such as store-comp and store-machine
+message Machine {
+  string email = 1;     // store machine account email address, set when account generate
+  string machsn = 2;    // store name frist perfix string
 }
 
-message RoleProf{
+message Composer {
+  string email = 1;     // store account email address, set when account generate
+  string nickname = 2;  // store name frist perfix string
+}
+
+message RoleProf {
   string uuid = 1;      // uuid for the profile
   string email = 2;     // account email
   string phone = 3;     // account phone
@@ -172,7 +178,7 @@ message RoleProfs {
   repeated RoleProf profiles = 1;
 }
 
-message RoleSearch{
+message Search {
   int64  category = 1;  // category for search
   string keyword = 2;   // search keyword
   string role = 3;      // target role

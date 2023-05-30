@@ -28,20 +28,20 @@ type AccClient interface {
 	ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error)
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
-	AccSearchInRole(ctx context.Context, in *RoleSearch, opts ...grpc.CallOption) (*RoleProfs, error)
+	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
-	GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error)
 	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error)
 	// GRPC interface for store service
+	StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*RegResult, error)
+	StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error)
 	StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
-	StoreAccAdd(ctx context.Context, in *AddStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreAccDel(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
@@ -85,9 +85,9 @@ func (c *accClient) AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *accClient) AccSearchInRole(ctx context.Context, in *RoleSearch, opts ...grpc.CallOption) (*RoleProfs, error) {
+func (c *accClient) SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error) {
 	out := new(RoleProfs)
-	err := c.cc.Invoke(ctx, "/proto.Acc/AccSearchInRole", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Acc/SearchInRole", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,18 +130,27 @@ func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *accClient) GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error) {
-	out := new(CreateTime)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetCreatetime", in, out, opts...)
+func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error) {
+	out := new(RoleProfs)
+	err := c.cc.Invoke(ctx, "/proto.Acc/RoleProfiles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error) {
-	out := new(RoleProfs)
-	err := c.cc.Invoke(ctx, "/proto.Acc/RoleProfiles", in, out, opts...)
+func (c *accClient) StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*RegResult, error) {
+	out := new(RegResult)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddMach", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error) {
+	out := new(UUID)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddComp", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -187,15 +196,6 @@ func (c *accClient) StoreRename(ctx context.Context, in *RnStore, opts ...grpc.C
 func (c *accClient) StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreBindWx", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) StoreAccAdd(ctx context.Context, in *AddStore, opts ...grpc.CallOption) (*UUID, error) {
-	out := new(UUID)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAccAdd", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -266,20 +266,20 @@ type AccServer interface {
 	ViaRole(context.Context, *Role) (*Result, error)
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(context.Context, *AccPwd) (*Token, error)
-	AccSearchInRole(context.Context, *RoleSearch) (*RoleProfs, error)
+	SearchInRole(context.Context, *Search) (*RoleProfs, error)
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
-	GetCreatetime(context.Context, *UUID) (*CreateTime, error)
 	RoleProfiles(context.Context, *UserRole) (*RoleProfs, error)
 	// GRPC interface for store service
+	StoreAddMach(context.Context, *Machine) (*RegResult, error)
+	StoreAddComp(context.Context, *Composer) (*UUID, error)
 	StoreRegister(context.Context, *RegStore) (*UUID, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	StoreRename(context.Context, *RnStore) (*AEmpty, error)
 	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
-	StoreAccAdd(context.Context, *AddStore) (*UUID, error)
 	StoreAccDel(context.Context, *UIDS) (*AEmpty, error)
 	StoreRePwd(context.Context, *RePwd) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
@@ -302,8 +302,8 @@ func (UnimplementedAccServer) ViaRole(context.Context, *Role) (*Result, error) {
 func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccLogin not implemented")
 }
-func (UnimplementedAccServer) AccSearchInRole(context.Context, *RoleSearch) (*RoleProfs, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AccSearchInRole not implemented")
+func (UnimplementedAccServer) SearchInRole(context.Context, *Search) (*RoleProfs, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchInRole not implemented")
 }
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
@@ -317,11 +317,14 @@ func (UnimplementedAccServer) GetProfSumms(context.Context, *UIDS) (*ProfSumms, 
 func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
 }
-func (UnimplementedAccServer) GetCreatetime(context.Context, *UUID) (*CreateTime, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCreatetime not implemented")
-}
 func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RoleProfiles not implemented")
+}
+func (UnimplementedAccServer) StoreAddMach(context.Context, *Machine) (*RegResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreAddMach not implemented")
+}
+func (UnimplementedAccServer) StoreAddComp(context.Context, *Composer) (*UUID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreAddComp not implemented")
 }
 func (UnimplementedAccServer) StoreRegister(context.Context, *RegStore) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRegister not implemented")
@@ -337,9 +340,6 @@ func (UnimplementedAccServer) StoreRename(context.Context, *RnStore) (*AEmpty, e
 }
 func (UnimplementedAccServer) StoreBindWx(context.Context, *WxBind) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreBindWx not implemented")
-}
-func (UnimplementedAccServer) StoreAccAdd(context.Context, *AddStore) (*UUID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreAccAdd not implemented")
 }
 func (UnimplementedAccServer) StoreAccDel(context.Context, *UIDS) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAccDel not implemented")
@@ -426,20 +426,20 @@ func _Acc_AccLogin_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_AccSearchInRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RoleSearch)
+func _Acc_SearchInRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Search)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).AccSearchInRole(ctx, in)
+		return srv.(AccServer).SearchInRole(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/AccSearchInRole",
+		FullMethod: "/proto.Acc/SearchInRole",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AccSearchInRole(ctx, req.(*RoleSearch))
+		return srv.(AccServer).SearchInRole(ctx, req.(*Search))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -516,24 +516,6 @@ func _Acc_GetContact_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_GetCreatetime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).GetCreatetime(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/GetCreatetime",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetCreatetime(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Acc_RoleProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UserRole)
 	if err := dec(in); err != nil {
@@ -548,6 +530,42 @@ func _Acc_RoleProfiles_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).RoleProfiles(ctx, req.(*UserRole))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_StoreAddMach_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Machine)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreAddMach(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreAddMach",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreAddMach(ctx, req.(*Machine))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_StoreAddComp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Composer)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreAddComp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreAddComp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreAddComp(ctx, req.(*Composer))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -638,24 +656,6 @@ func _Acc_StoreBindWx_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).StoreBindWx(ctx, req.(*WxBind))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_StoreAccAdd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddStore)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).StoreAccAdd(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/StoreAccAdd",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreAccAdd(ctx, req.(*AddStore))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -788,8 +788,8 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_AccLogin_Handler,
 		},
 		{
-			MethodName: "AccSearchInRole",
-			Handler:    _Acc_AccSearchInRole_Handler,
+			MethodName: "SearchInRole",
+			Handler:    _Acc_SearchInRole_Handler,
 		},
 		{
 			MethodName: "AccActivate",
@@ -808,12 +808,16 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_GetContact_Handler,
 		},
 		{
-			MethodName: "GetCreatetime",
-			Handler:    _Acc_GetCreatetime_Handler,
-		},
-		{
 			MethodName: "RoleProfiles",
 			Handler:    _Acc_RoleProfiles_Handler,
+		},
+		{
+			MethodName: "StoreAddMach",
+			Handler:    _Acc_StoreAddMach_Handler,
+		},
+		{
+			MethodName: "StoreAddComp",
+			Handler:    _Acc_StoreAddComp_Handler,
 		},
 		{
 			MethodName: "StoreRegister",
@@ -834,10 +838,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreBindWx",
 			Handler:    _Acc_StoreBindWx_Handler,
-		},
-		{
-			MethodName: "StoreAccAdd",
-			Handler:    _Acc_StoreAccAdd_Handler,
 		},
 		{
 			MethodName: "StoreAccDel",
