@@ -318,7 +318,7 @@ func (c *WingController) responCheckState(datatype string, isprotect bool, state
 
 		/*
 		 * Not Protect mode, response error code and message to frontend,
-		 * It contain 4xx http request errors and 202 custom extend error.
+		 * Here dispathed 4xx http request errors and 202 extend error!
 		 */
 		errmsg := invar.StatusText(state)
 		ctl, act := c.GetControllerAndAction()
