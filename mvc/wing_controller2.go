@@ -127,7 +127,7 @@ var GRoleHandlerFunc RoleHandlerFunc
 // Get authoration and token from http header, than verify it and return account secures.
 func (c *WAuthController) AuthRequestHeader() (string, string) {
 	if GAuthHandlerFunc == nil || GRoleHandlerFunc == nil {
-		c.E403Denind("Controller not set global handlers!")
+		c.E405Disabled("Controller not set global handlers!")
 		return "", ""
 	}
 
@@ -150,7 +150,7 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 			return "", ""
 		} else {
 			if !GRoleHandlerFunc(uuid, c.Ctx.Input.URL(), c.Ctx.Request.Method) {
-				c.E401Unauthed("Role permission denied for " + uuid)
+				c.E403Denind("Role permission denied for " + uuid)
 				return "", ""
 			}
 

@@ -26,16 +26,27 @@ var (
 	ErrInvalidNum          = errors.New("Invalid number")
 	ErrInvalidAccount      = errors.New("Invalid account")
 	ErrInvalidToken        = errors.New("Invalid token")
+	ErrInvalidRole         = errors.New("Invalid role")
 	ErrInvalidClient       = errors.New("Invalid client")
 	ErrInvalidDevice       = errors.New("Invalid device")
 	ErrInvalidParams       = errors.New("Invalid params")
 	ErrInvalidData         = errors.New("Invalid data")
 	ErrInvalidState        = errors.New("Invalid state")
+	ErrInvalidPhone        = errors.New("Invalid phone")
+	ErrInvalidEmail        = errors.New("Invalid email")
+	ErrInvalidOptions      = errors.New("Invalid options")
+	ErrInvalidRedisOptions = errors.New("Invalid redis options")
+	ErrInvalidConfigs      = errors.New("Invalid config datas")
+	ErrInvaildExecTime     = errors.New("Invaild execute time")
+	ErrInvalidRealname     = errors.New("Invaild realname")
 	ErrTagOffline          = errors.New("Target offline")
 	ErrClientOffline       = errors.New("Client offline")
 	ErrDupRegister         = errors.New("Duplicated registration")
 	ErrDupLogin            = errors.New("Duplicated admin login")
 	ErrDupData             = errors.New("Duplicated data")
+	ErrDupAccount          = errors.New("Duplicated account")
+	ErrDupName             = errors.New("Duplicate name")
+	ErrDupKey              = errors.New("Duplicate key")
 	ErrTokenExpired        = errors.New("Token expired")
 	ErrBadPublicKey        = errors.New("Invalid public key")
 	ErrBadPrivateKey       = errors.New("Invalid private key")
@@ -54,12 +65,12 @@ var (
 	ErrSendHeadBytes       = errors.New("Failed send head bytes")
 	ErrSendBodyBytes       = errors.New("Failed send body bytes")
 	ErrReadBytes           = errors.New("Error read bytes")
-	ErrFileNotFound        = errors.New("File not found")
 	ErrInternalServer      = errors.New("Internal server error")
-	ErrDownloadFile        = errors.New("Failed download file")
 	ErrCreateByte          = errors.New("Failed create bytes: system protection")
-	ErrAlreadyConn         = errors.New("Already connected")
+	ErrFileNotFound        = errors.New("File not found")
+	ErrDownloadFile        = errors.New("Failed download file")
 	ErrOpenSourceFile      = errors.New("Failed open source file")
+	ErrAlreadyConn         = errors.New("Already connected")
 	ErrEmptyReponse        = errors.New("Received empty response")
 	ErrReadConf            = errors.New("Failed load config file")
 	ErrUnexpectedDir       = errors.New("Expect file path not directory")
@@ -80,16 +91,14 @@ var (
 	ErrImgOverSize         = errors.New("Image file size over")
 	ErrAudioOverSize       = errors.New("Audio file size over")
 	ErrVideoOverSize       = errors.New("Video file size over")
-	ErrUnsupportedFile     = errors.New("Unsupported file format")
-	ErrInvalidConfigs      = errors.New("Invalid config datas")
-	ErrInvalidRedisOptions = errors.New("Invalid redis options")
-	ErrUnexistRedisKey     = errors.New("Unexist redis key")
 	ErrNoAssociatedExpire  = errors.New("No associated expire")
 	ErrUnsupportFormat     = errors.New("Unsupported format data")
-	ErrInvalidOptions      = errors.New("Invalid options")
+	ErrUnsupportedFile     = errors.New("Unsupported file format")
 	ErrUnexistKey          = errors.New("Unexist key")
-	ErrInvaildExecTime     = errors.New("Invaild execute time")
-	ErrLifecycleUnexist    = errors.New("The lifecycle configuration does not exist")
+	ErrUnexistRedisKey     = errors.New("Unexist redis key")
+	ErrUnexistLifecycle    = errors.New("Unexist lifecycle configs")
+	ErrSetLifecycleTag     = errors.New("Failed set file lifecycel tag")
+	ErrInactiveAccount     = errors.New("Inactive status account")
 )
 
 var (
@@ -97,70 +106,79 @@ var (
 	WErrInvalidNum          = &WingErr{0x1001, ErrInvalidNum}
 	WErrInvalidAccount      = &WingErr{0x1002, ErrInvalidAccount}
 	WErrInvalidToken        = &WingErr{0x1003, ErrInvalidToken}
-	WErrInvalidClient       = &WingErr{0x1004, ErrInvalidClient}
-	WErrInvalidDevice       = &WingErr{0x1005, ErrInvalidDevice}
-	WErrInvalidParams       = &WingErr{0x1006, ErrInvalidParams}
-	WErrInvalidData         = &WingErr{0x1007, ErrInvalidData}
-	WErrInvalidState        = &WingErr{0x1008, ErrInvalidState}
-	WErrTagOffline          = &WingErr{0x1009, ErrTagOffline}
-	WErrClientOffline       = &WingErr{0x100A, ErrClientOffline}
-	WErrDupRegister         = &WingErr{0x100B, ErrDupRegister}
-	WErrDupLogin            = &WingErr{0x100C, ErrDupLogin}
-	WErrDupData             = &WingErr{0x100D, ErrDupData}
-	WErrTokenExpired        = &WingErr{0x100E, ErrTokenExpired}
-	WErrBadPublicKey        = &WingErr{0x100F, ErrBadPublicKey}
-	WErrBadPrivateKey       = &WingErr{0x1010, ErrBadPrivateKey}
-	WErrUnkownCharType      = &WingErr{0x1011, ErrUnkownCharType}
-	WErrUnperparedState     = &WingErr{0x1012, ErrUnperparedState}
-	WErrOrmNotUsing         = &WingErr{0x1013, ErrOrmNotUsing}
-	WErrNoneRowFound        = &WingErr{0x1014, ErrNoneRowFound}
-	WErrNotChanged          = &WingErr{0x1015, ErrNotChanged}
-	WErrNotInserted         = &WingErr{0x1016, ErrNotInserted}
-	WErrSendFailed          = &WingErr{0x1017, ErrSendFailed}
-	WErrAuthDenied          = &WingErr{0x1018, ErrAuthDenied}
-	WErrKeyLenSixteen       = &WingErr{0x1019, ErrKeyLenSixteen}
-	WErrOverTimes           = &WingErr{0x101A, ErrOverTimes}
-	WErrSetFrameNil         = &WingErr{0x101B, ErrSetFrameNil}
-	WErrOperationNotSupport = &WingErr{0x101C, ErrOperationNotSupport}
-	WErrSendHeadBytes       = &WingErr{0x101D, ErrSendHeadBytes}
-	WErrSendBodyBytes       = &WingErr{0x101E, ErrSendBodyBytes}
-	WErrReadBytes           = &WingErr{0x101F, ErrReadBytes}
-	WErrFileNotFound        = &WingErr{0x1020, ErrFileNotFound}
-	WErrInternalServer      = &WingErr{0x1021, ErrInternalServer}
-	WErrDownloadFile        = &WingErr{0x1022, ErrDownloadFile}
-	WErrCreateByte          = &WingErr{0x1023, ErrCreateByte}
-	WErrAlreadyConn         = &WingErr{0x1024, ErrAlreadyConn}
-	WErrOpenSourceFile      = &WingErr{0x1025, ErrOpenSourceFile}
-	WErrEmptyReponse        = &WingErr{0x1026, ErrEmptyReponse}
-	WErrReadConf            = &WingErr{0x1027, ErrReadConf}
-	WErrUnexpectedDir       = &WingErr{0x1028, ErrUnexpectedDir}
-	WErrWriteMD5            = &WingErr{0x1029, ErrWriteMD5}
-	WErrWriteOut            = &WingErr{0x102A, ErrWriteOut}
-	WErrHandleDownload      = &WingErr{0x102B, ErrHandleDownload}
-	WErrFullConnPool        = &WingErr{0x102C, ErrFullConnPool}
-	WErrPoolSize            = &WingErr{0x102D, ErrPoolSize}
-	WErrPoolFull            = &WingErr{0x102E, ErrPoolFull}
-	WErrCheckDB             = &WingErr{0x102F, ErrCheckDB}
-	WErrFetchDB             = &WingErr{0x1030, ErrFetchDB}
-	WErrReadFileBody        = &WingErr{0x1031, ErrReadFileBody}
-	WErrNilFrame            = &WingErr{0x1032, ErrNilFrame}
-	WErrNoStorage           = &WingErr{0x1033, ErrNoStorage}
-	WErrUnmatchLen          = &WingErr{0x1034, ErrUnmatchLen}
-	WErrCopyFile            = &WingErr{0x1035, ErrCopyFile}
-	WErrEmptyData           = &WingErr{0x1036, ErrEmptyData}
-	WErrImgOverSize         = &WingErr{0x1037, ErrImgOverSize}
-	WErrAudioOverSize       = &WingErr{0x1038, ErrAudioOverSize}
-	WErrVideoOverSize       = &WingErr{0x1039, ErrVideoOverSize}
-	WErrUnsupportedFile     = &WingErr{0x103A, ErrUnsupportedFile}
-	WErrInvalidConfigs      = &WingErr{0x103B, ErrInvalidConfigs}
-	WErrInvalidRedisOptions = &WingErr{0x103C, ErrInvalidRedisOptions}
-	WErrUnexistRedisKey     = &WingErr{0x103D, ErrUnexistRedisKey}
-	WErrNoAssociatedExpire  = &WingErr{0x103E, ErrNoAssociatedExpire}
-	WErrUnsupportFormat     = &WingErr{0x1040, ErrUnsupportFormat}
-	WErrInvalidOptions      = &WingErr{0x1041, ErrInvalidOptions}
-	WErrUnexistKey          = &WingErr{0x1042, ErrUnexistKey}
-	WErrInvaildExecTime     = &WingErr{0x1043, ErrInvaildExecTime}
-	WErrLifecycleUnexist    = &WingErr{0x1044, ErrLifecycleUnexist}
+	WErrInvalidRole         = &WingErr{0x1004, ErrInvalidRole}
+	WErrInvalidClient       = &WingErr{0x1005, ErrInvalidClient}
+	WErrInvalidDevice       = &WingErr{0x1006, ErrInvalidDevice}
+	WErrInvalidParams       = &WingErr{0x1007, ErrInvalidParams}
+	WErrInvalidData         = &WingErr{0x1008, ErrInvalidData}
+	WErrInvalidState        = &WingErr{0x1009, ErrInvalidState}
+	WErrInvalidPhone        = &WingErr{0x100A, ErrInvalidPhone}
+	WErrInvalidEmail        = &WingErr{0x100B, ErrInvalidEmail}
+	WErrInvalidOptions      = &WingErr{0x100C, ErrInvalidOptions}
+	WErrInvalidRedisOptions = &WingErr{0x100D, ErrInvalidRedisOptions}
+	WErrInvalidConfigs      = &WingErr{0x100E, ErrInvalidConfigs}
+	WErrInvaildExecTime     = &WingErr{0x100F, ErrInvaildExecTime}
+	WErrInvalidRealname     = &WingErr{0x100F, ErrInvalidRealname}
+	WErrTagOffline          = &WingErr{0x1010, ErrTagOffline}
+	WErrClientOffline       = &WingErr{0x1011, ErrClientOffline}
+	WErrDupRegister         = &WingErr{0x1012, ErrDupRegister}
+	WErrDupLogin            = &WingErr{0x1013, ErrDupLogin}
+	WErrDupData             = &WingErr{0x1014, ErrDupData}
+	WErrDupAccount          = &WingErr{0x1014, ErrDupAccount}
+	WErrDupName             = &WingErr{0x1014, ErrDupName}
+	WErrDupKey              = &WingErr{0x1014, ErrDupKey}
+	WErrTokenExpired        = &WingErr{0x1015, ErrTokenExpired}
+	WErrBadPublicKey        = &WingErr{0x1016, ErrBadPublicKey}
+	WErrBadPrivateKey       = &WingErr{0x1017, ErrBadPrivateKey}
+	WErrUnkownCharType      = &WingErr{0x1018, ErrUnkownCharType}
+	WErrUnperparedState     = &WingErr{0x1019, ErrUnperparedState}
+	WErrOrmNotUsing         = &WingErr{0x101A, ErrOrmNotUsing}
+	WErrNoneRowFound        = &WingErr{0x101B, ErrNoneRowFound}
+	WErrNotChanged          = &WingErr{0x101C, ErrNotChanged}
+	WErrNotInserted         = &WingErr{0x101D, ErrNotInserted}
+	WErrSendFailed          = &WingErr{0x101E, ErrSendFailed}
+	WErrAuthDenied          = &WingErr{0x101F, ErrAuthDenied}
+	WErrKeyLenSixteen       = &WingErr{0x1020, ErrKeyLenSixteen}
+	WErrOverTimes           = &WingErr{0x1021, ErrOverTimes}
+	WErrSetFrameNil         = &WingErr{0x1022, ErrSetFrameNil}
+	WErrOperationNotSupport = &WingErr{0x1023, ErrOperationNotSupport}
+	WErrSendHeadBytes       = &WingErr{0x1024, ErrSendHeadBytes}
+	WErrSendBodyBytes       = &WingErr{0x1025, ErrSendBodyBytes}
+	WErrReadBytes           = &WingErr{0x1026, ErrReadBytes}
+	WErrInternalServer      = &WingErr{0x1027, ErrInternalServer}
+	WErrCreateByte          = &WingErr{0x1028, ErrCreateByte}
+	WErrFileNotFound        = &WingErr{0x1029, ErrFileNotFound}
+	WErrDownloadFile        = &WingErr{0x102A, ErrDownloadFile}
+	WErrOpenSourceFile      = &WingErr{0x102B, ErrOpenSourceFile}
+	WErrAlreadyConn         = &WingErr{0x102C, ErrAlreadyConn}
+	WErrEmptyReponse        = &WingErr{0x102D, ErrEmptyReponse}
+	WErrReadConf            = &WingErr{0x102E, ErrReadConf}
+	WErrUnexpectedDir       = &WingErr{0x102F, ErrUnexpectedDir}
+	WErrWriteMD5            = &WingErr{0x1030, ErrWriteMD5}
+	WErrWriteOut            = &WingErr{0x1031, ErrWriteOut}
+	WErrHandleDownload      = &WingErr{0x1032, ErrHandleDownload}
+	WErrFullConnPool        = &WingErr{0x1033, ErrFullConnPool}
+	WErrPoolSize            = &WingErr{0x1034, ErrPoolSize}
+	WErrPoolFull            = &WingErr{0x1035, ErrPoolFull}
+	WErrCheckDB             = &WingErr{0x1036, ErrCheckDB}
+	WErrFetchDB             = &WingErr{0x1037, ErrFetchDB}
+	WErrReadFileBody        = &WingErr{0x1038, ErrReadFileBody}
+	WErrNilFrame            = &WingErr{0x1039, ErrNilFrame}
+	WErrNoStorage           = &WingErr{0x103A, ErrNoStorage}
+	WErrUnmatchLen          = &WingErr{0x103B, ErrUnmatchLen}
+	WErrCopyFile            = &WingErr{0x103C, ErrCopyFile}
+	WErrEmptyData           = &WingErr{0x103D, ErrEmptyData}
+	WErrImgOverSize         = &WingErr{0x103E, ErrImgOverSize}
+	WErrAudioOverSize       = &WingErr{0x103F, ErrAudioOverSize}
+	WErrVideoOverSize       = &WingErr{0x1040, ErrVideoOverSize}
+	WErrNoAssociatedExpire  = &WingErr{0x1041, ErrNoAssociatedExpire}
+	WErrUnsupportFormat     = &WingErr{0x1042, ErrUnsupportFormat}
+	WErrUnsupportedFile     = &WingErr{0x1043, ErrUnsupportedFile}
+	WErrUnexistKey          = &WingErr{0x1044, ErrUnexistKey}
+	WErrUnexistRedisKey     = &WingErr{0x1045, ErrUnexistRedisKey}
+	WErrUnexistLifecycle    = &WingErr{0x1046, ErrUnexistLifecycle}
+	WErrSetLifecycleTag     = &WingErr{0x1045, ErrSetLifecycleTag}
+	WErrInactiveAccount     = &WingErr{0x1045, ErrInactiveAccount}
 )
 
 // Equal tow error if message same on char case
@@ -173,7 +191,7 @@ func EqualErrorFold(a, b error) bool {
 	return strings.EqualFold(a.Error(), b.Error())
 }
 
-// Check if error message contain given string
+// Check if error message contain given error string
 func ErrorContain(s, sub error) bool {
 	return strings.Contains(s.Error(), sub.Error())
 }
@@ -186,4 +204,10 @@ func ErrorStart(s, sub error) bool {
 // Check if error message start given perfix
 func ErrorEnd(s, sub error) bool {
 	return strings.HasSuffix(s.Error(), sub.Error())
+}
+
+// Check if error message contain given string
+func IsError(e error, s string) bool {
+	esu, su := strings.ToLower(e.Error()), strings.ToLower(s)
+	return strings.Contains(esu, su)
 }
