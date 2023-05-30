@@ -18,10 +18,11 @@ service Acc {
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
+  rpc GetCreatetime(UUID) returns (CreateTime);
   rpc RoleProfiles(UserRole) returns (RoleProfs);
 
   // GRPC interface for store service
-  rpc StoreAddMach(Machine) returns (RegResult);
+  rpc StoreAddMach(Machine) returns (UUID);
   rpc StoreAddComp(Composer) returns (UUID);
 
   rpc StoreRegister(RegStore) returns (UUID);
@@ -38,7 +39,7 @@ service Acc {
   rpc UnbindUnionID2(UUID) returns (AEmpty);
 }
 
-message AEmpty{}        // diferent other server when using together
+message AEmpty {}       // diferent other server when using together
 
 message Token {
   string token = 1;     // account request token
@@ -48,18 +49,17 @@ message UUID {
   string uuid = 1;      // account unique id
 }
 
-message UIDS { 
+message UIDS {
   repeated string uids = 1;
 }
 
-message AccPwd { 
-  string acc = 1;       // account uuid, email or phone
-  string pwd =2;        // account login password enripted by RSA + Base64
+message CreateTime {
+  int64 createtime = 1; // createtime of account
 }
 
-message RegResult {
-  string uuid = 1;      // account unique id
-  int64  createtime = 2;// createtime of account
+message AccPwd {
+  string acc = 1;       // account uuid, email or phone
+  string pwd =2;        // account login password enripted by RSA + Base64
 }
 
 message Profile {
@@ -78,7 +78,7 @@ message ProfSumm {
   string heardurl = 4;  // account heardurl, the value set from wechat avatar
 }
 
-message ProfSumms { 
+message ProfSumms {
   repeated ProfSumm summs = 1;
 }
 
@@ -110,7 +110,7 @@ message ProfStore {
   bool   activate = 10; // is account activate
 }
 
-message ProfStores { 
+message ProfStores {
   repeated ProfStore profiles = 1;
 }
 
@@ -142,7 +142,7 @@ message Secures {
   string pwd = 4;       // account login password enripted by RSA + Base64
 }
 
-message Role{
+message Role {
   string uuid = 1;      // verification request account id
   string router = 2;    // verification request API router
   string method = 3;    // verification request http method

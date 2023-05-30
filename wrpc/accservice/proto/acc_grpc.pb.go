@@ -33,9 +33,10 @@ type AccClient interface {
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
+	GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error)
 	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error)
 	// GRPC interface for store service
-	StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*RegResult, error)
+	StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*UUID, error)
 	StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error)
 	StoreRegister(ctx context.Context, in *RegStore, opts ...grpc.CallOption) (*UUID, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
@@ -130,6 +131,15 @@ func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *accClient) GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error) {
+	out := new(CreateTime)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetCreatetime", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error) {
 	out := new(RoleProfs)
 	err := c.cc.Invoke(ctx, "/proto.Acc/RoleProfiles", in, out, opts...)
@@ -139,8 +149,8 @@ func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc
 	return out, nil
 }
 
-func (c *accClient) StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*RegResult, error) {
-	out := new(RegResult)
+func (c *accClient) StoreAddMach(ctx context.Context, in *Machine, opts ...grpc.CallOption) (*UUID, error) {
+	out := new(UUID)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddMach", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -271,9 +281,10 @@ type AccServer interface {
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetContact(context.Context, *UUID) (*Contact, error)
+	GetCreatetime(context.Context, *UUID) (*CreateTime, error)
 	RoleProfiles(context.Context, *UserRole) (*RoleProfs, error)
 	// GRPC interface for store service
-	StoreAddMach(context.Context, *Machine) (*RegResult, error)
+	StoreAddMach(context.Context, *Machine) (*UUID, error)
 	StoreAddComp(context.Context, *Composer) (*UUID, error)
 	StoreRegister(context.Context, *RegStore) (*UUID, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
@@ -317,10 +328,13 @@ func (UnimplementedAccServer) GetProfSumms(context.Context, *UIDS) (*ProfSumms, 
 func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
 }
+func (UnimplementedAccServer) GetCreatetime(context.Context, *UUID) (*CreateTime, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCreatetime not implemented")
+}
 func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RoleProfiles not implemented")
 }
-func (UnimplementedAccServer) StoreAddMach(context.Context, *Machine) (*RegResult, error) {
+func (UnimplementedAccServer) StoreAddMach(context.Context, *Machine) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAddMach not implemented")
 }
 func (UnimplementedAccServer) StoreAddComp(context.Context, *Composer) (*UUID, error) {
@@ -512,6 +526,24 @@ func _Acc_GetContact_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).GetContact(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_GetCreatetime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GetCreatetime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GetCreatetime",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GetCreatetime(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -806,6 +838,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetContact",
 			Handler:    _Acc_GetContact_Handler,
+		},
+		{
+			MethodName: "GetCreatetime",
+			Handler:    _Acc_GetCreatetime_Handler,
 		},
 		{
 			MethodName: "RoleProfiles",
