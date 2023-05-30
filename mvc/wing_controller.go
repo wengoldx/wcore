@@ -306,13 +306,20 @@ func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, 
 // responCheckState check respon state and print out log, the datatype must
 // range in ['json', 'jsonp', 'xml', 'yaml'], if outof range current controller
 // just return blank string to close http connection.
-func (c *WingController) responCheckState(datatype string, needCheck bool, state int, data ...interface{}) {
+func (c *WingController) responCheckState(datatype string, isprotect bool, state int, data ...interface{}) {
 	if state != invar.StatusOK {
-		if needCheck {
+		/* --------------------------------------------------------------
+		 * Not response error message to frontend when isprotect is true!
+		 * -------------------------------------------------------------- */
+		if state != invar.StatusExError && isprotect {
 			c.ErrorState(state)
 			return
 		}
 
+		/*
+		 * Not Protect mode, response error code and message to frontend,
+		 * It contain 4xx http request errors and 202 custom extend error.
+		 */
 		errmsg := invar.StatusText(state)
 		ctl, act := c.GetControllerAndAction()
 		logger.E("Respone "+strings.ToUpper(datatype)+" error:", state, ">", ctl+"."+act, errmsg)
