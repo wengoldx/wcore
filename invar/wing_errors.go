@@ -103,7 +103,7 @@ var (
 	ErrUnexistKey          = errors.New("Unexist key")
 	ErrUnexistRedisKey     = errors.New("Unexist redis key")
 	ErrUnexistLifecycle    = errors.New("Unexist lifecycle configs")
-	ErrSetLifecycleTag     = errors.New("Failed set file lifecycel tag")
+	ErrSetLifecycleTag     = errors.New("Failed set file lifecycle tag")
 	ErrInactiveAccount     = errors.New("Inactive status account")
 )
 
