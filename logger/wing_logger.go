@@ -13,6 +13,7 @@ package logger
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"runtime"
 )
 
 const (
@@ -81,6 +82,15 @@ func readLoggerConfigs() string {
 	return "{\"filename\":\"logs/" + app + ".log\", \"daily\":true, \"maxdays\":" + maxdays + "}"
 }
 
+func appendFuncName(v ...interface{}) []interface{} {
+	if pc, _, _, ok := runtime.Caller(2); ok {
+		if fn := runtime.FuncForPC(pc); fn != nil {
+			v = append([]interface{}{fn.Name() + " >"}, v...)
+		}
+	}
+	return v
+}
+
 // SetOutputLogger close console logger on prod mode and only remain file logger.
 func SetOutputLogger() {
 	if beego.BConfig.RunMode != "dev" && GetLevel() != LevelDebug {
@@ -106,40 +116,40 @@ func GetLevel() string {
 
 // EM logs a message at emergency level.
 func EM(v ...interface{}) {
-	beego.Emergency(v...)
+	beego.Emergency(appendFuncName(v))
 }
 
 // AL logs a message at alert level.
 func AL(v ...interface{}) {
-	beego.Alert(v...)
+	beego.Alert(appendFuncName(v))
 }
 
 // CR logs a message at critical level.
 func CR(v ...interface{}) {
-	beego.Critical(v...)
+	beego.Critical(appendFuncName(v))
 }
 
 // E logs a message at error level.
 func E(v ...interface{}) {
-	beego.Error(v...)
+	beego.Error(appendFuncName(v))
 }
 
 // W logs a message at warning level.
 func W(v ...interface{}) {
-	beego.Warning(v...)
+	beego.Warning(appendFuncName(v))
 }
 
 // N logs a message at notice level.
 func N(v ...interface{}) {
-	beego.Notice(v...)
+	beego.Notice(appendFuncName(v))
 }
 
 // I logs a message at info level.
 func I(v ...interface{}) {
-	beego.Informational(v...)
+	beego.Informational(appendFuncName(v))
 }
 
 // D logs a message at debug level.
 func D(v ...interface{}) {
-	beego.Debug(v...)
+	beego.Debug(appendFuncName(v))
 }
