@@ -223,7 +223,9 @@ func GenWExErr(code int, message string) WExErr {
 	return WExErr{Code: code, Message: message}
 }
 
-// Transform a WingErr to extend error
-func ToWExErr(we WingErr) WExErr {
-	return WExErr{Code: we.Code, Message: we.Err.Error()}
+// Transform a WingErr to WExErr extend error, you can use it as:
+//
+// `[CODE]` invar.WErrNotFoune.ExErr()
+func (we *WingErr) ExErr() *WExErr {
+	return &WExErr{Code: we.Code, Message: we.Err.Error()}
 }

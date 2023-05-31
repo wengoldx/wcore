@@ -83,6 +83,10 @@ func readLoggerConfigs() string {
 	return "{\"filename\":\"logs/" + app + ".log\", \"daily\":true, \"maxdays\":" + maxdays + "}"
 }
 
+// appendFuncName append runtime calling function name start log prefix, it format as :
+// ------------------------------------------------------------------------------------
+// 2023/05/31 10:56:36.609 [I] [code_file.go:89]  FuncName() Log output message string
+// ------------------------------------------------------------------------------------
 func appendFuncName(v ...interface{}) []interface{} {
 	/* Fixed the call skipe on 1 to filter current function name */
 	if pc, _, _, ok := runtime.Caller(2); ok {
