@@ -89,7 +89,7 @@ func appendFuncName(v ...interface{}) []interface{} {
 		if funcptr := runtime.FuncForPC(pc); funcptr != nil {
 			if funname := funcptr.Name(); funname != "" {
 				fns := strings.SplitAfter(funname, ".")
-				v = append([]interface{}{fns[len(fns)-1] + " >"}, v...)
+				v = append([]interface{}{fns[len(fns)-1] + "()"}, v...)
 			}
 		}
 	}
