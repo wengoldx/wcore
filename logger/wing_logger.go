@@ -116,40 +116,40 @@ func GetLevel() string {
 
 // EM logs a message at emergency level.
 func EM(v ...interface{}) {
-	beego.Emergency(appendFuncName(v))
+	beego.Emergency(appendFuncName(v)...)
 }
 
 // AL logs a message at alert level.
 func AL(v ...interface{}) {
-	beego.Alert(appendFuncName(v))
+	beego.Alert(appendFuncName(v)...)
 }
 
 // CR logs a message at critical level.
 func CR(v ...interface{}) {
-	beego.Critical(appendFuncName(v))
+	beego.Critical(appendFuncName(v)...)
 }
 
 // E logs a message at error level.
 func E(v ...interface{}) {
-	beego.Error(appendFuncName(v))
+	beego.Error(appendFuncName(v)...)
 }
 
 // W logs a message at warning level.
 func W(v ...interface{}) {
-	beego.Warning(appendFuncName(v))
+	beego.Warning(appendFuncName(v)...)
 }
 
 // N logs a message at notice level.
 func N(v ...interface{}) {
-	beego.Notice(appendFuncName(v))
+	beego.Notice(appendFuncName(v)...)
 }
 
 // I logs a message at info level.
 func I(v ...interface{}) {
-	beego.Informational(appendFuncName(v))
+	beego.Informational(appendFuncName(v)...)
 }
 
 // D logs a message at debug level.
 func D(v ...interface{}) {
-	beego.Debug(appendFuncName(v))
+	beego.Debug(appendFuncName(v)...)
 }
