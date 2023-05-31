@@ -14,6 +14,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"runtime"
+	"strings"
 )
 
 const (
@@ -83,9 +84,13 @@ func readLoggerConfigs() string {
 }
 
 func appendFuncName(v ...interface{}) []interface{} {
-	if pc, _, _, ok := runtime.Caller(2); ok {
-		if fn := runtime.FuncForPC(pc); fn != nil {
-			v = append([]interface{}{fn.Name() + " >"}, v...)
+	/* Fixed the call skipe on 1 to filter current function name */
+	if pc, _, _, ok := runtime.Caller(1); ok {
+		if funcptr := runtime.FuncForPC(pc); funcptr != nil {
+			if funname := funcptr.Name(); funname != "" {
+				fns := strings.SplitAfter(funname, ".")
+				v = append([]interface{}{fns[len(fns)-1] + " >"}, v...)
+			}
 		}
 	}
 	return v
