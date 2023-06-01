@@ -41,15 +41,17 @@ type AccClient interface {
 	StoreAddMach(ctx context.Context, in *Email, opts ...grpc.CallOption) (*UUID, error)
 	// Register store composer account
 	StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error)
+	// Store machine bind with player wechat unionid
+	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
+	// Store machine unbind player wechat unionid
+	StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error)
-	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreAccDel(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*AEmpty, error)
 	StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
-	UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 }
 
@@ -169,6 +171,24 @@ func (c *accClient) StoreAddComp(ctx context.Context, in *Composer, opts ...grpc
 	return out, nil
 }
 
+func (c *accClient) StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreBindWx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreUnbindWx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error) {
 	out := new(ProfStore)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreProfile", in, out, opts...)
@@ -190,15 +210,6 @@ func (c *accClient) StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.Ca
 func (c *accClient) StoreRename(ctx context.Context, in *RnStore, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRename", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreBindWx", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -241,15 +252,6 @@ func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) UnbindUnionID(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindUnionID", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *accClient) UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindUnionID2", in, out, opts...)
@@ -282,15 +284,17 @@ type AccServer interface {
 	StoreAddMach(context.Context, *Email) (*UUID, error)
 	// Register store composer account
 	StoreAddComp(context.Context, *Composer) (*UUID, error)
+	// Store machine bind with player wechat unionid
+	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
+	// Store machine unbind player wechat unionid
+	StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error)
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	StoreRename(context.Context, *RnStore) (*AEmpty, error)
-	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
 	StoreAccDel(context.Context, *UIDS) (*AEmpty, error)
 	StoreRePwd(context.Context, *RePwd) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
-	UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error)
 	UnbindUnionID2(context.Context, *UUID) (*AEmpty, error)
 	mustEmbedUnimplementedAccServer()
 }
@@ -335,6 +339,12 @@ func (UnimplementedAccServer) StoreAddMach(context.Context, *Email) (*UUID, erro
 func (UnimplementedAccServer) StoreAddComp(context.Context, *Composer) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAddComp not implemented")
 }
+func (UnimplementedAccServer) StoreBindWx(context.Context, *WxBind) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreBindWx not implemented")
+}
+func (UnimplementedAccServer) StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreUnbindWx not implemented")
+}
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
 }
@@ -343,9 +353,6 @@ func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores
 }
 func (UnimplementedAccServer) StoreRename(context.Context, *RnStore) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRename not implemented")
-}
-func (UnimplementedAccServer) StoreBindWx(context.Context, *WxBind) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreBindWx not implemented")
 }
 func (UnimplementedAccServer) StoreAccDel(context.Context, *UIDS) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAccDel not implemented")
@@ -358,9 +365,6 @@ func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*AEmpty, er
 }
 func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
-}
-func (UnimplementedAccServer) UnbindUnionID(context.Context, *AccPwd) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID not implemented")
 }
 func (UnimplementedAccServer) UnbindUnionID2(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID2 not implemented")
@@ -594,6 +598,42 @@ func _Acc_StoreAddComp_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_StoreBindWx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WxBind)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreBindWx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreBindWx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreBindWx(ctx, req.(*WxBind))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_StoreUnbindWx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccPwd)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreUnbindWx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreUnbindWx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreUnbindWx(ctx, req.(*AccPwd))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_StoreProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UUID)
 	if err := dec(in); err != nil {
@@ -644,24 +684,6 @@ func _Acc_StoreRename_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).StoreRename(ctx, req.(*RnStore))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_StoreBindWx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WxBind)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).StoreBindWx(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/StoreBindWx",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreBindWx(ctx, req.(*WxBind))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -734,24 +756,6 @@ func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).BindAccount(ctx, req.(*Secures))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_UnbindUnionID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccPwd)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).UnbindUnionID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/UnbindUnionID",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).UnbindUnionID(ctx, req.(*AccPwd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -830,6 +834,14 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_StoreAddComp_Handler,
 		},
 		{
+			MethodName: "StoreBindWx",
+			Handler:    _Acc_StoreBindWx_Handler,
+		},
+		{
+			MethodName: "StoreUnbindWx",
+			Handler:    _Acc_StoreUnbindWx_Handler,
+		},
+		{
 			MethodName: "StoreProfile",
 			Handler:    _Acc_StoreProfile_Handler,
 		},
@@ -840,10 +852,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreRename",
 			Handler:    _Acc_StoreRename_Handler,
-		},
-		{
-			MethodName: "StoreBindWx",
-			Handler:    _Acc_StoreBindWx_Handler,
 		},
 		{
 			MethodName: "StoreAccDel",
@@ -860,10 +868,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BindAccount",
 			Handler:    _Acc_BindAccount_Handler,
-		},
-		{
-			MethodName: "UnbindUnionID",
-			Handler:    _Acc_UnbindUnionID_Handler,
 		},
 		{
 			MethodName: "UnbindUnionID2",

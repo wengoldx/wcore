@@ -40,16 +40,20 @@ service Acc {
   // Register store composer account
   rpc StoreAddComp(Composer) returns (UUID);
 
+  // Store machine bind with player wechat unionid
+  rpc StoreBindWx(WxBind) returns (AEmpty);
+
+  // Store machine unbind player wechat unionid
+  rpc StoreUnbindWx(AccPwd) returns (AEmpty);
+
   rpc StoreProfile(UUID) returns (ProfStore);
   rpc StoreProfiles(UIDS) returns (ProfStores);
   rpc StoreRename(RnStore) returns (AEmpty);
-  rpc StoreBindWx(WxBind) returns (AEmpty);
   rpc StoreAccDel(UIDS) returns (AEmpty);
   rpc StoreRePwd(RePwd) returns (AEmpty);
 
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
-  rpc UnbindUnionID(AccPwd) returns (AEmpty);
   rpc UnbindUnionID2(UUID) returns (AEmpty);
 }
 
