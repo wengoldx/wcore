@@ -307,7 +307,7 @@ func (w *WingProvider) Query(query string, args ...interface{}) (*sql.Rows, erro
 	return w.Conn.Query(query, args...)
 }
 
-// IsEmpty call sql.Query() to check target data if exist
+// IsEmpty call sql.Query() to check target data if empty
 func (w *WingProvider) IsEmpty(query string, args ...interface{}) (bool, error) {
 	rows, err := w.Conn.Query(query, args...)
 	if err != nil {
@@ -315,6 +315,12 @@ func (w *WingProvider) IsEmpty(query string, args ...interface{}) (bool, error) 
 	}
 	defer rows.Close()
 	return !rows.Next(), nil
+}
+
+// IsExist call sql.Query() to check target data if exist
+func (w *WingProvider) IsExist(query string, args ...interface{}) (bool, error) {
+	empty, err := w.IsEmpty(query, args...)
+	return !empty, err
 }
 
 // QueryOne call sql.Query() to query one record

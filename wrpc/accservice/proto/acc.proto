@@ -4,6 +4,11 @@ package proto;
 option go_package = "./proto";
 
 service Acc {
+
+  // -----------------------------------
+  // For Common & Utils
+  // -----------------------------------
+
   // Request token access permission check
   rpc ViaToken(Token) returns (AccPwd);
 
@@ -12,17 +17,27 @@ service Acc {
 
   // Account login by uuid/phone/email and encryptd password 
   rpc AccLogin(AccPwd) returns (Token);
-  rpc SearchInRole(Search) returns (RoleProfs);
-  rpc AccActivate (UUID) returns (AEmpty);
 
+  // Return profiles on role, e.g. get all store composers
+  rpc RoleProfiles(UserRole) returns (RoleProfs);
+
+  // Return profiles on role, and filter by search conditions
+  rpc SearchInRole(Search) returns (RoleProfs);
+
+  rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetContact(UUID) returns (Contact);
   rpc GetCreatetime(UUID) returns (CreateTime);
-  rpc RoleProfiles(UserRole) returns (RoleProfs);
 
-  // GRPC interface for store service
+  // -----------------------------------
+  // For Store Module Of IFSCM
+  // -----------------------------------
+
+  // Register store machine account
   rpc StoreAddMach(Email) returns (UUID);
+
+  // Register store composer account
   rpc StoreAddComp(Composer) returns (UUID);
 
   rpc StoreProfile(UUID) returns (ProfStore);
