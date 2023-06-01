@@ -32,6 +32,8 @@ type AccClient interface {
 	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error)
 	// Return profiles on role, and filter by search conditions
 	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
+	// Rest account password and send it to account email
+	ResetPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
@@ -41,6 +43,8 @@ type AccClient interface {
 	StoreAddMach(ctx context.Context, in *Email, opts ...grpc.CallOption) (*UUID, error)
 	// Register store composer account
 	StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error)
+	// Update store composer email and nickname
+	StoreUpComp(ctx context.Context, in *CompSimp, opts ...grpc.CallOption) (*AEmpty, error)
 	// Store machine bind with player wechat unionid
 	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
 	// Store machine unbind player wechat unionid
@@ -108,6 +112,15 @@ func (c *accClient) SearchInRole(ctx context.Context, in *Search, opts ...grpc.C
 	return out, nil
 }
 
+func (c *accClient) ResetPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/ResetPwd", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AccActivate", in, out, opts...)
@@ -165,6 +178,15 @@ func (c *accClient) StoreAddMach(ctx context.Context, in *Email, opts ...grpc.Ca
 func (c *accClient) StoreAddComp(ctx context.Context, in *Composer, opts ...grpc.CallOption) (*UUID, error) {
 	out := new(UUID)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddComp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) StoreUpComp(ctx context.Context, in *CompSimp, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreUpComp", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -275,6 +297,8 @@ type AccServer interface {
 	RoleProfiles(context.Context, *UserRole) (*RoleProfs, error)
 	// Return profiles on role, and filter by search conditions
 	SearchInRole(context.Context, *Search) (*RoleProfs, error)
+	// Rest account password and send it to account email
+	ResetPwd(context.Context, *UUID) (*AEmpty, error)
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
@@ -284,6 +308,8 @@ type AccServer interface {
 	StoreAddMach(context.Context, *Email) (*UUID, error)
 	// Register store composer account
 	StoreAddComp(context.Context, *Composer) (*UUID, error)
+	// Update store composer email and nickname
+	StoreUpComp(context.Context, *CompSimp) (*AEmpty, error)
 	// Store machine bind with player wechat unionid
 	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
 	// Store machine unbind player wechat unionid
@@ -318,6 +344,9 @@ func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RolePro
 func (UnimplementedAccServer) SearchInRole(context.Context, *Search) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchInRole not implemented")
 }
+func (UnimplementedAccServer) ResetPwd(context.Context, *UUID) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPwd not implemented")
+}
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
 }
@@ -338,6 +367,9 @@ func (UnimplementedAccServer) StoreAddMach(context.Context, *Email) (*UUID, erro
 }
 func (UnimplementedAccServer) StoreAddComp(context.Context, *Composer) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAddComp not implemented")
+}
+func (UnimplementedAccServer) StoreUpComp(context.Context, *CompSimp) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreUpComp not implemented")
 }
 func (UnimplementedAccServer) StoreBindWx(context.Context, *WxBind) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreBindWx not implemented")
@@ -472,6 +504,24 @@ func _Acc_SearchInRole_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_ResetPwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).ResetPwd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/ResetPwd",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).ResetPwd(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_AccActivate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UUID)
 	if err := dec(in); err != nil {
@@ -594,6 +644,24 @@ func _Acc_StoreAddComp_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).StoreAddComp(ctx, req.(*Composer))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_StoreUpComp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompSimp)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).StoreUpComp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/StoreUpComp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).StoreUpComp(ctx, req.(*CompSimp))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -806,6 +874,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_SearchInRole_Handler,
 		},
 		{
+			MethodName: "ResetPwd",
+			Handler:    _Acc_ResetPwd_Handler,
+		},
+		{
 			MethodName: "AccActivate",
 			Handler:    _Acc_AccActivate_Handler,
 		},
@@ -832,6 +904,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreAddComp",
 			Handler:    _Acc_StoreAddComp_Handler,
+		},
+		{
+			MethodName: "StoreUpComp",
+			Handler:    _Acc_StoreUpComp_Handler,
 		},
 		{
 			MethodName: "StoreBindWx",

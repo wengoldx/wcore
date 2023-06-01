@@ -24,6 +24,9 @@ service Acc {
   // Return profiles on role, and filter by search conditions
   rpc SearchInRole(Search) returns (RoleProfs);
 
+  // Rest account password and send it to account email
+  rpc ResetPwd(UUID) returns (AEmpty);
+
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
@@ -39,6 +42,9 @@ service Acc {
 
   // Register store composer account
   rpc StoreAddComp(Composer) returns (UUID);
+
+  // Update store composer email and nickname
+  rpc StoreUpComp(CompSimp) returns (AEmpty);
 
   // Store machine bind with player wechat unionid
   rpc StoreBindWx(WxBind) returns (AEmpty);
@@ -177,7 +183,13 @@ message Machine {
 
 message Composer {
   string email = 1;     // store account email address, set when account generate
-  string nickname = 2;  // store name frist perfix string
+  string nickname = 2;  // store composer nickname
+}
+
+message CompSimp {
+  string uuid = 1;      // uuid for the profile
+  string email = 2;     // store composer email address to update
+  string nickname = 3;  // store composer nickname
 }
 
 message RoleProf {
