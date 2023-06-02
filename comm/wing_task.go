@@ -172,7 +172,6 @@ func (t *TTask) innerTaskExecuter(callback TaskCallback) {
 				time.Sleep(t.interval)
 			}
 			t.executing = false
-			t.innerPostFor("Next Action")
 		}
 	}
 }
