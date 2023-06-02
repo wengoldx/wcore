@@ -14,9 +14,14 @@ package comm
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/toolbox"
+	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 	"time"
 )
+
+/* --------------------------- */
+/* Timer Task Base On toolbox  */
+/* --------------------------- */
 
 // Task datas for multipe generate
 type WTask struct {
@@ -57,20 +62,25 @@ func GetTask(tname string) *toolbox.Task {
 	return nil
 }
 
-// Task the type of task
-type TTask struct {
+/* --------------------------- */
+/* Custom Task On Queue        */
+/* --------------------------- */
+
+// Task monitor to execute queue tasks in sequence
+type QTask struct {
 	queue     *Queue
 	interrupt bool
 	interval  time.Duration
 	executing bool
 }
 
-var chexe = make(chan string)
+// Block chan for TTack queue PIPO
+var ttaskchan = make(chan string)
 
-// TaskCallback task callback
+// TaskCallback task callback function
 type TaskCallback func(data interface{}) error
 
-// GenTask generat a new task instance, you can set the interval duration
+// Generat a new task monitor instance, you can set the interval duration
 // and interrupt flag as the follow format:
 // [CODE:]
 //   interrupt := 1  // interrupt to execut the remain tasks when case error
@@ -78,9 +88,8 @@ type TaskCallback func(data interface{}) error
 //   task := comm.GenTask(callback, interrupt, interval)
 //   task.Post(taskdata)
 // [CODE]
-func GenTask(callback TaskCallback, configs ...int) *TTask {
-	// generat the task and fill default configs
-	task := &TTask{
+func GenQTask(callback TaskCallback, configs ...int) *QTask {
+	task := &QTask{
 		queue: GenQueue(), interrupt: false, interval: 0, executing: false,
 	}
 
@@ -92,52 +101,54 @@ func GenTask(callback TaskCallback, configs ...int) *TTask {
 		}
 	}
 
-	// start task channel to listen
-	go task.innerTaskExecuter(callback)
-	logger.I("Generat a task:{interrupt:", task.interrupt, ", interval:", task.interval, "}")
+	// start task monitor to listen task insert
+	go task.startTaskMonitor(callback)
+	logger.I("Excuting task monitor:{interrupt:", task.interrupt, ", interval:", task.interval, "}")
 	return task
 }
 
-// Post post a task to tasks queue back
-func (t *TTask) Post(taskdata interface{}, check bool) {
-	if check && t.queue.Len() > 5000 {
-		logger.E("Task queue too busy now!")
-		return
-	}
-
-	if taskdata == nil {
-		logger.E("Invalid task data, abort post")
-		return
-	}
-
-	t.queue.Push(taskdata)
-	t.innerPostFor("Post Action")
-}
-
-// SetInterrupt set interrupt flag
-func (t *TTask) SetInterrupt(interrupt bool) {
+// Set task monitor interrupt filter times
+func (t *QTask) SetInterrupt(interrupt bool) {
 	t.interrupt = interrupt
 }
 
-// setInterval set wait interval between tasks in microseconds, and it must > 0.
-func (t *TTask) SetInterval(interval int) {
+// Set waiting interval between tasks in microseconds, and it must > 0.
+func (t *QTask) SetInterval(interval int) {
 	if interval > 0 {
 		t.interval = time.Duration(interval * 1000)
 	}
 }
 
-// innerPostFor start runtime to post action
-func (t *TTask) innerPostFor(action string) {
-	logger.I("Start runtime to post action:", action)
-	go func() { chexe <- action }()
+// Push a new task to monitor queue back
+func (t *QTask) Post(taskdata interface{}, maxlimits ...int) error {
+	if taskdata == nil {
+		logger.E("Invalid data, abort push to queue!")
+		return invar.ErrInvalidData
+	}
+
+	if len(maxlimits) > 0 && maxlimits[0] > 0 && t.queue.Len() > maxlimits[0] {
+		logger.E("Task queue too heavy on oversize", maxlimits[0])
+		return invar.ErrPoolFull
+	}
+
+	t.queue.Push(taskdata)
+	t.asyncPostNext("Post")
+	return nil
 }
 
-// innerTaskExecuter task execute monitor to listen tasks
-func (t *TTask) innerTaskExecuter(callback TaskCallback) {
+// Start runtime to post action
+func (t *QTask) asyncPostNext(action string) {
+	logger.D("Start runtime for [" + action + "] action")
+	go func() { ttaskchan <- action }()
+}
+
+// Start task monitor to listen tasks pushed into queue, and execute it
+func (t *QTask) startTaskMonitor(callback TaskCallback) {
 	for {
-		logger.I("Blocking for task requir select...")
+		logger.I("Blocking for task require select...")
+
 		select {
-		case action := <-chexe:
+		case action := <-ttaskchan:
 			logger.I("Received request from:", action)
 			if callback == nil {
 				logger.E("Nil task callback, abort request")
@@ -172,6 +183,7 @@ func (t *TTask) innerTaskExecuter(callback TaskCallback) {
 				time.Sleep(t.interval)
 			}
 			t.executing = false
+			t.asyncPostNext("Next")
 		}
 	}
 }
