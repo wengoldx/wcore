@@ -27,6 +27,9 @@ service Acc {
   // Rest account password and send it to account email
   rpc RestSendPwd(UUID) returns (AEmpty);
 
+  // Return account emails by given uuids
+  rpc GetAccEmails(UIDS) returns (IDEMails);
+
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
@@ -88,6 +91,15 @@ message CreateTime {
 message AccPwd {
   string acc = 1;       // account uuid, email or phone
   string pwd =2;        // account login password enripted by RSA + Base64
+}
+
+message IDEMail {
+  string uuid = 1;      // uuid for the profile
+  string email = 2;     // store composer email address to update
+}
+
+message IDEMails {
+  repeated IDEMail items = 1;
 }
 
 message Profile {

@@ -34,6 +34,8 @@ type AccClient interface {
 	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
 	// Rest account password and send it to account email
 	RestSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
+	// Return account emails by given uuids
+	GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error)
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
@@ -115,6 +117,15 @@ func (c *accClient) SearchInRole(ctx context.Context, in *Search, opts ...grpc.C
 func (c *accClient) RestSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/RestSendPwd", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error) {
+	out := new(IDEMails)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetAccEmails", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -299,6 +310,8 @@ type AccServer interface {
 	SearchInRole(context.Context, *Search) (*RoleProfs, error)
 	// Rest account password and send it to account email
 	RestSendPwd(context.Context, *UUID) (*AEmpty, error)
+	// Return account emails by given uuids
+	GetAccEmails(context.Context, *UIDS) (*IDEMails, error)
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
@@ -346,6 +359,9 @@ func (UnimplementedAccServer) SearchInRole(context.Context, *Search) (*RoleProfs
 }
 func (UnimplementedAccServer) RestSendPwd(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RestSendPwd not implemented")
+}
+func (UnimplementedAccServer) GetAccEmails(context.Context, *UIDS) (*IDEMails, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAccEmails not implemented")
 }
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
@@ -518,6 +534,24 @@ func _Acc_RestSendPwd_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).RestSendPwd(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_GetAccEmails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UIDS)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GetAccEmails(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GetAccEmails",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GetAccEmails(ctx, req.(*UIDS))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -876,6 +910,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RestSendPwd",
 			Handler:    _Acc_RestSendPwd_Handler,
+		},
+		{
+			MethodName: "GetAccEmails",
+			Handler:    _Acc_GetAccEmails_Handler,
 		},
 		{
 			MethodName: "AccActivate",
