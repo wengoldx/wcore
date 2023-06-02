@@ -25,7 +25,7 @@ service Acc {
   rpc SearchInRole(Search) returns (RoleProfs);
 
   // Rest account password and send it to account email
-  rpc ResetPwd(UUID) returns (AEmpty);
+  rpc RestSendPwd(UUID) returns (AEmpty);
 
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);

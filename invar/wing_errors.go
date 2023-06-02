@@ -105,6 +105,7 @@ var (
 	ErrUnexistLifecycle    = errors.New("Unexist lifecycle configs")
 	ErrSetLifecycleTag     = errors.New("Failed set file lifecycle tag")
 	ErrInactiveAccount     = errors.New("Inactive status account")
+	ErrCaseException       = errors.New("Case exception")
 )
 
 var (
@@ -185,6 +186,7 @@ var (
 	WErrUnexistLifecycle    = &WingErr{0x104A, ErrUnexistLifecycle}
 	WErrSetLifecycleTag     = &WingErr{0x104B, ErrSetLifecycleTag}
 	WErrInactiveAccount     = &WingErr{0x104C, ErrInactiveAccount}
+	WErrCaseException       = &WingErr{0x104D, ErrCaseException}
 )
 
 // Equal tow error if message same on char case

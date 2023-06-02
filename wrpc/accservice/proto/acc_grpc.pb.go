@@ -33,7 +33,7 @@ type AccClient interface {
 	// Return profiles on role, and filter by search conditions
 	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
 	// Rest account password and send it to account email
-	ResetPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
+	RestSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
@@ -112,9 +112,9 @@ func (c *accClient) SearchInRole(ctx context.Context, in *Search, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) ResetPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+func (c *accClient) RestSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/ResetPwd", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Acc/RestSendPwd", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ type AccServer interface {
 	// Return profiles on role, and filter by search conditions
 	SearchInRole(context.Context, *Search) (*RoleProfs, error)
 	// Rest account password and send it to account email
-	ResetPwd(context.Context, *UUID) (*AEmpty, error)
+	RestSendPwd(context.Context, *UUID) (*AEmpty, error)
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
@@ -344,8 +344,8 @@ func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RolePro
 func (UnimplementedAccServer) SearchInRole(context.Context, *Search) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchInRole not implemented")
 }
-func (UnimplementedAccServer) ResetPwd(context.Context, *UUID) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResetPwd not implemented")
+func (UnimplementedAccServer) RestSendPwd(context.Context, *UUID) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestSendPwd not implemented")
 }
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
@@ -504,20 +504,20 @@ func _Acc_SearchInRole_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_ResetPwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Acc_RestSendPwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UUID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).ResetPwd(ctx, in)
+		return srv.(AccServer).RestSendPwd(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/ResetPwd",
+		FullMethod: "/proto.Acc/RestSendPwd",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).ResetPwd(ctx, req.(*UUID))
+		return srv.(AccServer).RestSendPwd(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -874,8 +874,8 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_SearchInRole_Handler,
 		},
 		{
-			MethodName: "ResetPwd",
-			Handler:    _Acc_ResetPwd_Handler,
+			MethodName: "RestSendPwd",
+			Handler:    _Acc_RestSendPwd_Handler,
 		},
 		{
 			MethodName: "AccActivate",
