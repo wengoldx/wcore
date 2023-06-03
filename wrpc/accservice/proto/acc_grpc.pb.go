@@ -32,6 +32,8 @@ type AccClient interface {
 	RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*RoleProfs, error)
 	// Return profiles on role, and filter by search conditions
 	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
+	// Update account email, it maybe case duplicate entry error when tag email exist in databse
+	UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.CallOption) (*AEmpty, error)
 	// Rest account password and send it to account email
 	RestSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account emails by given uuids
@@ -108,6 +110,15 @@ func (c *accClient) RoleProfiles(ctx context.Context, in *UserRole, opts ...grpc
 func (c *accClient) SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error) {
 	out := new(RoleProfs)
 	err := c.cc.Invoke(ctx, "/proto.Acc/SearchInRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/UpdateEmail", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -308,6 +319,8 @@ type AccServer interface {
 	RoleProfiles(context.Context, *UserRole) (*RoleProfs, error)
 	// Return profiles on role, and filter by search conditions
 	SearchInRole(context.Context, *Search) (*RoleProfs, error)
+	// Update account email, it maybe case duplicate entry error when tag email exist in databse
+	UpdateEmail(context.Context, *IDEMail) (*AEmpty, error)
 	// Rest account password and send it to account email
 	RestSendPwd(context.Context, *UUID) (*AEmpty, error)
 	// Return account emails by given uuids
@@ -356,6 +369,9 @@ func (UnimplementedAccServer) RoleProfiles(context.Context, *UserRole) (*RolePro
 }
 func (UnimplementedAccServer) SearchInRole(context.Context, *Search) (*RoleProfs, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchInRole not implemented")
+}
+func (UnimplementedAccServer) UpdateEmail(context.Context, *IDEMail) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateEmail not implemented")
 }
 func (UnimplementedAccServer) RestSendPwd(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RestSendPwd not implemented")
@@ -516,6 +532,24 @@ func _Acc_SearchInRole_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).SearchInRole(ctx, req.(*Search))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_UpdateEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IDEMail)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).UpdateEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/UpdateEmail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).UpdateEmail(ctx, req.(*IDEMail))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -906,6 +940,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchInRole",
 			Handler:    _Acc_SearchInRole_Handler,
+		},
+		{
+			MethodName: "UpdateEmail",
+			Handler:    _Acc_UpdateEmail_Handler,
 		},
 		{
 			MethodName: "RestSendPwd",

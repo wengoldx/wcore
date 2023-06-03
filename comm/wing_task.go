@@ -183,7 +183,6 @@ func (t *QTask) startTaskMonitor(callback TaskCallback) {
 				time.Sleep(t.interval)
 			}
 			t.executing = false
-			// t.asyncPostNext("Next")
 		}
 	}
 }
