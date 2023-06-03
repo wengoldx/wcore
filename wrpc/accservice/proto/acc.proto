@@ -33,6 +33,9 @@ service Acc {
   // Return account emails by given uuids
   rpc GetAccEmails(UIDS) returns (IDEMails);
 
+  // Return account contact (contain nickname, phone, email)
+  rpc GetContact(UUID) returns (Contact);
+
   // Delete indicated account by given uuid
   rpc DeleteAcc(UUID) returns (AEmpty);
 
@@ -55,18 +58,20 @@ service Acc {
   // Store machine unbind player wechat unionid
   rpc StoreUnbindWx(AccPwd) returns (AEmpty);
 
+  // Rename store machine nickname and addresses
+  rpc StoreRename(Addresses) returns (AEmpty);
+
+  // Return account simple profiles and addresses
+  rpc StoreProfile(UUID) returns (ProfStore);
+
 
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
-  rpc GetContact(UUID) returns (Contact);
   rpc GetCreatetime(UUID) returns (CreateTime);
 
-  rpc StoreProfile(UUID) returns (ProfStore);
   rpc StoreProfiles(UIDS) returns (ProfStores);
-  rpc StoreRename(RnStore) returns (AEmpty);
   rpc StoreRePwd(RePwd) returns (AEmpty);
-
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
   rpc UnbindUnionID2(UUID) returns (AEmpty);
@@ -108,6 +113,13 @@ message IDEMails {
   repeated IDEMail items = 1;
 }
 
+message Contact {
+  string uuid = 1;      // account unique id
+  string contact = 2;   // account nickname
+  string email = 3;     // account email address
+  string phone = 4;     // account email phone
+}
+
 message Profile {
   string uuid = 1;      // account unique id
   string nickname = 2;  // account nickname
@@ -128,13 +140,6 @@ message ProfSumms {
   repeated ProfSumm summs = 1;
 }
 
-message Contact {
-  string uuid = 1;      // account unique id
-  string contact = 2;   // account nickname
-  string email = 3;     // account email address
-  string phone = 4;     // account email phone
-}
-
 message ProfStore {
   string logourl = 1;   // store logo image url from heardurl field value of database
   string unionid = 2;   // wechat unionid bind with store account
@@ -152,12 +157,11 @@ message ProfStores {
   repeated ProfStore profiles = 1;
 }
 
-message RnStore {
+message Addresses {
   string uuid = 1;      // account unique id
   string nickname = 2;  // store name frist perfix string
   string province = 3;  // store name middle string
   string city = 4;      // store name the last string
-  string address = 5;   // store address string
 }
 
 message RePwd {
