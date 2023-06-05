@@ -152,7 +152,7 @@ message StoreAddr {
 }
 
 message StoreAddrs {
-  repeated StoreAddr summs = 1;
+  repeated StoreAddr addrs = 1;
 }
 
 message ProfStore {
