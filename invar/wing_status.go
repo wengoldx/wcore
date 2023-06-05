@@ -27,7 +27,7 @@ const (
 	E409Duplicate        = http.StatusConflict
 	E410Gone             = http.StatusGone
 	E412InvalidState     = http.StatusPreconditionFailed
-	E424Locked           = http.StatusLocked
+	E423Locked           = http.StatusLocked
 	E426UpgradeRequired  = http.StatusUpgradeRequired
 )
 
@@ -44,7 +44,7 @@ var statusText = map[int]string{
 	E409Duplicate:        "Duplicate Request",
 	E410Gone:             "Gone",
 	E412InvalidState:     "Invalid State",
-	E424Locked:           "Resource Locked",
+	E423Locked:           "Resource Locked",
 	E426UpgradeRequired:  "Upgrade Header Required",
 }
 
