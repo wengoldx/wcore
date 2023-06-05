@@ -64,6 +64,8 @@ service Acc {
   // Return account simple profiles and addresses
   rpc StoreProfile(UUID) returns (ProfStore);
 
+  // Return store machine unionid and addresses
+  rpc StoreAddresses(UIDS) returns (StoreAddrs);
 
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
@@ -138,6 +140,19 @@ message ProfSumm {
 
 message ProfSumms {
   repeated ProfSumm summs = 1;
+}
+
+message StoreAddr {
+  string uuid = 1;      // uuid for the profile
+  string unionid = 2;   // wechat unionid bind with store account
+  string nickname = 3;  // store name frist perfix string
+  string province = 4;  // store name middle string
+  string city = 5;      // store name the last string
+  string address = 6;   // store address string
+}
+
+message StoreAddrs {
+  repeated StoreAddr summs = 1;
 }
 
 message ProfStore {
