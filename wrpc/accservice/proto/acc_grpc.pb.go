@@ -40,6 +40,8 @@ type AccClient interface {
 	GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
+	// Return account avatars by givan uuids
+	GetAvatars(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*Avatars, error)
 	// Delete indicated account by given uuid
 	DeleteAcc(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Register store machine account
@@ -53,15 +55,14 @@ type AccClient interface {
 	// Store machine unbind player wechat unionid
 	StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	// Rename store machine nickname and addresses
-	StoreRename(ctx context.Context, in *Addresses, opts ...grpc.CallOption) (*AEmpty, error)
+	StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account simple profiles and addresses
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
 	// Return accounts simple profiles and addresses
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
+	/// Maybe Deprecated the follows ///
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
-	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
-	GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error)
 	StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
@@ -157,6 +158,15 @@ func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *accClient) GetAvatars(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*Avatars, error) {
+	out := new(Avatars)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetAvatars", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) DeleteAcc(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/DeleteAcc", in, out, opts...)
@@ -211,7 +221,7 @@ func (c *accClient) StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.
 	return out, nil
 }
 
-func (c *accClient) StoreRename(ctx context.Context, in *Addresses, opts ...grpc.CallOption) (*AEmpty, error) {
+func (c *accClient) StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRename", in, out, opts...)
 	if err != nil {
@@ -250,24 +260,6 @@ func (c *accClient) AccActivate(ctx context.Context, in *UUID, opts ...grpc.Call
 func (c *accClient) GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error) {
 	out := new(Profile)
 	err := c.cc.Invoke(ctx, "/proto.Acc/GetProfile", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error) {
-	out := new(ProfSumms)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetProfSumms", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error) {
-	out := new(CreateTime)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetCreatetime", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -332,6 +324,8 @@ type AccServer interface {
 	GetAccEmails(context.Context, *UIDS) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
 	GetContact(context.Context, *UUID) (*Contact, error)
+	// Return account avatars by givan uuids
+	GetAvatars(context.Context, *UIDS) (*Avatars, error)
 	// Delete indicated account by given uuid
 	DeleteAcc(context.Context, *UUID) (*AEmpty, error)
 	// Register store machine account
@@ -345,15 +339,14 @@ type AccServer interface {
 	// Store machine unbind player wechat unionid
 	StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error)
 	// Rename store machine nickname and addresses
-	StoreRename(context.Context, *Addresses) (*AEmpty, error)
+	StoreRename(context.Context, *ProfAddr) (*AEmpty, error)
 	// Return account simple profiles and addresses
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
 	// Return accounts simple profiles and addresses
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
+	/// Maybe Deprecated the follows ///
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
-	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
-	GetCreatetime(context.Context, *UUID) (*CreateTime, error)
 	StoreRePwd(context.Context, *RePwd) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
@@ -392,6 +385,9 @@ func (UnimplementedAccServer) GetAccEmails(context.Context, *UIDS) (*IDEMails, e
 func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
 }
+func (UnimplementedAccServer) GetAvatars(context.Context, *UIDS) (*Avatars, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAvatars not implemented")
+}
 func (UnimplementedAccServer) DeleteAcc(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAcc not implemented")
 }
@@ -410,7 +406,7 @@ func (UnimplementedAccServer) StoreBindWx(context.Context, *WxBind) (*AEmpty, er
 func (UnimplementedAccServer) StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreUnbindWx not implemented")
 }
-func (UnimplementedAccServer) StoreRename(context.Context, *Addresses) (*AEmpty, error) {
+func (UnimplementedAccServer) StoreRename(context.Context, *ProfAddr) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRename not implemented")
 }
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
@@ -424,12 +420,6 @@ func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, erro
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
-}
-func (UnimplementedAccServer) GetProfSumms(context.Context, *UIDS) (*ProfSumms, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProfSumms not implemented")
-}
-func (UnimplementedAccServer) GetCreatetime(context.Context, *UUID) (*CreateTime, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCreatetime not implemented")
 }
 func (UnimplementedAccServer) StoreRePwd(context.Context, *RePwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRePwd not implemented")
@@ -618,6 +608,24 @@ func _Acc_GetContact_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_GetAvatars_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UIDS)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GetAvatars(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GetAvatars",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GetAvatars(ctx, req.(*UIDS))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_DeleteAcc_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UUID)
 	if err := dec(in); err != nil {
@@ -727,7 +735,7 @@ func _Acc_StoreUnbindWx_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _Acc_StoreRename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Addresses)
+	in := new(ProfAddr)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -739,7 +747,7 @@ func _Acc_StoreRename_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/proto.Acc/StoreRename",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreRename(ctx, req.(*Addresses))
+		return srv.(AccServer).StoreRename(ctx, req.(*ProfAddr))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -812,42 +820,6 @@ func _Acc_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).GetProfile(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_GetProfSumms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UIDS)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).GetProfSumms(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/GetProfSumms",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetProfSumms(ctx, req.(*UIDS))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_GetCreatetime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).GetCreatetime(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/GetCreatetime",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetCreatetime(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -968,6 +940,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_GetContact_Handler,
 		},
 		{
+			MethodName: "GetAvatars",
+			Handler:    _Acc_GetAvatars_Handler,
+		},
+		{
 			MethodName: "DeleteAcc",
 			Handler:    _Acc_DeleteAcc_Handler,
 		},
@@ -1010,14 +986,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProfile",
 			Handler:    _Acc_GetProfile_Handler,
-		},
-		{
-			MethodName: "GetProfSumms",
-			Handler:    _Acc_GetProfSumms_Handler,
-		},
-		{
-			MethodName: "GetCreatetime",
-			Handler:    _Acc_GetCreatetime_Handler,
 		},
 		{
 			MethodName: "StoreRePwd",

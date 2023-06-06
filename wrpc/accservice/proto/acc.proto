@@ -36,6 +36,9 @@ service Acc {
   // Return account contact (contain nickname, phone, email)
   rpc GetContact(UUID) returns (Contact);
 
+  // Return account avatars by givan uuids
+  rpc GetAvatars(UIDS) returns (Avatars);
+  
   // Delete indicated account by given uuid
   rpc DeleteAcc(UUID) returns (AEmpty);
 
@@ -59,7 +62,7 @@ service Acc {
   rpc StoreUnbindWx(AccPwd) returns (AEmpty);
 
   // Rename store machine nickname and addresses
-  rpc StoreRename(Addresses) returns (AEmpty);
+  rpc StoreRename(ProfAddr) returns (AEmpty);
 
   // Return account simple profiles and addresses
   rpc StoreProfile(UUID) returns (ProfStore);
@@ -67,12 +70,9 @@ service Acc {
   // Return accounts simple profiles and addresses
   rpc StoreProfiles(UIDS) returns (ProfStores);
 
+  /// Maybe Deprecated the follows ///
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
-  rpc GetProfSumms(UIDS) returns (ProfSumms);
-  rpc GetCreatetime(UUID) returns (CreateTime);
-
-  
   rpc StoreRePwd(RePwd) returns (AEmpty);
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
@@ -95,10 +95,6 @@ message UIDS {
 
 message Email {
   string email = 1;      // account email
-}
-
-message CreateTime {
-  int64 createtime = 1; // createtime of account
 }
 
 message AccPwd {
@@ -131,15 +127,22 @@ message Profile {
   bool   isverify = 6;  // status to indicate account if pass real-name autnenticated
 }
 
-message ProfSumm {
+message ProfAddr {
+  string uuid = 1;      // account unique id
+  string nickname = 2;  // store name frist perfix string
+  string province = 3;  // store name middle string
+  string city = 4;      // store name the last string
+}
+
+message Avatar {
   string uuid = 1;      // account unique id
   int64  sex = 2;       // account sex, 0:none, 1:male, 2:female, 3:neutral
   string nickname = 3;  // account nickname
   string heardurl = 4;  // account heardurl, the value set from wechat avatar
 }
 
-message ProfSumms {
-  repeated ProfSumm summs = 1;
+message Avatars {
+  repeated Avatar profs = 1;
 }
 
 message ProfStore {
@@ -155,13 +158,6 @@ message ProfStore {
 
 message ProfStores {
   repeated ProfStore profs = 1;
-}
-
-message Addresses {
-  string uuid = 1;      // account unique id
-  string nickname = 2;  // store name frist perfix string
-  string province = 3;  // store name middle string
-  string city = 4;      // store name the last string
 }
 
 message RePwd {
