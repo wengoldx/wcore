@@ -64,15 +64,15 @@ service Acc {
   // Return account simple profiles and addresses
   rpc StoreProfile(UUID) returns (ProfStore);
 
-  // Return store machine unionid and addresses
-  rpc StoreAddresses(UIDS) returns (StoreAddrs);
+  // Return accounts simple profiles and addresses
+  rpc StoreProfiles(UIDS) returns (ProfStores);
 
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
   rpc GetProfSumms(UIDS) returns (ProfSumms);
   rpc GetCreatetime(UUID) returns (CreateTime);
 
-  rpc StoreProfiles(UIDS) returns (ProfStores);
+  
   rpc StoreRePwd(RePwd) returns (AEmpty);
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
@@ -142,34 +142,19 @@ message ProfSumms {
   repeated ProfSumm summs = 1;
 }
 
-message StoreAddr {
-  string uuid = 1;      // uuid for the profile
-  string unionid = 2;   // wechat unionid bind with store account
-  string nickname = 3;  // store name frist perfix string
-  string province = 4;  // store name middle string
-  string city = 5;      // store name the last string
-  string address = 6;   // store address string
-}
-
-message StoreAddrs {
-  repeated StoreAddr addrs = 1;
-}
-
 message ProfStore {
-  string logourl = 1;   // store logo image url from heardurl field value of database
+  string uuid = 1;      // account unique id
   string unionid = 2;   // wechat unionid bind with store account
-  string email = 3;     // store account email address, set when account generate
-  string phone = 4;     // store account phone number, set when account generate
+  string logourl = 3;   // store logo image url from heardurl field value of database
+  string email = 4;     // store account email address, set when account generate
   string nickname = 5;  // store name frist perfix string
   string province = 6;  // store name middle string
   string city = 7;      // store name the last string
   string address = 8;   // store address string
-  string uuid = 9;      // uuid for the profile
-  bool   activate = 10; // is account activate
 }
 
 message ProfStores {
-  repeated ProfStore profiles = 1;
+  repeated ProfStore profs = 1;
 }
 
 message Addresses {

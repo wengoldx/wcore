@@ -56,13 +56,12 @@ type AccClient interface {
 	StoreRename(ctx context.Context, in *Addresses, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account simple profiles and addresses
 	StoreProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*ProfStore, error)
-	// Return store machine unionid and addresses
-	StoreAddresses(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*StoreAddrs, error)
+	// Return accounts simple profiles and addresses
+	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfSumms, error)
 	GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error)
-	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
@@ -230,9 +229,9 @@ func (c *accClient) StoreProfile(ctx context.Context, in *UUID, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *accClient) StoreAddresses(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*StoreAddrs, error) {
-	out := new(StoreAddrs)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreAddresses", in, out, opts...)
+func (c *accClient) StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error) {
+	out := new(ProfStores)
+	err := c.cc.Invoke(ctx, "/proto.Acc/StoreProfiles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -269,15 +268,6 @@ func (c *accClient) GetProfSumms(ctx context.Context, in *UIDS, opts ...grpc.Cal
 func (c *accClient) GetCreatetime(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*CreateTime, error) {
 	out := new(CreateTime)
 	err := c.cc.Invoke(ctx, "/proto.Acc/GetCreatetime", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error) {
-	out := new(ProfStores)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreProfiles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -358,13 +348,12 @@ type AccServer interface {
 	StoreRename(context.Context, *Addresses) (*AEmpty, error)
 	// Return account simple profiles and addresses
 	StoreProfile(context.Context, *UUID) (*ProfStore, error)
-	// Return store machine unionid and addresses
-	StoreAddresses(context.Context, *UIDS) (*StoreAddrs, error)
+	// Return accounts simple profiles and addresses
+	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	GetProfSumms(context.Context, *UIDS) (*ProfSumms, error)
 	GetCreatetime(context.Context, *UUID) (*CreateTime, error)
-	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	StoreRePwd(context.Context, *RePwd) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
@@ -427,8 +416,8 @@ func (UnimplementedAccServer) StoreRename(context.Context, *Addresses) (*AEmpty,
 func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreProfile not implemented")
 }
-func (UnimplementedAccServer) StoreAddresses(context.Context, *UIDS) (*StoreAddrs, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreAddresses not implemented")
+func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StoreProfiles not implemented")
 }
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
@@ -441,9 +430,6 @@ func (UnimplementedAccServer) GetProfSumms(context.Context, *UIDS) (*ProfSumms, 
 }
 func (UnimplementedAccServer) GetCreatetime(context.Context, *UUID) (*CreateTime, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCreatetime not implemented")
-}
-func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreProfiles not implemented")
 }
 func (UnimplementedAccServer) StoreRePwd(context.Context, *RePwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRePwd not implemented")
@@ -776,20 +762,20 @@ func _Acc_StoreProfile_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_StoreAddresses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Acc_StoreProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UIDS)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).StoreAddresses(ctx, in)
+		return srv.(AccServer).StoreProfiles(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/StoreAddresses",
+		FullMethod: "/proto.Acc/StoreProfiles",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreAddresses(ctx, req.(*UIDS))
+		return srv.(AccServer).StoreProfiles(ctx, req.(*UIDS))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -862,24 +848,6 @@ func _Acc_GetCreatetime_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).GetCreatetime(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_StoreProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UIDS)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).StoreProfiles(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/StoreProfiles",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreProfiles(ctx, req.(*UIDS))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1032,8 +1000,8 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_StoreProfile_Handler,
 		},
 		{
-			MethodName: "StoreAddresses",
-			Handler:    _Acc_StoreAddresses_Handler,
+			MethodName: "StoreProfiles",
+			Handler:    _Acc_StoreProfiles_Handler,
 		},
 		{
 			MethodName: "AccActivate",
@@ -1050,10 +1018,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCreatetime",
 			Handler:    _Acc_GetCreatetime_Handler,
-		},
-		{
-			MethodName: "StoreProfiles",
-			Handler:    _Acc_StoreProfiles_Handler,
 		},
 		{
 			MethodName: "StoreRePwd",
