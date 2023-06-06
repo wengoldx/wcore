@@ -59,17 +59,6 @@ func Condition(condition bool, trueData interface{}, falseData interface{}) inte
 	return falseData
 }
 
-// Join strings with ' ', then insert into the given format string;
-//
-// - `format` : "SELECT * FROM account WHERE uuid IN (%s)"
-//
-// - `values` : []string{"D23", "4R", "A34"}
-//
-// The return is "SELECT * FROM account WHERE uuid IN ('D23','4R','A34')"
-func JoinStrings(format string, values []string) string {
-	return fmt.Sprintf(format, "'"+strings.Join(values, "','")+"'")
-}
-
 // Contain check the given string list if contains item
 func Contain(list *[]string, item string) bool {
 	for _, v := range *list {
@@ -152,6 +141,17 @@ func ToXMLReplace(input interface{}, from, to string) (string, error) {
 		xmlout = strings.Replace(xmlout, trimsrc, to, -1)
 	}
 	return xmlout, nil
+}
+
+// Join strings with ' ', then insert into the given format string;
+//
+// - `format` : "SELECT * FROM account WHERE uuid IN (%s)"
+//
+// - `values` : []string{"D23", "4R", "A34"}
+//
+// The return is "SELECT * FROM account WHERE uuid IN ('D23','4R','A34')"
+func JoinStrings(format string, values []string) string {
+	return fmt.Sprintf(format, "'"+strings.Join(values, "','")+"'")
 }
 
 // JoinLines combine strings into multiple lines
