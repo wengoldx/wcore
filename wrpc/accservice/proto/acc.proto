@@ -17,7 +17,7 @@ service Acc {
 
   // Register account with given role, then return uuid and random password
   // NOTICE that this function not create a admin role account
-  rpc AccRegister(Role) returns (AccPwd);
+  rpc AccRegister(UserRole) returns (AccPwd);
 
   // Account login by uuid/phone/email and encryptd password 
   rpc AccLogin(AccPwd) returns (Token);

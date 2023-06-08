@@ -28,7 +28,7 @@ type AccClient interface {
 	ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error)
 	// Register account with given role, then return uuid and random password
 	// NOTICE that this function not create a admin role account
-	AccRegister(ctx context.Context, in *Role, opts ...grpc.CallOption) (*AccPwd, error)
+	AccRegister(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AccPwd, error)
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
 	// Return profiles on role, e.g. get all store composers
@@ -98,7 +98,7 @@ func (c *accClient) ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOpti
 	return out, nil
 }
 
-func (c *accClient) AccRegister(ctx context.Context, in *Role, opts ...grpc.CallOption) (*AccPwd, error) {
+func (c *accClient) AccRegister(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AccPwd, error) {
 	out := new(AccPwd)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AccRegister", in, out, opts...)
 	if err != nil {
@@ -324,7 +324,7 @@ type AccServer interface {
 	ViaRole(context.Context, *Role) (*Result, error)
 	// Register account with given role, then return uuid and random password
 	// NOTICE that this function not create a admin role account
-	AccRegister(context.Context, *Role) (*AccPwd, error)
+	AccRegister(context.Context, *UserRole) (*AccPwd, error)
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(context.Context, *AccPwd) (*Token, error)
 	// Return profiles on role, e.g. get all store composers
@@ -379,7 +379,7 @@ func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error)
 func (UnimplementedAccServer) ViaRole(context.Context, *Role) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaRole not implemented")
 }
-func (UnimplementedAccServer) AccRegister(context.Context, *Role) (*AccPwd, error) {
+func (UnimplementedAccServer) AccRegister(context.Context, *UserRole) (*AccPwd, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccRegister not implemented")
 }
 func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
@@ -501,7 +501,7 @@ func _Acc_ViaRole_Handler(srv interface{}, ctx context.Context, dec func(interfa
 }
 
 func _Acc_AccRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Role)
+	in := new(UserRole)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -513,7 +513,7 @@ func _Acc_AccRegister_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/proto.Acc/AccRegister",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AccRegister(ctx, req.(*Role))
+		return srv.(AccServer).AccRegister(ctx, req.(*UserRole))
 	}
 	return interceptor(ctx, in, info, handler)
 }

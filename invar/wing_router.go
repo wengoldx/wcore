@@ -21,6 +21,12 @@ const (
 	WRoleSComp     = "store-comp"    // Store composer account
 	WRoleSMachine  = "store-machine" // Store machine account
 	WRoleQKPartner = "qk-partner"    // QKS partner account
+
+	/* FIXME :
+	 *
+	 * Update the follow IsValidAdmin() and IsValidUser() methods
+	 * when added same new role strings.
+	 */
 )
 
 // RBAC role router keyword
@@ -51,4 +57,16 @@ func GetRouterKey(role string) string {
 		return WRGroupPartner
 	}
 	return role
+}
+
+// Check given role if super or admin role
+func IsValidAdmin(role string) bool {
+	return role != "" && (role == WRoleSuper || role == WRoleAdmin)
+}
+
+// Check given role if normal user, not admins
+func IsValidUser(role string) bool {
+	return role != "" && (role == WRoleUser || role == WRoleMComp ||
+		role == WRoleMDesigner || role == WRoleSComp ||
+		role == WRoleSMachine || role == WRoleQKPartner)
 }
