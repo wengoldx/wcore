@@ -26,6 +26,9 @@ type AccClient interface {
 	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error)
 	// Account role access permission check
 	ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error)
+	// Register account with given role, then return uuid and random password
+	// NOTICE that this function not create a admin role account
+	AccRegister(ctx context.Context, in *Role, opts ...grpc.CallOption) (*AccPwd, error)
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*Token, error)
 	// Return profiles on role, e.g. get all store composers
@@ -89,6 +92,15 @@ func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOp
 func (c *accClient) ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error) {
 	out := new(Result)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) AccRegister(ctx context.Context, in *Role, opts ...grpc.CallOption) (*AccPwd, error) {
+	out := new(AccPwd)
+	err := c.cc.Invoke(ctx, "/proto.Acc/AccRegister", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -310,6 +322,9 @@ type AccServer interface {
 	ViaToken(context.Context, *Token) (*AccPwd, error)
 	// Account role access permission check
 	ViaRole(context.Context, *Role) (*Result, error)
+	// Register account with given role, then return uuid and random password
+	// NOTICE that this function not create a admin role account
+	AccRegister(context.Context, *Role) (*AccPwd, error)
 	// Account login by uuid/phone/email and encryptd password
 	AccLogin(context.Context, *AccPwd) (*Token, error)
 	// Return profiles on role, e.g. get all store composers
@@ -363,6 +378,9 @@ func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error)
 }
 func (UnimplementedAccServer) ViaRole(context.Context, *Role) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaRole not implemented")
+}
+func (UnimplementedAccServer) AccRegister(context.Context, *Role) (*AccPwd, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AccRegister not implemented")
 }
 func (UnimplementedAccServer) AccLogin(context.Context, *AccPwd) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccLogin not implemented")
@@ -478,6 +496,24 @@ func _Acc_ViaRole_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).ViaRole(ctx, req.(*Role))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_AccRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Role)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).AccRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/AccRegister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).AccRegister(ctx, req.(*Role))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -910,6 +946,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ViaRole",
 			Handler:    _Acc_ViaRole_Handler,
+		},
+		{
+			MethodName: "AccRegister",
+			Handler:    _Acc_AccRegister_Handler,
 		},
 		{
 			MethodName: "AccLogin",
