@@ -39,6 +39,8 @@ type AccClient interface {
 	UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.CallOption) (*AEmpty, error)
 	// Rest account password and send it to account email
 	ResetSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
+	// Unbind account wechat unionid (clear unionid field directly)
+	UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account emails by given uuids
 	GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
@@ -69,7 +71,6 @@ type AccClient interface {
 	StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
-	UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 }
 
 type accClient struct {
@@ -146,6 +147,15 @@ func (c *accClient) UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.C
 func (c *accClient) ResetSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ResetSendPwd", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindWechat", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -305,15 +315,6 @@ func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) UnbindUnionID2(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindUnionID2", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -335,6 +336,8 @@ type AccServer interface {
 	UpdateEmail(context.Context, *IDEMail) (*AEmpty, error)
 	// Rest account password and send it to account email
 	ResetSendPwd(context.Context, *UUID) (*AEmpty, error)
+	// Unbind account wechat unionid (clear unionid field directly)
+	UnbindWechat(context.Context, *UUID) (*AEmpty, error)
 	// Return account emails by given uuids
 	GetAccEmails(context.Context, *UIDS) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
@@ -365,7 +368,6 @@ type AccServer interface {
 	StoreRePwd(context.Context, *RePwd) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
-	UnbindUnionID2(context.Context, *UUID) (*AEmpty, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -396,6 +398,9 @@ func (UnimplementedAccServer) UpdateEmail(context.Context, *IDEMail) (*AEmpty, e
 }
 func (UnimplementedAccServer) ResetSendPwd(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetSendPwd not implemented")
+}
+func (UnimplementedAccServer) UnbindWechat(context.Context, *UUID) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnbindWechat not implemented")
 }
 func (UnimplementedAccServer) GetAccEmails(context.Context, *UIDS) (*IDEMails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccEmails not implemented")
@@ -447,9 +452,6 @@ func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*AEmpty, er
 }
 func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
-}
-func (UnimplementedAccServer) UnbindUnionID2(context.Context, *UUID) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnbindUnionID2 not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -604,6 +606,24 @@ func _Acc_ResetSendPwd_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).ResetSendPwd(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_UnbindWechat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).UnbindWechat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/UnbindWechat",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).UnbindWechat(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -914,24 +934,6 @@ func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_UnbindUnionID2_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).UnbindUnionID2(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/UnbindUnionID2",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).UnbindUnionID2(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -970,6 +972,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResetSendPwd",
 			Handler:    _Acc_ResetSendPwd_Handler,
+		},
+		{
+			MethodName: "UnbindWechat",
+			Handler:    _Acc_UnbindWechat_Handler,
 		},
 		{
 			MethodName: "GetAccEmails",
@@ -1038,10 +1044,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BindAccount",
 			Handler:    _Acc_BindAccount_Handler,
-		},
-		{
-			MethodName: "UnbindUnionID2",
-			Handler:    _Acc_UnbindUnionID2_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

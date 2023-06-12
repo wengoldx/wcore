@@ -34,6 +34,9 @@ service Acc {
   // Rest account password and send it to account email
   rpc ResetSendPwd(UUID) returns (AEmpty);
 
+  // Unbind account wechat unionid (clear unionid field directly)
+  rpc UnbindWechat(UUID) returns (AEmpty);
+
   // Return account emails by given uuids
   rpc GetAccEmails(UIDS) returns (IDEMails);
 
@@ -80,7 +83,6 @@ service Acc {
   rpc StoreRePwd(RePwd) returns (AEmpty);
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
-  rpc UnbindUnionID2(UUID) returns (AEmpty);
 }
 
 message AEmpty {}       // diferent other server when using together
