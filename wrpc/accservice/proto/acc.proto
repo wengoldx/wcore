@@ -68,6 +68,9 @@ service Acc {
   // Store machine unbind player wechat unionid
   rpc StoreUnbindWx(AccPwd) returns (AEmpty);
 
+  // Store composer unbind machine's player wechat unionid
+  rpc CompUnbindWx(UUID) returns (AEmpty);
+
   // Rename store machine nickname and addresses
   rpc StoreRename(ProfAddr) returns (AEmpty);
 

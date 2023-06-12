@@ -59,6 +59,8 @@ type AccClient interface {
 	StoreBindWx(ctx context.Context, in *WxBind, opts ...grpc.CallOption) (*AEmpty, error)
 	// Store machine unbind player wechat unionid
 	StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
+	// Store composer unbind machine's player wechat unionid
+	CompUnbindWx(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Rename store machine nickname and addresses
 	StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account simple profiles and addresses
@@ -243,6 +245,15 @@ func (c *accClient) StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.
 	return out, nil
 }
 
+func (c *accClient) CompUnbindWx(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/CompUnbindWx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRename", in, out, opts...)
@@ -356,6 +367,8 @@ type AccServer interface {
 	StoreBindWx(context.Context, *WxBind) (*AEmpty, error)
 	// Store machine unbind player wechat unionid
 	StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error)
+	// Store composer unbind machine's player wechat unionid
+	CompUnbindWx(context.Context, *UUID) (*AEmpty, error)
 	// Rename store machine nickname and addresses
 	StoreRename(context.Context, *ProfAddr) (*AEmpty, error)
 	// Return account simple profiles and addresses
@@ -428,6 +441,9 @@ func (UnimplementedAccServer) StoreBindWx(context.Context, *WxBind) (*AEmpty, er
 }
 func (UnimplementedAccServer) StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreUnbindWx not implemented")
+}
+func (UnimplementedAccServer) CompUnbindWx(context.Context, *UUID) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompUnbindWx not implemented")
 }
 func (UnimplementedAccServer) StoreRename(context.Context, *ProfAddr) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRename not implemented")
@@ -790,6 +806,24 @@ func _Acc_StoreUnbindWx_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_CompUnbindWx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).CompUnbindWx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/CompUnbindWx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).CompUnbindWx(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_StoreRename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ProfAddr)
 	if err := dec(in); err != nil {
@@ -1012,6 +1046,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StoreUnbindWx",
 			Handler:    _Acc_StoreUnbindWx_Handler,
+		},
+		{
+			MethodName: "CompUnbindWx",
+			Handler:    _Acc_CompUnbindWx_Handler,
 		},
 		{
 			MethodName: "StoreRename",
