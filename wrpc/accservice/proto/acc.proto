@@ -86,7 +86,6 @@ service Acc {
   /// Maybe Deprecated the follows ///
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
-  rpc StoreRePwd(RePwd) returns (AEmpty);
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
 }
@@ -170,13 +169,6 @@ message ProfStore {
 
 message ProfStores {
   repeated ProfStore profs = 1;
-}
-
-message RePwd {
-  string uuid = 1;      // account unique id
-  string nickname = 2;  // account nickname, maybe the company name
-  string pwd = 3;       // account password
-  string role = 4;      // account for role, store-comp or store-machine
 }
 
 message WxBind {

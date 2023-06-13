@@ -72,7 +72,6 @@ type AccClient interface {
 	/// Maybe Deprecated the follows ///
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
-	StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 }
@@ -310,15 +309,6 @@ func (c *accClient) GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *accClient) StoreRePwd(ctx context.Context, in *RePwd, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRePwd", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *accClient) SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/SetContact", in, out, opts...)
@@ -391,7 +381,6 @@ type AccServer interface {
 	/// Maybe Deprecated the follows ///
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
-	StoreRePwd(context.Context, *RePwd) (*AEmpty, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
 	mustEmbedUnimplementedAccServer()
@@ -475,9 +464,6 @@ func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, erro
 }
 func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
-}
-func (UnimplementedAccServer) StoreRePwd(context.Context, *RePwd) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StoreRePwd not implemented")
 }
 func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetContact not implemented")
@@ -948,24 +934,6 @@ func _Acc_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_StoreRePwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RePwd)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).StoreRePwd(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/StoreRePwd",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).StoreRePwd(ctx, req.(*RePwd))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Acc_SetContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Contact)
 	if err := dec(in); err != nil {
@@ -1108,10 +1076,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetProfile",
 			Handler:    _Acc_GetProfile_Handler,
-		},
-		{
-			MethodName: "StoreRePwd",
-			Handler:    _Acc_StoreRePwd_Handler,
 		},
 		{
 			MethodName: "SetContact",
