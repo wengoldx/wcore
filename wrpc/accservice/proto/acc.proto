@@ -31,7 +31,7 @@ service Acc {
   // Update account email, it maybe case duplicate entry error when tag email exist in databse
   rpc UpdateEmail(IDEMail) returns (AEmpty);
 
-  // Rest account password and send it to account email
+  // Reset account password and send by email
   rpc ResetSendPwd(UUID) returns (AEmpty);
 
   // Unbind account wechat unionid (clear unionid field directly)
@@ -70,6 +70,9 @@ service Acc {
 
   // Store composer unbind machine's player wechat unionid
   rpc CompUnbindWx(UUID) returns (AEmpty);
+
+  // Store composer reset machine password and send by email
+  rpc CompResetPwd(AccPwd) returns (AEmpty);
 
   // Rename store machine nickname and addresses
   rpc StoreRename(ProfAddr) returns (AEmpty);

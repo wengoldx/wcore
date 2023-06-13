@@ -37,7 +37,7 @@ type AccClient interface {
 	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
 	// Update account email, it maybe case duplicate entry error when tag email exist in databse
 	UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.CallOption) (*AEmpty, error)
-	// Rest account password and send it to account email
+	// Reset account password and send by email
 	ResetSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Unbind account wechat unionid (clear unionid field directly)
 	UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
@@ -61,6 +61,8 @@ type AccClient interface {
 	StoreUnbindWx(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	// Store composer unbind machine's player wechat unionid
 	CompUnbindWx(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
+	// Store composer reset machine password and send by email
+	CompResetPwd(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	// Rename store machine nickname and addresses
 	StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account simple profiles and addresses
@@ -254,6 +256,15 @@ func (c *accClient) CompUnbindWx(ctx context.Context, in *UUID, opts ...grpc.Cal
 	return out, nil
 }
 
+func (c *accClient) CompResetPwd(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/CompResetPwd", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/StoreRename", in, out, opts...)
@@ -345,7 +356,7 @@ type AccServer interface {
 	SearchInRole(context.Context, *Search) (*RoleProfs, error)
 	// Update account email, it maybe case duplicate entry error when tag email exist in databse
 	UpdateEmail(context.Context, *IDEMail) (*AEmpty, error)
-	// Rest account password and send it to account email
+	// Reset account password and send by email
 	ResetSendPwd(context.Context, *UUID) (*AEmpty, error)
 	// Unbind account wechat unionid (clear unionid field directly)
 	UnbindWechat(context.Context, *UUID) (*AEmpty, error)
@@ -369,6 +380,8 @@ type AccServer interface {
 	StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, error)
 	// Store composer unbind machine's player wechat unionid
 	CompUnbindWx(context.Context, *UUID) (*AEmpty, error)
+	// Store composer reset machine password and send by email
+	CompResetPwd(context.Context, *AccPwd) (*AEmpty, error)
 	// Rename store machine nickname and addresses
 	StoreRename(context.Context, *ProfAddr) (*AEmpty, error)
 	// Return account simple profiles and addresses
@@ -444,6 +457,9 @@ func (UnimplementedAccServer) StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, 
 }
 func (UnimplementedAccServer) CompUnbindWx(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompUnbindWx not implemented")
+}
+func (UnimplementedAccServer) CompResetPwd(context.Context, *AccPwd) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompResetPwd not implemented")
 }
 func (UnimplementedAccServer) StoreRename(context.Context, *ProfAddr) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreRename not implemented")
@@ -824,6 +840,24 @@ func _Acc_CompUnbindWx_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_CompResetPwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccPwd)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).CompResetPwd(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/CompResetPwd",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).CompResetPwd(ctx, req.(*AccPwd))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_StoreRename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ProfAddr)
 	if err := dec(in); err != nil {
@@ -1050,6 +1084,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CompUnbindWx",
 			Handler:    _Acc_CompUnbindWx_Handler,
+		},
+		{
+			MethodName: "CompResetPwd",
+			Handler:    _Acc_CompResetPwd_Handler,
 		},
 		{
 			MethodName: "StoreRename",
