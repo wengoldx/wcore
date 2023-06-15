@@ -222,9 +222,10 @@ func IsError(e error, s string) bool {
 
 // Check given error if duplicated errors
 func IsDupError(e error) bool {
-	return ErrorContain(e, ErrDupRegister) || ErrorContain(e, ErrDupLogin) ||
+	return ErrorContain(e, ErrDupRegister) || IsError(e, "Duplicate entry") ||
 		ErrorContain(e, ErrDupData) || ErrorContain(e, ErrDupAccount) ||
-		ErrorContain(e, ErrDupName) || ErrorContain(e, ErrDupKey)
+		ErrorContain(e, ErrDupName) || ErrorContain(e, ErrDupKey) ||
+		ErrorContain(e, ErrDupLogin)
 }
 
 /////////////////////////////////////
