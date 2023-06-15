@@ -220,6 +220,15 @@ func IsError(e error, s string) bool {
 	return strings.Contains(esu, su)
 }
 
+// Check given error if duplicated errors
+func IsDupError(e error) bool {
+	return ErrorContain(e, ErrDupRegister) || ErrorContain(e, ErrDupLogin) ||
+		ErrorContain(e, ErrDupData) || ErrorContain(e, ErrDupAccount) ||
+		ErrorContain(e, ErrDupName) || ErrorContain(e, ErrDupKey)
+}
+
+/////////////////////////////////////
+
 // Create a custom extend error from given code and message
 func GenWExErr(code int, message string) WExErr {
 	return WExErr{Code: code, Message: message}
