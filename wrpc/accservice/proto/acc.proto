@@ -72,7 +72,7 @@ service Acc {
   rpc CompUnbindWx(UUID) returns (AEmpty);
 
   // Store composer reset machine password and send by email
-  rpc CompResetPwd(AccPwd) returns (AEmpty);
+  rpc CompResetPwd(TagPwd) returns (AEmpty);
 
   // Rename store machine nickname and addresses
   rpc StoreRename(ProfAddr) returns (AEmpty);
@@ -111,6 +111,12 @@ message Email {
 message AccPwd {
   string acc = 1;       // account uuid, email or phone
   string pwd = 2;       // account login password enripted by RSA + Base64
+}
+
+message TagPwd {
+  string uuid = 1;      // request account uuid
+  string tag = 2;       // target account uuid to change password
+  string pwd = 3;       // target account login password enripted by RSA + Base64
 }
 
 message IDEMail {

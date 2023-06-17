@@ -62,7 +62,7 @@ type AccClient interface {
 	// Store composer unbind machine's player wechat unionid
 	CompUnbindWx(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Store composer reset machine password and send by email
-	CompResetPwd(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error)
+	CompResetPwd(ctx context.Context, in *TagPwd, opts ...grpc.CallOption) (*AEmpty, error)
 	// Rename store machine nickname and addresses
 	StoreRename(ctx context.Context, in *ProfAddr, opts ...grpc.CallOption) (*AEmpty, error)
 	// Return account simple profiles and addresses
@@ -255,7 +255,7 @@ func (c *accClient) CompUnbindWx(ctx context.Context, in *UUID, opts ...grpc.Cal
 	return out, nil
 }
 
-func (c *accClient) CompResetPwd(ctx context.Context, in *AccPwd, opts ...grpc.CallOption) (*AEmpty, error) {
+func (c *accClient) CompResetPwd(ctx context.Context, in *TagPwd, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/CompResetPwd", in, out, opts...)
 	if err != nil {
@@ -371,7 +371,7 @@ type AccServer interface {
 	// Store composer unbind machine's player wechat unionid
 	CompUnbindWx(context.Context, *UUID) (*AEmpty, error)
 	// Store composer reset machine password and send by email
-	CompResetPwd(context.Context, *AccPwd) (*AEmpty, error)
+	CompResetPwd(context.Context, *TagPwd) (*AEmpty, error)
 	// Rename store machine nickname and addresses
 	StoreRename(context.Context, *ProfAddr) (*AEmpty, error)
 	// Return account simple profiles and addresses
@@ -447,7 +447,7 @@ func (UnimplementedAccServer) StoreUnbindWx(context.Context, *AccPwd) (*AEmpty, 
 func (UnimplementedAccServer) CompUnbindWx(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompUnbindWx not implemented")
 }
-func (UnimplementedAccServer) CompResetPwd(context.Context, *AccPwd) (*AEmpty, error) {
+func (UnimplementedAccServer) CompResetPwd(context.Context, *TagPwd) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CompResetPwd not implemented")
 }
 func (UnimplementedAccServer) StoreRename(context.Context, *ProfAddr) (*AEmpty, error) {
@@ -827,7 +827,7 @@ func _Acc_CompUnbindWx_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Acc_CompResetPwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AccPwd)
+	in := new(TagPwd)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -839,7 +839,7 @@ func _Acc_CompResetPwd_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/proto.Acc/CompResetPwd",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).CompResetPwd(ctx, req.(*AccPwd))
+		return srv.(AccServer).CompResetPwd(ctx, req.(*TagPwd))
 	}
 	return interceptor(ctx, in, info, handler)
 }
