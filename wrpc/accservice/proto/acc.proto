@@ -149,6 +149,7 @@ message ProfAddr {
   string nickname = 2;  // store name frist perfix string
   string province = 3;  // store name middle string
   string city = 4;      // store name the last string
+  string address = 5;   // store address string
 }
 
 message Avatar {
