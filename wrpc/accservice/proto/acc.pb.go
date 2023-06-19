@@ -633,7 +633,7 @@ type ProfAddr struct {
 	Nickname string `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"` // store name frist perfix string
 	Province string `protobuf:"bytes,3,opt,name=province,proto3" json:"province,omitempty"` // store name middle string
 	City     string `protobuf:"bytes,4,opt,name=city,proto3" json:"city,omitempty"`         // store name the last string
-	Address  string `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`   // store address string
+	Address  string `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`   // store address string, it maybe empty
 }
 
 func (x *ProfAddr) Reset() {
