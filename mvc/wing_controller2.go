@@ -11,8 +11,6 @@
 package mvc
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"github.com/wengoldx/wing/logger"
 	"strings"
 )
@@ -22,10 +20,11 @@ import (
 // before post request if expect the controller method enable execute token
 // authentication from header.
 //
-// * Authoration : It must fixed keyword as WENGOLD
+// * Authoration : It must fixed keyword as WENGOLD-V1.1
 //
 // * Token : Authenticate JWT token responsed by login success
 //
+// * Location : Optional value of client indicator, global location
 //
 // `USAGE` :
 //
@@ -52,14 +51,16 @@ import (
 // `USECASE 1. Auth account and Parse input params`
 //
 //	//	@Description Restful api bind with /login on POST method
-//	//	@Param Authoration header string true "WENGOLD"
+//	//	@Param Authoration header string true "WENGOLD-V1.1"
 //	//	@Param Token       header string true "Authentication token"
 //	//	@Param data body types.Accout true "input param description"
 //	//	@Success 200 {string} "response data description"
 //	//	@router /login [post]
 //	func (c *AccController) AccLogin() {
 //		ps := &types.Accout{}
-//		c.DoAfterValidated(ps, func(uuid, pwd string) (int, interface{}) {
+//		c.DoAfterValidated(ps, func(uuid string) (int, interface{}) {
+//		// Or get authed account password as :
+//		// c.DoAfterAuthValidated(ps, func(uuid, pwd string) (int, interface{}) {
 //			// do same business with input NO-EMPTY account uuid,
 //			// directe use c and ps param in this methed.
 //			// ...
@@ -70,12 +71,12 @@ import (
 // `USECASE 2. Auth account on GET http method`
 //
 //	//	@Description Restful api bind with /detail on GET method
-//	//	@Param Authoration header string true "WENGOLD"
+//	//	@Param Authoration header string true "WENGOLD-V1.1"
 //	//	@Param Token       header string true "Authentication token"
 //	//	@Success 200 {types.Detail} "response data description"
 //	//	@router /detail [get]
 //	func (c *AccController) AccDetail() {
-//		if uuid, _ := c.AuthRequestHeader(); uuid != "" {
+//		if uuid := c.AuthRequestHeader(); uuid != "" {
 //			// use c.BindValue("fieldkey", out) parse params from url
 //			c.ResponJSON(service.AccDetail(uuid))
 //		}
@@ -110,7 +111,10 @@ type WAuthController struct {
 }
 
 // NextFunc2 do action after input params validated, it decode token to get account uuid.
-type NextFunc2 func(uuid, pwd string) (int, interface{})
+type NextFunc2 func(uuid string) (int, interface{})
+
+// NextFunc3 do action after input params validated, it decode token to get account uuid and password.
+type NextFunc3 func(uuid, pwd string) (int, interface{})
 
 // AuthHandlerFunc auth request token from http header and returen account secures.
 type AuthHandlerFunc func(token string) (string, string)
@@ -125,7 +129,81 @@ var GAuthHandlerFunc AuthHandlerFunc
 var GRoleHandlerFunc RoleHandlerFunc
 
 // Get authoration and token from http header, than verify it and return account secures.
-func (c *WAuthController) AuthRequestHeader() (string, string) {
+func (c *WAuthController) AuthRequestHeader() string {
+	uuid, _ := c.innerAuthHeader()
+	return uuid
+}
+
+// DoAfterValidated do bussiness action after success validate the given json data.
+func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+	if uuid, _ := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, true, isprotect)
+	}
+}
+
+// DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
+func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+	if uuid, _ := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, false, isprotect)
+	}
+}
+
+// DoAfterValidatedXml do bussiness action after success validate the given xml data.
+func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+	if uuid, _ := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, true, isprotect)
+	}
+}
+
+// DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
+func (c *WAuthController) DoAfterUnmarshalXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+	if uuid, _ := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, false, isprotect)
+	}
+}
+
+// ------------------------------------------------------
+
+// DoAfterAuthValidated do bussiness action after success validate the given json data.
+func (c *WAuthController) DoAfterAuthValidated(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, true, isprotect)
+	}
+}
+
+// DoAfterAuthUnmarshal do bussiness action after success unmarshaled the given json data.
+func (c *WAuthController) DoAfterAuthUnmarshal(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, false, isprotect)
+	}
+}
+
+// DoAfterAuthValidatedXml do bussiness action after success validate the given xml data.
+func (c *WAuthController) DoAfterAuthValidatedXml(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, true, isprotect)
+	}
+}
+
+// DoAfterAuthUnmarshalXml do bussiness action after success unmarshaled the given xml data.
+func (c *WAuthController) DoAfterAuthUnmarshalXml(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
+		isprotect := !(len(option) > 0 && !option[0].(bool))
+		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, false, isprotect)
+	}
+}
+
+// ------------------------------------------------------
+
+// Get authoration and token from http header, than verify it and return account secures.
+func (c *WAuthController) innerAuthHeader() (string, string) {
 	if GAuthHandlerFunc == nil || GRoleHandlerFunc == nil {
 		c.E405Disabled("Controller not set global handlers!")
 		return "", ""
@@ -164,71 +242,32 @@ func (c *WAuthController) AuthRequestHeader() (string, string) {
 	return "", ""
 }
 
-// DoAfterValidated do bussiness action after success validate the given json data.
-func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("json", ps, nextFunc2, uuid, pwd, true, isprotect)
-	}
-}
-
-// DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
-func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("json", ps, nextFunc2, uuid, pwd, false, isprotect)
-	}
-}
-
-// DoAfterValidatedXml do bussiness action after success validate the given xml data.
-func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("xml", ps, nextFunc2, uuid, pwd, true, isprotect)
-	}
-}
-
-// DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-func (c *WAuthController) DoAfterUnmarshalXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
-	if uuid, pwd := c.AuthRequestHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterParsedOrValidated("xml", ps, nextFunc2, uuid, pwd, false, isprotect)
-	}
-}
-
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
-func (c *WAuthController) doAfterParsedOrValidated(datatype string,
-	ps interface{}, nextFunc2 NextFunc2, uuid, pwd string, isvalidate, isprotect bool) {
-
-	// unmarshal the input params
-	switch datatype {
-	case "json":
-		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.E400Unmarshal(err.Error())
-			return
-		}
-	case "xml":
-		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.E400Unmarshal(err.Error())
-			return
-		}
-	default: // current not support the jsonp and yaml parse
-		c.E404Exception("Invalid data type:" + datatype)
+func (c *WAuthController) doAfterValidatedInner(datatype string,
+	ps interface{}, nextFunc2 NextFunc2, uuid string, isvalidate, isprotect bool) {
+	if !c.validatrParams(datatype, ps, isvalidate) {
 		return
 	}
 
-	// validate input params if need
-	if isvalidate {
-		ensureValidatorGenerated()
-		if err := Validator.Struct(ps); err != nil {
-			c.E400Validate(ps, err.Error())
-			return
-		}
+	// execute business function after unmarshal and validated
+	if status, resp := nextFunc2(uuid); resp != nil {
+		c.responCheckState(datatype, isprotect, status, resp)
+	} else {
+		c.responCheckState(datatype, isprotect, status)
+	}
+}
+
+// doAfterValidatedInner3 do bussiness action after success unmarshal params or
+// validate the unmarshaled json data.
+func (c *WAuthController) doAfterValidatedInner3(datatype string,
+	ps interface{}, nextFunc3 NextFunc3, uuid, pwd string, isvalidate, isprotect bool) {
+	if !c.validatrParams(datatype, ps, isvalidate) {
+		return
 	}
 
 	// execute business function after unmarshal and validated
-	if status, resp := nextFunc2(uuid, pwd); resp != nil {
+	if status, resp := nextFunc3(uuid, pwd); resp != nil {
 		c.responCheckState(datatype, isprotect, status, resp)
 	} else {
 		c.responCheckState(datatype, isprotect, status)

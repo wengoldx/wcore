@@ -277,28 +277,28 @@ func (c *WingController) BindValue(key string, dest interface{}) error {
 //	see WingController
 func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("json", ps, nextFunc, true, isprotect)
+	c.doAfterValidatedInner("json", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterUnmarshal(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("json", ps, nextFunc, false, isprotect)
+	c.doAfterValidatedInner("json", ps, nextFunc, false, isprotect)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
 //	see DoAfterValidated
 func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("xml", ps, nextFunc, true, isprotect)
+	c.doAfterValidatedInner("xml", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
 //	see DoAfterValidated, DoAfterValidatedXml
 func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
-	c.doAfterParsedOrValidated("xml", ps, nextFunc, false, isprotect)
+	c.doAfterValidatedInner("xml", ps, nextFunc, false, isprotect)
 }
 
 // ----------------
@@ -351,33 +351,10 @@ func (c *WingController) responCheckState(datatype string, isprotect bool, state
 
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
-func (c *WingController) doAfterParsedOrValidated(datatype string,
+func (c *WingController) doAfterValidatedInner(datatype string,
 	ps interface{}, nextFunc NextFunc, isvalidate, isprotect bool) {
-
-	// unmarshal the input params
-	switch datatype {
-	case "json":
-		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.E400Unmarshal(err.Error())
-			return
-		}
-	case "xml":
-		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
-			c.E400Unmarshal(err.Error())
-			return
-		}
-	default: // current not support the jsonp and yaml parse
-		c.E404Exception("Invalid data type:" + datatype)
+	if !c.validatrParams(datatype, ps, isvalidate) {
 		return
-	}
-
-	// validate input params if need
-	if isvalidate {
-		ensureValidatorGenerated()
-		if err := Validator.Struct(ps); err != nil {
-			c.E400Validate(ps, err.Error())
-			return
-		}
 	}
 
 	// execute business function after unmarshal and validated
@@ -386,4 +363,34 @@ func (c *WingController) doAfterParsedOrValidated(datatype string,
 	} else {
 		c.responCheckState(datatype, isprotect, status)
 	}
+}
+
+// validatrParams do bussiness action after success unmarshal params or validate the unmarshaled json data.
+func (c *WingController) validatrParams(datatype string, ps interface{}, isvalidate bool) bool {
+	switch datatype {
+	case "json":
+		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
+			c.E400Unmarshal(err.Error())
+			return false
+		}
+	case "xml":
+		if err := xml.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {
+			c.E400Unmarshal(err.Error())
+			return false
+		}
+	default: // current not support the jsonp and yaml parse
+		c.E404Exception("Invalid data type:" + datatype)
+		return false
+	}
+
+	// validate input params if need
+	if isvalidate {
+		ensureValidatorGenerated()
+		if err := Validator.Struct(ps); err != nil {
+			c.E400Validate(ps, err.Error())
+			return false
+		}
+	}
+
+	return true
 }
