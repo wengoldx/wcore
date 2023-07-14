@@ -163,6 +163,24 @@ func JoinLines(inputs ...string) string {
 	return packet
 }
 
+// SplitVia implement split and return a empty return value when its parameters are empty
+func SplitVia(src, char string) []string {
+	st := strings.Split(strings.TrimSpace(src), char)
+	if len(st) == 1 && st[0] == "" {
+		return []string{}
+	}
+	return st
+}
+
+// SplitAfterVia implement splitafter and return a empty return value when its parameters are empty
+func SplitAfterVia(src, char string) []string {
+	st := strings.SplitAfter(strings.TrimSpace(src), char)
+	if len(st) == 1 && st[0] == "" {
+		return []string{}
+	}
+	return st
+}
+
 // GetSortKey get first letter of Chinese Pinyin
 func GetSortKey(str string) string {
 	if str == "" { // check the input param
