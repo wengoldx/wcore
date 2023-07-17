@@ -33,6 +33,12 @@ func CreateNewClient(address []string, user, pwd, cfp string) (*ESClient, error)
 	if err != nil {
 		return nil, fmt.Errorf("dail with elastic search server err:%v", err)
 	}
+
+	// get cluster info
+	if _, err := conn.Info(); err != nil {
+		return nil, err
+	}
+
 	c.Conn = conn
 	return c, nil
 }
