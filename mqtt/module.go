@@ -11,12 +11,16 @@
 package mqtt
 
 type MqttConfig struct {
-	Broker   string `json:"broker"`
-	Port     int    `json:"port"`
+	Broker  string             `json:"broker"`
+	Port    int                `json:"port"`
+	SvrCfg  map[string]*SvrCfg `json:"svrcfg"`
+	CAFile  string             `json:"ca"`
+	CerFile string             `json:"certificate"`
+	KeyFile string             `json:"key"`
+}
+
+type SvrCfg struct {
 	ClientID string `json:"client_id"`
 	User     string `json:"user"`
 	PWD      string `json:"pwd"`
-	CAFile   string `json:"ca"`
-	CerFile  string `json:"certificate"`
-	KeyFile  string `json:"key"`
 }
