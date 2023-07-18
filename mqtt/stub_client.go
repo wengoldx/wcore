@@ -143,6 +143,11 @@ func (stub *MqttStub) GenClient(server ...string) {
 		svr = server[0]
 	}
 
+	if _, ok := stub.Cfg.SvrCfg[svr]; !ok {
+		logger.E("Not found server mqtt config!")
+		return
+	}
+
 	stub.Cfg.SvrCfg[svr].ClientID = secure.GenCode()
 	opt := stub.GenConfig("tcp", svr)
 	client, err := stub.newClient(opt)
