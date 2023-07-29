@@ -232,7 +232,9 @@ func (c *WAuthController) innerAuthHeader() (string, string) {
 				return "", ""
 			}
 
-			logger.D("Authenticated account:", uuid)
+			if !c.HideRespLogs {
+				logger.D("Authenticated account:", uuid)
+			}
 			return uuid, pwd
 		}
 	}
