@@ -69,6 +69,9 @@ import (
 //	}
 type WingController struct {
 	beego.Controller
+
+	// Off the response logs to logout, default false
+	HideRespLogs bool
 }
 
 // NextFunc do action after input params validated.
@@ -155,8 +158,11 @@ func (c *WingController) ResponData(state int, data ...map[interface{}]interface
 		return
 	}
 
-	ctl, act := c.GetControllerAndAction()
-	logger.I("Respone state:OK-DATA >", ctl+"."+act)
+	if !c.HideRespLogs {
+		ctl, act := c.GetControllerAndAction()
+		logger.I("Respone state:OK-DATA >", ctl+"."+act)
+	}
+
 	c.Ctx.Output.Status = state
 	if len(data) > 0 {
 		c.Data = data[0]
@@ -167,7 +173,9 @@ func (c *WingController) ResponData(state int, data ...map[interface{}]interface
 // ResponOK sends a empty success response to client
 func (c *WingController) ResponOK() {
 	ctl, act := c.GetControllerAndAction()
-	logger.I("Respone state:OK >", ctl+"."+act)
+	if !c.HideRespLogs {
+		logger.I("Respone state:OK >", ctl+"."+act)
+	}
 
 	w := c.Ctx.ResponseWriter
 	w.WriteHeader(invar.StatusOK)
@@ -325,7 +333,9 @@ func (c *WingController) responCheckState(datatype string, isprotect bool, state
 		logger.E("Respone "+strings.ToUpper(datatype)+" error:", state, ">", ctl+"."+act, errmsg)
 	} else {
 		ctl, act := c.GetControllerAndAction()
-		logger.I("Respone state:OK-"+strings.ToUpper(datatype)+" >", ctl+"."+act)
+		if !c.HideRespLogs {
+			logger.I("Respone state:OK-"+strings.ToUpper(datatype)+" >", ctl+"."+act)
+		}
 	}
 
 	c.Ctx.Output.Status = state
