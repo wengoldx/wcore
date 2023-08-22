@@ -45,8 +45,10 @@ type AccClient interface {
 	GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
-	// Return account avatars by givan uuids
+	// Return account avatars by given uuids
 	GetAvatars(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*Avatars, error)
+	// Return account avatars by given uuids and search conditions
+	SearchAvatars(ctx context.Context, in *SKeys, opts ...grpc.CallOption) (*Avatars, error)
 	// Delete indicated account by given uuid
 	DeleteAcc(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Register store machine account
@@ -186,6 +188,15 @@ func (c *accClient) GetContact(ctx context.Context, in *UUID, opts ...grpc.CallO
 func (c *accClient) GetAvatars(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*Avatars, error) {
 	out := new(Avatars)
 	err := c.cc.Invoke(ctx, "/proto.Acc/GetAvatars", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) SearchAvatars(ctx context.Context, in *SKeys, opts ...grpc.CallOption) (*Avatars, error) {
+	out := new(Avatars)
+	err := c.cc.Invoke(ctx, "/proto.Acc/SearchAvatars", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -354,8 +365,10 @@ type AccServer interface {
 	GetAccEmails(context.Context, *UIDS) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
 	GetContact(context.Context, *UUID) (*Contact, error)
-	// Return account avatars by givan uuids
+	// Return account avatars by given uuids
 	GetAvatars(context.Context, *UIDS) (*Avatars, error)
+	// Return account avatars by given uuids and search conditions
+	SearchAvatars(context.Context, *SKeys) (*Avatars, error)
 	// Delete indicated account by given uuid
 	DeleteAcc(context.Context, *UUID) (*AEmpty, error)
 	// Register store machine account
@@ -425,6 +438,9 @@ func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, erro
 }
 func (UnimplementedAccServer) GetAvatars(context.Context, *UIDS) (*Avatars, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAvatars not implemented")
+}
+func (UnimplementedAccServer) SearchAvatars(context.Context, *SKeys) (*Avatars, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchAvatars not implemented")
 }
 func (UnimplementedAccServer) DeleteAcc(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAcc not implemented")
@@ -696,6 +712,24 @@ func _Acc_GetAvatars_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).GetAvatars(ctx, req.(*UIDS))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_SearchAvatars_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SKeys)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).SearchAvatars(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/SearchAvatars",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).SearchAvatars(ctx, req.(*SKeys))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1024,6 +1058,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAvatars",
 			Handler:    _Acc_GetAvatars_Handler,
+		},
+		{
+			MethodName: "SearchAvatars",
+			Handler:    _Acc_SearchAvatars_Handler,
 		},
 		{
 			MethodName: "DeleteAcc",

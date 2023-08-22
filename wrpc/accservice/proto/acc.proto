@@ -43,9 +43,12 @@ service Acc {
   // Return account contact (contain nickname, phone, email)
   rpc GetContact(UUID) returns (Contact);
 
-  // Return account avatars by givan uuids
+  // Return account avatars by given uuids
   rpc GetAvatars(UIDS) returns (Avatars);
   
+  // Return account avatars by given uuids and search conditions
+  rpc SearchAvatars(SKeys) returns (Avatars);
+
   // Delete indicated account by given uuid
   rpc DeleteAcc(UUID) returns (AEmpty);
 
@@ -102,6 +105,12 @@ message UUID {
 
 message UIDS {
   repeated string uids = 1;
+}
+
+message SKeys {
+  repeated string uids = 1;
+  bool   filterid = 2;
+  string keyword = 3;
 }
 
 message Email {
