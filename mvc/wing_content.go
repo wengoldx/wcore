@@ -37,6 +37,12 @@ type WingProvider struct {
 // ScanCallback use for scan query result from rows
 type ScanCallback func(rows *sql.Rows) error
 
+// FormatCallback format query value to string for MultiInsert().
+type FormatCallback func(index int) string
+
+// TransactionCallback transaction callback for MultiTransaction().
+type TransactionCallback func(tx *sql.Tx) error
+
 const (
 	/* MySQL */
 	mysqlConfigUser = "%s::user" // configs key of mysql database user
@@ -355,7 +361,9 @@ func (w *WingProvider) QueryArray(query string, cb ScanCallback, args ...interfa
 	return nil
 }
 
-// Insert call sql.Prepare() and stmt.Exec() to insert a new record
+// Insert call sql.Prepare() and stmt.Exec() to insert a new record.
+//
+// `@see` Use MultiInsert() to insert multiple values in once database operation.
 func (w *WingProvider) Insert(query string, args ...interface{}) (int64, error) {
 	stmt, err := w.Conn.Prepare(query)
 	if err != nil {
@@ -368,6 +376,30 @@ func (w *WingProvider) Insert(query string, args ...interface{}) (int64, error) 
 		return -1, err
 	}
 	return result.LastInsertId()
+}
+
+// Format and combine multiple values to insert at once, this method can provide
+// high-performance than call Insert() one by one.
+//
+// ---
+//
+//	query := "INSERT sametable (field1, field2, fieldn) VALUES"
+//	err := mvc.MultiInsert(query, 5, func(index int) string {
+//		return fmt.Sprintf("(%v, %v, %v)", v1, v2, v3)
+//
+//		// For string values like follows:
+//		// return fmt.Sprintf("(\"%s\", \"%s\", \"%s\")", v1, v2, v3)
+//	})
+func (w *WingProvider) MultiInsert(query string, cnt int, cb FormatCallback) error {
+	values := []string{}
+	for i := 0; i < cnt; i++ {
+		value := strings.TrimSpace(cb(i))
+		if value != "" {
+			values = append(values, value)
+		}
+	}
+	query = query + " " + strings.Join(values, ",")
+	return w.Execute(query)
 }
 
 // Execute call sql.Prepare() and stmt.Exec() to update or delete records
@@ -480,30 +512,49 @@ func (w *WingProvider) FormatSets(updates interface{}) string {
 	return strings.Join(sets, ", ")
 }
 
-// Execute a sql transaction, this method can provide high-performance
-// multi datas insert or update operation by using combined query string.
+// Execute one sql transaction, it will rollback when operate failed.
 //
-// ---
-//
-//	query := "INSERT sametable (field1, field2, fieldn) VALUES %s"
-//	for _, d := range params {
-//		query += fmt.Sprintf("(%s, %s, %s),", d.v1, d.v2, d.v3)
-//	}
-//	query = strings.Trim(query, ",")
-//	err := mvc.Transaction(query)
+// `@see` Use MultiTransaction() to excute multiple transaction as once.
 func (w *WingProvider) Transaction(query string, args ...interface{}) error {
 	tx, err := w.Conn.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
 	if _, err := tx.Exec(query, args...); err != nil {
-		tx.Rollback()
 		return err
 	}
 
 	if err := tx.Commit(); err != nil {
-		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+// Excute multiple transactions, it will rollback all operations when case error.
+//
+// ---
+//
+//	// Excute 3 transactions in callback with different query1 ~ 3
+//	err := mvc.MultiTransaction(func(tx *sqlTx) { return tx.Exec(query1, args...) },
+//		func(tx *sqlTx) { return tx.Exec(query2, args...) },
+//		func(tx *sqlTx) { return tx.Exec(query3, args...) })
+func (w *WingProvider) MultiTransaction(cbs ...TransactionCallback) error {
+	tx, err := w.Conn.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// start excute multiple transactions in callback
+	for _, cb := range cbs {
+		if err := cb(tx); err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 	return nil
