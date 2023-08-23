@@ -537,9 +537,9 @@ func (w *WingProvider) Transaction(query string, args ...interface{}) error {
 // ---
 //
 //	// Excute 3 transactions in callback with different query1 ~ 3
-//	err := mvc.MultiTransaction(func(tx *sqlTx) { return tx.Exec(query1, args...) },
-//		func(tx *sqlTx) { return tx.Exec(query2, args...) },
-//		func(tx *sqlTx) { return tx.Exec(query3, args...) })
+//	err := mvc.MultiTransaction(func(tx *sqlTx) error { return tx.Exec(query1, args...) },
+//		func(tx *sqlTx) error { return tx.Exec(query2, args...) },
+//		func(tx *sqlTx) error { return tx.Exec(query3, args...) })
 func (w *WingProvider) MultiTransaction(cbs ...TransactionCallback) error {
 	tx, err := w.Conn.Begin()
 	if err != nil {
