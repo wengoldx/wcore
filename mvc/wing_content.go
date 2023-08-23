@@ -41,7 +41,7 @@ type ScanCallback func(rows *sql.Rows) error
 type FormatCallback func(index int) string
 
 // TransactionCallback transaction callback for MultiTransaction().
-type TransactionCallback func(tx *sql.Tx) error
+type TransactionCallback func(tx *sql.Tx) (sql.Result, error)
 
 const (
 	/* MySQL */
@@ -537,9 +537,10 @@ func (w *WingProvider) Transaction(query string, args ...interface{}) error {
 // ---
 //
 //	// Excute 3 transactions in callback with different query1 ~ 3
-//	err := mvc.MultiTransaction(func(tx *sqlTx) error { return tx.Exec(query1, args...) },
-//		func(tx *sqlTx) error { return tx.Exec(query2, args...) },
-//		func(tx *sqlTx) error { return tx.Exec(query3, args...) })
+//	err := mvc.MultiTransaction(
+//		func(tx *sqlTx) (sql.Result, error) { return tx.Exec(query1, args...) },
+//		func(tx *sqlTx) (sql.Result, error) { return tx.Exec(query2, args...) },
+//		func(tx *sqlTx) (sql.Result, error) { return tx.Exec(query3, args...) })
 func (w *WingProvider) MultiTransaction(cbs ...TransactionCallback) error {
 	tx, err := w.Conn.Begin()
 	if err != nil {
@@ -549,7 +550,7 @@ func (w *WingProvider) MultiTransaction(cbs ...TransactionCallback) error {
 
 	// start excute multiple transactions in callback
 	for _, cb := range cbs {
-		if err := cb(tx); err != nil {
+		if _, err := cb(tx); err != nil {
 			return err
 		}
 	}
