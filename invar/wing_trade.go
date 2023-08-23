@@ -11,6 +11,9 @@
 
 package invar
 
+// Fixed target payee for all trade of DY
+const PayeeDunYu = "PAYEE_DUNYU"
+
 // Trade status machine:
 // ===================================================================
 //
