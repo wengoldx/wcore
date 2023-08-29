@@ -34,6 +34,9 @@ import (
 //
 // see https://redis.io/commands/set
 func (c *WingRedisConn) Set(key string, value interface{}, options ...interface{}) error {
+	con := c.redisPool.Get()
+	defer con.Close()
+
 	err := invar.ErrInvalidRedisOptions
 	if len(options) > 0 {
 		switch option := options[0].(type) {
@@ -43,18 +46,18 @@ func (c *WingRedisConn) Set(key string, value interface{}, options ...interface{
 				case int64:
 					switch option {
 					case OptEX, OptPX, OptEXAT, OptPXAT:
-						_, err = c.Conn.Do("SET", c.serviceNamespace+key, value, option, expire)
+						_, err = con.Do("SET", c.serviceNamespace+key, value, option, expire)
 					}
 				}
 			} else {
 				switch option {
 				case OptNX, OptXX, OptKEEPTTL:
-					_, err = c.Conn.Do("SET", c.serviceNamespace+key, value, option)
+					_, err = con.Do("SET", c.serviceNamespace+key, value, option)
 				}
 			}
 		}
 	} else {
-		_, err = c.Conn.Do("SET", c.serviceNamespace+key, value)
+		_, err = con.Do("SET", c.serviceNamespace+key, value)
 	}
 	return err
 }
@@ -73,7 +76,10 @@ func (c *WingRedisConn) SetPx(key string, value interface{}, expire int64) error
 //
 // see https://redis.io/commands/setnx
 func (c *WingRedisConn) SetNx(key string, value interface{}) (bool, error) {
-	exist, err := c.Conn.Do("SETNX", c.serviceNamespace+key, value)
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	exist, err := con.Do("SETNX", c.serviceNamespace+key, value)
 	if err != nil {
 		return false, err
 	}
@@ -85,7 +91,10 @@ func (c *WingRedisConn) SetNx(key string, value interface{}) (bool, error) {
 //
 // see https://redis.io/commands/setrange
 func (c *WingRedisConn) SetRange(key string, value interface{}, offset int) int {
-	length, err := redis.Int(c.Conn.Do("SETRANGE", c.serviceNamespace+key, offset, value))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	length, err := redis.Int(con.Do("SETRANGE", c.serviceNamespace+key, offset, value))
 	if err != nil {
 		logger.E("Redis:SETRANGE [key"+key+"] err:", err)
 		return -1
@@ -98,7 +107,10 @@ func (c *WingRedisConn) SetRange(key string, value interface{}, offset int) int 
 //
 // see https://redis.io/commands/append
 func (c *WingRedisConn) Append(key string, value interface{}) int {
-	length, err := redis.Int(c.Conn.Do("APPEND", c.serviceNamespace+key, value))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	length, err := redis.Int(con.Do("APPEND", c.serviceNamespace+key, value))
 	if err != nil {
 		logger.E("Redis:APPEND [key"+key+"] err:", err)
 		return -1
@@ -110,13 +122,19 @@ func (c *WingRedisConn) Append(key string, value interface{}) int {
 //
 // see https://redis.io/commands/strlen
 func (c *WingRedisConn) StrLength(key string) int {
-	length, _ := redis.Int(c.Conn.Do("STRLEN", c.serviceNamespace+key))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	length, _ := redis.Int(con.Do("STRLEN", c.serviceNamespace+key))
 	return length
 }
 
 // Exist determine if a key exists, only support one key one check, set Exists.
 func (c *WingRedisConn) Exist(key string) (bool, error) {
-	return redis.Bool(c.Conn.Do("EXISTS", c.serviceNamespace+key))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	return redis.Bool(con.Do("EXISTS", c.serviceNamespace+key))
 }
 
 // Exists determine if given keys exist, and return exist keys count,
@@ -125,7 +143,10 @@ func (c *WingRedisConn) Exist(key string) (bool, error) {
 //
 // see https://redis.io/commands/exists
 func (c *WingRedisConn) Exists(nskeys ...string) (int, error) {
-	return redis.Int(c.Conn.Do("EXISTS", nskeys))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	return redis.Int(con.Do("EXISTS", nskeys))
 }
 
 // Expire set a key's time to live in seconds, the optional values can be set
@@ -144,7 +165,10 @@ func (c *WingRedisConn) ExpireAt(key string, expire int64, option ...string) boo
 //
 // see https://redis.io/commands/persist
 func (c *WingRedisConn) Persist(key string) bool {
-	set, err := redis.Bool(c.Conn.Do("PERSIST", c.serviceNamespace+key))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	set, err := redis.Bool(con.Do("PERSIST", c.serviceNamespace+key))
 	if err != nil {
 		logger.E("Redis:PERSIST [key"+key+"] err:", err)
 		return false
@@ -164,7 +188,10 @@ func (c *WingRedisConn) GetExpireMs(key string) (int64, error) {
 
 // Delete delete a key, see Deletes.
 func (c *WingRedisConn) Delete(key string) bool {
-	deleted, err := redis.Bool(c.Conn.Do("DEL", c.serviceNamespace+key))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	deleted, err := redis.Bool(con.Do("DEL", c.serviceNamespace+key))
 	if err != nil {
 		logger.E("Redis:DEL [key"+key+"] err:", err)
 		return false
@@ -178,14 +205,20 @@ func (c *WingRedisConn) Delete(key string) bool {
 //
 // see https://redis.io/commands/del
 func (c *WingRedisConn) Deletes(nskeys ...string) (int, error) {
-	return redis.Int(c.Conn.Do("DEL", nskeys))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	return redis.Int(con.Do("DEL", nskeys))
 }
 
 // GetRange get the string value of key cut by given range.
 //
 // see https://redis.io/commands/getrange
 func (c *WingRedisConn) GetRange(key string, start, end int) (string, error) {
-	return redis.String(c.Conn.Do("GETRANGE", c.serviceNamespace+key, start, end))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	return redis.String(con.Do("GETRANGE", c.serviceNamespace+key, start, end))
 }
 
 // Get get the string value of key.

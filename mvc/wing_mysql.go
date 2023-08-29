@@ -24,7 +24,6 @@ import (
 	// import the follows database drivers when using WingProvider.
 	//
 	// _ "github.com/go-sql-driver/mysql"   // usr fot mysql
-	// _ "github.com/denisenkom/go-mssqldb" // use for sql server 2017 ~ 2019
 	//
 	// ----------------------------------------
 )
@@ -43,29 +42,18 @@ type FormatCallback func(index int) string
 // TransactionCallback transaction callback for MultiTransaction().
 type TransactionCallback func(tx *sql.Tx) (sql.Result, error)
 
+// MySQL database configs
 const (
-	/* MySQL */
 	mysqlConfigUser = "%s::user" // configs key of mysql database user
 	mysqlConfigPwd  = "%s::pwd"  // configs key of mysql database password
 	mysqlConfigHost = "%s::host" // configs key of mysql database host and port
 	mysqlConfigName = "%s::name" // configs key of mysql database name
-
-	/* Microsoft SQL Server */
-	mssqlConfigUser = "%s::user"    // configs key of mssql database user
-	mssqlConfigPwd  = "%s::pwd"     // configs key of mssql database password
-	mssqlConfigHost = "%s::host"    // configs key of mssql database server host
-	mssqlConfigPort = "%s::port"    // configs key of mssql database port
-	mssqlConfigName = "%s::name"    // configs key of mssql database name
-	mssqlConfigTout = "%s::timeout" // configs key of mssql database connect timeout
 
 	// Mysql Server database source name for local connection
 	mysqldsnLocal = "%s:%s@/%s?charset=%s"
 
 	// Mysql Server database source name for tcp connection
 	mysqldsnTcp = "%s:%s@tcp(%s)/%s?charset=%s"
-
-	// Microsoft SQL Server database source name
-	mssqldsn = "server=%s;port=%d;database=%s;user id=%s;password=%s;Connection Timeout=%d;Connect Timeout=%d;"
 )
 
 var (
@@ -73,16 +61,8 @@ var (
 	// it will nil before mvc.OpenMySQL() called.
 	WingHelper *WingProvider
 
-	// MssqlHelper content provider to hold mssql database connections,
-	// it will nil before mvc.OpenMssql() called.
-	MssqlHelper *WingProvider
-
-	// ConnPool save databases connection pool
-	ConnPool = make(map[string]*WingProvider)
-
-	// limitPageItems limit to show lits items in one page, default is 50,
-	// you can use SetLimitPageItems() to change the limit value.
-	limitPageItems = 50
+	// Cache all mysql providers into pool for multiple databases server connect.
+	connPool = make(map[string]*WingProvider)
 )
 
 // readMySQLCofnigs read mysql database params from config file,
@@ -97,22 +77,6 @@ func readMySQLCofnigs(session string) (string, string, string, string, error) {
 		return "", "", "", "", invar.ErrInvalidConfigs
 	}
 	return user, pwd, host, name, nil
-}
-
-// readMssqlCofnigs read mssql database params from config file,
-// than verify them if empty.
-func readMssqlCofnigs(session string) (string, string, string, int, string, int, error) {
-	user := beego.AppConfig.String(fmt.Sprintf(mssqlConfigUser, session))
-	pwd := beego.AppConfig.String(fmt.Sprintf(mssqlConfigPwd, session))
-	host := beego.AppConfig.DefaultString(fmt.Sprintf(mssqlConfigHost, session), "127.0.0.1")
-	port := beego.AppConfig.DefaultInt(fmt.Sprintf(mssqlConfigPort, session), 1433)
-	name := beego.AppConfig.String(fmt.Sprintf(mssqlConfigName, session))
-	timeout := beego.AppConfig.DefaultInt(fmt.Sprintf(mssqlConfigTout, session), 600)
-
-	if user == "" || pwd == "" || name == "" {
-		return "", "", "", 0, "", 0, invar.ErrInvalidConfigs
-	}
-	return user, pwd, host, port, name, timeout, nil
 }
 
 // openMySQLPool open mysql and cached to connection pool by given session keys
@@ -153,13 +117,13 @@ func openMySQLPool(charset string, sessions []string) error {
 		con.SetMaxIdleConns(100)
 		con.SetMaxOpenConns(100)
 		con.SetConnMaxLifetime(28740)
-		ConnPool[session] = &WingProvider{con}
+		connPool[session] = &WingProvider{con}
 	}
 	return nil
 }
 
 // OpenMySQL connect database and check ping result, the connection holded
-// by mvc.WingHelper object if signle connect, or cached connections in ConnPool map
+// by mvc.WingHelper object if signle connect, or cached connections in connPool map
 // if multiple connect and select same one by given sessions of input params.
 // the datatable charset maybe 'utf8' or 'utf8mb4' same as database set.
 //
@@ -190,16 +154,16 @@ func openMySQLPool(charset string, sessions []string) error {
 // #### Case 4 : For multi-connections to set custom session keywords.
 //
 //	[mysql-a]
-//	... same as (1)
+//	... same as use Case 1.
 //
 //	[mysql-a-dev]
-//	... same as (2)
+//	... same as use Case 2.
 //
 //	[mysql-x]
-//	... same as (1)
+//	... same as use Case 1.
 //
 //	[mysql-x-dev]
-//	... same as (2)
+//	... same as use Case 2.
 func OpenMySQL(charset string, sessions ...string) error {
 	if len(sessions) > 0 {
 		if err := openMySQLPool(charset, sessions); err != nil {
@@ -222,85 +186,7 @@ func Select(session string) *WingProvider {
 	if beego.BConfig.RunMode == "dev" {
 		session = session + "-dev"
 	}
-	return ConnPool[session]
-}
-
-// OpenMssql connect mssql database and check ping result,
-// the connections holded by mvc.MssqlHelper object,
-// the charset maybe 'utf8' or 'utf8mb4' same as database set.
-//
-// `NOTICE`
-//
-// you must config database params in /conf/app.config file as:
-//
-// ---
-//
-// #### Case 1 For connect on prod mode.
-//
-//	[mssql]
-//	host    = "127.0.0.1"
-//	port    = 1433
-//	name    = "sampledb"
-//	user    = "sa"
-//	pwd     = "123456"
-//	timeout = 600
-//
-// #### Case 2 For connect on dev mode.
-//
-//	[mssql-dev]
-//	host    = "127.0.0.1"
-//	port    = 1433
-//	name    = "sampledb"
-//	user    = "sa"
-//	pwd     = "123456"
-//	timeout = 600
-//
-// #### Case 3 For both dev and prod mode, you can config all of up cases.
-func OpenMssql(charset string) error {
-	session := "mssql"
-	if beego.BConfig.RunMode == "dev" {
-		session = session + "-dev"
-	}
-
-	user, pwd, server, port, dbn, to, err := readMssqlCofnigs(session)
-	if err != nil {
-		return err
-	}
-
-	// get connection and connect timeouts
-	dts := []int{600, 600}
-	if to > 0 {
-		dts[0] = to
-		dts[1] = to
-	}
-
-	driver := "mssql"
-	dsn := fmt.Sprintf(mssqldsn, server, port, dbn, user, pwd, dts[0], dts[1])
-	logger.I("Open MSSQL Server on {", dsn, "}")
-
-	// open and connect database
-	con, err := sql.Open(driver, dsn)
-	if err != nil {
-		return err
-	}
-
-	// check database validable
-	if err = con.Ping(); err != nil {
-		return err
-	}
-
-	con.SetMaxIdleConns(100)
-	con.SetMaxOpenConns(100)
-	MssqlHelper = &WingProvider{con}
-	return nil
-}
-
-// SetLimitPageItems set global setting of limit items in page,
-// the input value must range in (0, 1000].
-func SetLimitPageItems(limit int) {
-	if limit > 0 && limit <= 1000 {
-		limitPageItems = limit
-	}
+	return connPool[session]
 }
 
 // Stub return content provider connection
@@ -378,7 +264,7 @@ func (w *WingProvider) Insert(query string, args ...interface{}) (int64, error) 
 	return result.LastInsertId()
 }
 
-// Format and combine multiple values to insert at once, this method can provide
+// MultiInsert format and combine multiple values to insert at once, this method can provide
 // high-performance than call Insert() one by one.
 //
 // ---
@@ -431,8 +317,7 @@ func (w *WingProvider) ExeAffected(query string, args ...interface{}) (int64, er
 	return w.Affected(result)
 }
 
-// AppendLike append like keyword end of sql string,
-// DON'T call it after AppendLimit()
+// AppendLike append like keyword end of sql string, DON'T call it when exist limit key in sql string
 func (w *WingProvider) AppendLike(query, filed, keyword string, and ...bool) string {
 	if len(and) > 0 && and[0] {
 		return query + " AND " + filed + " LIKE '%%" + keyword + "%%'"
@@ -440,19 +325,7 @@ func (w *WingProvider) AppendLike(query, filed, keyword string, and ...bool) str
 	return query + " WHERE " + filed + " LIKE '%%" + keyword + "%%'"
 }
 
-// AppendLimit append page limitation end of sql string,
-// DON'T call it before AppendLick()
-func (w *WingProvider) AppendLimit(query string, page int) string {
-	offset, items := page*limitPageItems, limitPageItems
-	return query + " LIMIT " + fmt.Sprintf("%d, %d", offset, items)
-}
-
-// AppendLikeLimit append like keyword and limit end of sql string
-func (w *WingProvider) AppendLikeLimit(query, filed, keyword string, page int, and ...bool) string {
-	return w.AppendLimit(w.AppendLike(query, filed, keyword, and...), page)
-}
-
-// CheckAffected append page limitation end of sql string
+// Affected append page limitation end of sql string
 func (w *WingProvider) Affected(result sql.Result) (int64, error) {
 	row, err := result.RowsAffected()
 	if err != nil || row == 0 {
@@ -512,7 +385,7 @@ func (w *WingProvider) FormatSets(updates interface{}) string {
 	return strings.Join(sets, ", ")
 }
 
-// Execute one sql transaction, it will rollback when operate failed.
+// Transaction execute one sql transaction, it will rollback when operate failed.
 //
 // `@see` Use MultiTransaction() to excute multiple transaction as once.
 func (w *WingProvider) Transaction(query string, args ...interface{}) error {
@@ -532,7 +405,7 @@ func (w *WingProvider) Transaction(query string, args ...interface{}) error {
 	return nil
 }
 
-// Excute multiple transactions, it will rollback all operations when case error.
+// MultiTransaction excute multiple transactions, it will rollback all operations when case error.
 //
 // ---
 //

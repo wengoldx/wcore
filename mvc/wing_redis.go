@@ -11,27 +11,37 @@
 package mvc
 
 import (
+	"errors"
 	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
+	"time"
 )
 
 // WingRedisConn content provider to support redis utils
 type WingRedisConn struct {
-	Conn redis.Conn
+	// redis connections pool, use redisPool.Get() to return one connect client
+	// then call redisPool.Close() to close it after finished use.
+	redisPool *redis.Pool
+
+	// redis server host address, usually use ip.
+	serverHost string
+
+	// redis server auth password.
+	serverAuthPwd string
 
 	// serviceNamespace service namespace to distinguish others server, it will
 	// append with key as prefix to get or set data to redis database, default is empty.
 	//
 	// `NOTICE` :
 	//
-	// you must config namespace in /conf/app.config file, or call WingRedis.SetNamespace(ns)
+	// you should config namespace in /conf/app.config file, or call WingRedis.SetNamespace(ns)
 	// to set unique server namespace when multiple services connecting the one redis server.
 	serviceNamespace string
 
-	// deadlockDur deadlock max duration
+	// deadlock max duration, default 20 seconds
 	deadlockDuration int64
 }
 
@@ -42,7 +52,7 @@ const (
 	redisConfigLock = "%s::deadlock"  // configs key of redis lock max duration
 )
 
-// The follow options may support by diffrent Redis version, get more infor
+// The follow options may support by diffrent Redis version, get more info
 // by link https://redis.io/commands webset.
 const (
 	OptEX      = "EX"      // seconds -- Set the specified expire time, in seconds
@@ -60,11 +70,9 @@ const (
 	CusOptDel = "DELETE" // The custom option to delete redis key after get commond execute.
 )
 
-var (
-	// WingRedis a connecter to access redis database data,
-	// it will nil before mvc.OpenRedis() called
-	WingRedis *WingRedisConn
-)
+// WingRedis a connecter to access redis database data,
+// it will nil before mvc.OpenRedis() called
+var WingRedis *WingRedisConn
 
 // readRedisCofnigs read redis params from config file, than verify them if empty.
 func readRedisCofnigs(session string) (string, string, string, int64, error) {
@@ -108,7 +116,15 @@ func readRedisCofnigs(session string) (string, string, string, int64, error) {
 //	namespace = "project_namespace"
 //	deadlock = 20
 //
-// #### Case 3 For both dev and prod mode, you can config all of up cases.
+// #### Case 3 : For both dev and prod mode, you can config all of up cases.
+//
+// #### Case 4 : For connect on prod mode without namespace and use default lock time.
+//
+//	[redis]
+//	host = "127.0.0.1:6379"
+//	pwd = "123456"
+//
+// ---
 //
 // The configs means as:
 //
@@ -127,19 +143,30 @@ func OpenRedis() error {
 		return err
 	}
 
-	// dial TCP connection
-	con, err := redis.Dial("tcp", host)
-	if err != nil {
-		return err
-	}
+	WingRedis = &WingRedisConn{nil, host, pwd, ns, lock}
+	WingRedis.redisPool = &redis.Pool{
+		MaxIdle: 16, MaxActive: 0, IdleTimeout: 300 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			host, pwd := WingRedis.serverHost, WingRedis.serverAuthPwd
+			c, err := redis.Dial("tcp", host) // dial TCP connection
+			if err != nil {
+				return nil, err
+			}
 
-	// authenticate connection password.
-	// see https://redis.io/commands/auth
-	if _, err = con.Do("AUTH", pwd); err != nil {
-		return err
+			// authenticate connection password. see https://redis.io/commands/auth
+			if _, err := c.Do("AUTH", pwd); err != nil {
+				c.Close()
+				panic(err)
+			}
+			return c, nil
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			if _, err := c.Do("PING"); err != nil {
+				return errors.New("Ping redis err: " + err.Error())
+			}
+			return nil
+		},
 	}
-
-	WingRedis = &WingRedisConn{con, ns, lock}
 	return nil
 }
 
@@ -175,8 +202,8 @@ func (c *WingRedisConn) NsKeys(keys ...string) []string {
 // NsArrKeys transform origin keys to namespaced keys
 func (c *WingRedisConn) NsArrKeys(keys []string) []string {
 	nskeys := []string{}
-	if len(keys) > 0 {
-		nskeys = append(nskeys, keys...)
+	for _, key := range keys {
+		nskeys = append(nskeys, c.NsKey(key))
 	}
 	return nskeys
 }
@@ -185,7 +212,10 @@ func (c *WingRedisConn) NsArrKeys(keys []string) []string {
 //
 // see command [time](https://redis.io/commands/time)
 func (c *WingRedisConn) ServerTime() (int64, int64) {
-	st, err := redis.Int64s(c.Conn.Do("TIME"))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	st, err := redis.Int64s(con.Do("TIME"))
 	if err != nil || len(st) != 2 {
 		logger.E("Redis:TIME Failed set redis server time")
 		return 0, 0
@@ -198,10 +228,11 @@ func (c *WingRedisConn) ServerTime() (int64, int64) {
 // see commands [setex](https://redis.io/commands/setex),
 // [psetex](https://redis.io/commands/psetex).
 func (c *WingRedisConn) setWithExpire(key, commond string, value interface{}, expire int64) error {
-	if _, err := c.Conn.Do(commond, c.serviceNamespace+key, expire, value); err != nil {
-		return err
-	}
-	return nil
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	_, err := con.Do(commond, c.serviceNamespace+key, expire, value)
+	return err
 }
 
 // parseGetOptions parse the GETEX, GETDEL commonds options
@@ -235,20 +266,23 @@ func (c *WingRedisConn) parseGetOptions(options ...interface{}) (string, int64) 
 // [getex](https://redis.io/commands/getex),
 // [getdel](https://redis.io/commands/getdel)
 func (c *WingRedisConn) getWithOptions(key string, options ...interface{}) (interface{}, error) {
+	con := c.redisPool.Get()
+	defer con.Close()
+
 	if options != nil {
 		var reply interface{}
 		err := invar.ErrInvalidRedisOptions
 		if option, expire := c.parseGetOptions(options); option != "" {
 			switch option {
 			case CusOptDel:
-				reply, err = c.Conn.Do("GETDEL", c.serviceNamespace+key)
+				reply, err = con.Do("GETDEL", c.serviceNamespace+key)
 			case OptEX, OptPX, OptEXAT, OptPXAT:
-				reply, err = c.Conn.Do("GETEX", c.serviceNamespace+key, option, expire)
+				reply, err = con.Do("GETEX", c.serviceNamespace+key, option, expire)
 			}
 		}
 		return redis.String(reply, err)
 	}
-	return c.Conn.Do("GET", c.serviceNamespace+key)
+	return con.Do("GET", c.serviceNamespace+key)
 }
 
 // getKeyExpire get the time to live for a key by given commond, it may return unexist
@@ -258,7 +292,10 @@ func (c *WingRedisConn) getWithOptions(key string, options ...interface{}) (inte
 // see commands [ttl](https://redis.io/commands/ttl),
 // [pttl](https://redis.io/commands/pttl)
 func (c *WingRedisConn) getKeyExpire(key, commond string) (int64, error) {
-	expire, err := redis.Int64(c.Conn.Do(commond, c.serviceNamespace+key))
+	con := c.redisPool.Get()
+	defer con.Close()
+
+	expire, err := redis.Int64(con.Do(commond, c.serviceNamespace+key))
 	if expire == -2 {
 		return 0, invar.ErrUnexistRedisKey
 	} else if expire == -1 {
@@ -273,14 +310,17 @@ func (c *WingRedisConn) getKeyExpire(key, commond string) (int64, error) {
 // see [expire](https://redis.io/commands/expire),
 // [expireat](https://redis.io/commands/expireat)
 func (c *WingRedisConn) setKeyExpire(key, commond string, expire int64, option ...string) bool {
+	con := c.redisPool.Get()
+	defer con.Close()
+
 	set, err := false, invar.ErrInvalidRedisOptions
 	if len(option) > 0 {
 		switch option[0] {
 		case ExpNX, ExpXX, ExpGT, ExpLT:
-			set, err = redis.Bool(c.Conn.Do(commond, c.serviceNamespace+key, expire, option[0]))
+			set, err = redis.Bool(con.Do(commond, c.serviceNamespace+key, expire, option[0]))
 		}
 	} else {
-		set, err = redis.Bool(c.Conn.Do(commond, c.serviceNamespace+key, expire))
+		set, err = redis.Bool(con.Do(commond, c.serviceNamespace+key, expire))
 	}
 
 	if err != nil {
