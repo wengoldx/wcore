@@ -25,6 +25,7 @@ import (
 	"golang.org/x/crypto/scrypt"
 	"io"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -34,6 +35,8 @@ const (
 	oauthCodeSeedsLower = "abcdefghijklmnopqrstuvwxyz"
 	oauthCodeSeedsUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	oauthCodeSeedsChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	radixCodeCharLoNum  = "0123456789abcdefghijklmnopqrstuvwxyz"
+	radixCodeCharUpNum  = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	radixCodeCharMap    = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	passwordHashBytes   = 64 // default password hash length
 )
@@ -50,6 +53,27 @@ func init() {
 		}
 		uuidNode = node
 	}
+}
+
+// Generate a code from given chars mapping, params src must over 0, mapping not empty.
+func genCodeFromMapping(src int64, mapping string) string {
+	radix := (int64)(len(mapping))
+	if src <= 0 || radix == 0 {
+		return "" // invalid input params
+	}
+
+	// encode by given chars mapping
+	code := []byte{}
+	for v := src; v > 0; v /= radix {
+		i := v % radix
+		code = append(code, mapping[i])
+	}
+
+	// reverse the chars order
+	for i, l := 0, len(code); i < l/2; i++ {
+		code[i], code[l-i-1] = code[l-i-1], code[i]
+	}
+	return (string)(code)
 }
 
 // Generate a new uuid in int64
@@ -77,59 +101,51 @@ func GenRandUUID(buflen ...int) string {
 	return string(buf)
 }
 
-// Generate a code by using current nanosecond
+// Generate a code just as current nano seconds time, e.g. 1693359476235899600
+func GenNano() string {
+	return strconv.FormatInt(time.Now().UnixNano(), 10)
+}
+
+// Generate a code by using current nanosecond, e.g. M25eNdE4rF5
 func GenCode() string {
-	now := time.Now().UnixNano()
-	radix := (int64)(len(radixCodeCharMap))
-
-	code := []byte{}
-	for v := now; v > 0; v /= radix {
-		i := v % radix
-		code = append(code, radixCodeCharMap[i])
-	}
-	return (string)(code)
+	return genCodeFromMapping(time.Now().UnixNano(), radixCodeCharMap)
 }
 
-// Generate a code from given int64 data
+// Generate a code from given int64 data, e.g. M25eNdE4rF5
 func GenCodeFrom(src int64) string {
-	radix := (int64)(len(radixCodeCharMap))
-
-	code := []byte{}
-	for v := src; v > 0; v /= radix {
-		i := v % radix
-		code = append(code, radixCodeCharMap[i])
-	}
-	return (string)(code)
+	return genCodeFromMapping(src, radixCodeCharMap)
 }
 
-// Generate a code by using current nanosecond and append random suffix
+// Generate a code formated only lower chars, e.g. mabendecrfdme
+func GenLowCode() string {
+	return genCodeFromMapping(time.Now().UnixNano(), oauthCodeSeedsLower)
+}
+
+// Generate a code formated only upper chars, e.g. MABENDECRFDME
+func GenUpCode() string {
+	return genCodeFromMapping(time.Now().UnixNano(), oauthCodeSeedsUpper)
+}
+
+// Generate a code formated only number and lower chars, e.g. m25ende4rf5m
+func GenLowNum() string {
+	return genCodeFromMapping(time.Now().UnixNano(), radixCodeCharLoNum)
+}
+
+// Generate a code formated only number and upper chars, e.g. M25ENDE4RF5M
+func GenUpNum() string {
+	return genCodeFromMapping(time.Now().UnixNano(), radixCodeCharUpNum)
+}
+
+// Generate a code by using current nanosecond and append random suffix, e.g. M25eNdE4rF50987
 func GenRandCode() string {
-	now := time.Now().UnixNano()
-	radix := (int64)(len(radixCodeCharMap))
-
-	code := []byte{}
-	for v := now; v > 0; v /= radix {
-		i := v % radix
-		code = append(code, radixCodeCharMap[i])
-	}
-
-	rand.Seed(now)
-	return fmt.Sprintf("%s%04d", (string)(code), rand.Intn(1000))
+	rand.Seed(time.Now().UnixNano())
+	return fmt.Sprintf("%s%04d", GenCode(), rand.Intn(1000))
 }
 
-// Generate a code from given int64 data and append random suffix
+// Generate a code from given int64 data and append random suffix, e.g. M25eNdE4rF50987
 func GenRandCodeFrom(src int64) string {
-	radix := (int64)(len(radixCodeCharMap))
-
-	code := []byte{}
-	for v := src; v > 0; v /= radix {
-		i := v % radix
-		code = append(code, radixCodeCharMap[i])
-	}
-
-	now := time.Now().UnixNano()
-	rand.Seed(now)
-	return fmt.Sprintf("%s%04d", (string)(code), rand.Intn(1000))
+	rand.Seed(time.Now().UnixNano())
+	return fmt.Sprintf("%s%04d", GenCodeFrom(src), rand.Intn(1000))
 }
 
 // Convert to lower string and encode by base64 -> md5

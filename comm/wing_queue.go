@@ -18,6 +18,16 @@ import (
 )
 
 // Queue the type of queue with sync lock
+//
+//				---------
+//	Quere Top : |   1   | -> Pop
+//				+-------+
+//				|   2   |
+//				+-------+
+//				|  ...  |
+//				+-------+
+//		Push -> |   n   | : Queue Back (or Bottom)
+//				+-------+
 type Queue struct {
 	list  *list.List
 	mutex sync.Mutex
@@ -25,9 +35,7 @@ type Queue struct {
 
 // GenQueue generat a new queue instance
 func GenQueue() *Queue {
-	return &Queue{
-		list: list.New(),
-	}
+	return &Queue{list: list.New()}
 }
 
 // Push push a data to queue back if the data not nil

@@ -22,6 +22,19 @@ import (
 	"io/ioutil"
 )
 
+// MQTT stub to manager MQTT connection.
+//
+// `USAGE` : you can connect MQTT remote server and return client like follow codes.
+//
+// ---
+//
+//	var MqClient mq.Client
+//	if err := mqtt.Singleton().ParseConfig(data); err != nil {
+//		logger.E("Parce mqtt config err:", err)
+//		return
+//	}
+//	mqtt.Singleton().GenClient()
+//	MqClient = mqtt.Singleton().Client
 type MqttStub struct {
 	Cfg    *MqttConfig
 	Client mq.Client
@@ -113,16 +126,6 @@ func (stub *MqttStub) newClient(opt *mq.ClientOptions) (mq.Client, error) {
 	}
 	return client, nil
 }
-
-// `USAGE`
-//
-//	var MqClient mq.Client
-//	if err := mqtt.Singleton().ParseConfig(data); err != nil {
-//		logger.E("Parce mqtt config err:", err)
-//		return
-//	}
-//	mqtt.Singleton().GenClient()
-//	MqClient = mqtt.Singleton().Client
 
 //	Parse all grpc certs from nacos config data, and cache to certs map
 func (stub *MqttStub) ParseConfig(data string) error {

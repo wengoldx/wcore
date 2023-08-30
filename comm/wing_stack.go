@@ -18,6 +18,18 @@ import (
 )
 
 // Stack the type of stack with sync lock
+//
+//		Push -> +       + -> Pop
+//				 \     /
+//				+-------+
+//	Stack Top : |   n   |
+//				+-------+
+//				|  ...  |
+//				+-------+
+//				|   2   |
+//				+-------+
+//				|   1   | : Stack Bottom
+//				---------
 type Stack struct {
 	list  *list.List
 	mutex sync.Mutex
@@ -25,9 +37,7 @@ type Stack struct {
 
 // GenStack generat a new stack instance
 func GenStack() *Stack {
-	return &Stack{
-		list: list.New(),
-	}
+	return &Stack{list: list.New()}
 }
 
 // Push push a data to stack top one if the data not nil
