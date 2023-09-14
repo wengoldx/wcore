@@ -48,6 +48,7 @@ const (
 	DID_ES_AGENTS    = "dunyu.es.agents"    // Group by IFSC,  data id of elastic search agents
 	DID_GRPC_CERTS   = "dunyu.grpc.certs"   // Group by BASIC, data id of grpc certs, the data format as xml
 	DID_MIO_PATHS    = "dunyu.mio.paths"    // Group by BASIC, data id of minio source paths
+	DID_MIO_USERS    = "dunyu.mio.users"    // Group by BASIC, data id of minio account key
 	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Group by IFSC,  data id of mqtt agents
 	DID_OTA_BUILDS   = "dunyu.ota.builds"   // Group by BASIC, data id of all projects OTA informations
 	DID_WX_AGENTS    = "dunyu.wx.agents"    // Group by BASIC, data id of wechat agents
