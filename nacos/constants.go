@@ -65,8 +65,6 @@ type AccConfs struct {
 	Email struct {
 		Host     string `json:"host"`
 		Port     int    `json:"port"`
-		User     string `json:"user"`
-		Pwd      string `json:"pwd"`
 		Identity string `json:"identity"`
 	} `json:"email"`
 
@@ -85,8 +83,14 @@ type AccConfs struct {
 		PageLimits   int    `json:"pageLimits"`   // One times to get list item counts on a page
 	} `json:"secure"`
 
-	// Administrators to allow login SysMgr
-	Admins []string `json:"admin"`
+	// Mall account settings
+	MallAccs map[string]*MallAcc `json:"mallaccs"`
+}
+
+// Nacos config for mall account settings
+type MallAcc struct {
+	User string `json:"user"`
+	Pwd  string `json:"pwd"`
 }
 
 // Nacos config for OTA upgrade by using DID_OTA_BUILDS data id
