@@ -151,7 +151,8 @@ func (stub *MqttStub) GenClient(server ...string) {
 		return
 	}
 
-	stub.Cfg.SvrCfg[svr].ClientID = secure.GenCode()
+	// Combine mqtt client id as 'server@123456789'
+	stub.Cfg.SvrCfg[svr].ClientID = svr + "@" + secure.GenCode()
 	opt := stub.GenConfig("tcp", svr)
 	client, err := stub.newClient(opt)
 	if err != nil {
