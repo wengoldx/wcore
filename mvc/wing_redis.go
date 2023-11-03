@@ -329,3 +329,8 @@ func (c *WingRedisConn) setKeyExpire(key, commond string, expire int64, option .
 	}
 	return set
 }
+
+// GetRedisPool get redis pool
+func (c *WingRedisConn) GetRedisPool() redis.Conn {
+	return c.redisPool.Get()
+}
