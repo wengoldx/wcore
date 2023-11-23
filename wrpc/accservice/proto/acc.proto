@@ -87,7 +87,7 @@ service Acc {
   rpc StoreProfiles(UIDS) returns (ProfStores);
 
   // Return uuids and emails
-  rpc GetUIDSByEmail(Email) returns (IDEMails);
+  rpc GetActiveEmails(Emails) returns (Emails);
 
   /// Maybe Deprecated the follows ///
   rpc AccActivate (UUID) returns (AEmpty);
@@ -118,6 +118,10 @@ message SKeys {
 
 message Email {
   string email = 1;      // account email
+}
+
+message Emails {
+  repeated Email items = 1;
 }
 
 message AccPwd {

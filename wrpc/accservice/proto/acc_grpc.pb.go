@@ -72,7 +72,7 @@ type AccClient interface {
 	// Return accounts simple profiles and addresses
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	// Return uuids and emails
-	GetUIDSByEmail(ctx context.Context, in *Email, opts ...grpc.CallOption) (*IDEMails, error)
+	GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error)
 	/// Maybe Deprecated the follows ///
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
@@ -304,9 +304,9 @@ func (c *accClient) StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *accClient) GetUIDSByEmail(ctx context.Context, in *Email, opts ...grpc.CallOption) (*IDEMails, error) {
-	out := new(IDEMails)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetUIDSByEmail", in, out, opts...)
+func (c *accClient) GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error) {
+	out := new(Emails)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetActiveEmails", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +403,7 @@ type AccServer interface {
 	// Return accounts simple profiles and addresses
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	// Return uuids and emails
-	GetUIDSByEmail(context.Context, *Email) (*IDEMails, error)
+	GetActiveEmails(context.Context, *Emails) (*Emails, error)
 	/// Maybe Deprecated the follows ///
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
@@ -488,8 +488,8 @@ func (UnimplementedAccServer) StoreProfile(context.Context, *UUID) (*ProfStore, 
 func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreProfiles not implemented")
 }
-func (UnimplementedAccServer) GetUIDSByEmail(context.Context, *Email) (*IDEMails, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUIDSByEmail not implemented")
+func (UnimplementedAccServer) GetActiveEmails(context.Context, *Emails) (*Emails, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveEmails not implemented")
 }
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
@@ -948,20 +948,20 @@ func _Acc_StoreProfiles_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_GetUIDSByEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Email)
+func _Acc_GetActiveEmails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Emails)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).GetUIDSByEmail(ctx, in)
+		return srv.(AccServer).GetActiveEmails(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/GetUIDSByEmail",
+		FullMethod: "/proto.Acc/GetActiveEmails",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetUIDSByEmail(ctx, req.(*Email))
+		return srv.(AccServer).GetActiveEmails(ctx, req.(*Emails))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1142,8 +1142,8 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_StoreProfiles_Handler,
 		},
 		{
-			MethodName: "GetUIDSByEmail",
-			Handler:    _Acc_GetUIDSByEmail_Handler,
+			MethodName: "GetActiveEmails",
+			Handler:    _Acc_GetActiveEmails_Handler,
 		},
 		{
 			MethodName: "AccActivate",
