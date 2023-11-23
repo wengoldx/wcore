@@ -86,6 +86,9 @@ service Acc {
   // Return accounts simple profiles and addresses
   rpc StoreProfiles(UIDS) returns (ProfStores);
 
+  // Return uuids and emails
+  rpc GetUIDSByEmail(Email) returns (IDEMails);
+
   /// Maybe Deprecated the follows ///
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
