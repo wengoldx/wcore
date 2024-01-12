@@ -33,6 +33,7 @@ service Wgpay {
     rpc CombineJS(TradeUID) returns (JSPayRet);
     rpc QueryTrade(No) returns (QueryRet);
     rpc TradeRefund(RefundNo) returns (RefundRet);
+    rpc AppPay(TradeNo) returns (AppPayRet);
 }
 
 message PayEmpty{}
@@ -138,4 +139,19 @@ message RefundNo{
 message RefundRet {
   string create_time = 1;
   string status = 2;
+}
+
+message TradeNo {
+  string trade_no =1;
+}
+
+message AppPayRet {
+  string trade_no = 1;
+  string appid = 2;
+  string partnerid = 3;
+  string prepay_id = 4;
+  string package = 5;
+  string noncestr = 6;
+  string timestamp = 7;
+  string sign = 8;
 }

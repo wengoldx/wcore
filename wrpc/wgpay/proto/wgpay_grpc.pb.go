@@ -46,6 +46,7 @@ type WgpayClient interface {
 	CombineJS(ctx context.Context, in *TradeUID, opts ...grpc.CallOption) (*JSPayRet, error)
 	QueryTrade(ctx context.Context, in *No, opts ...grpc.CallOption) (*QueryRet, error)
 	TradeRefund(ctx context.Context, in *RefundNo, opts ...grpc.CallOption) (*RefundRet, error)
+	AppPay(ctx context.Context, in *TradeNo, opts ...grpc.CallOption) (*AppPayRet, error)
 }
 
 type wgpayClient struct {
@@ -218,6 +219,15 @@ func (c *wgpayClient) TradeRefund(ctx context.Context, in *RefundNo, opts ...grp
 	return out, nil
 }
 
+func (c *wgpayClient) AppPay(ctx context.Context, in *TradeNo, opts ...grpc.CallOption) (*AppPayRet, error) {
+	out := new(AppPayRet)
+	err := c.cc.Invoke(ctx, "/proto.Wgpay/AppPay", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WgpayServer is the server API for Wgpay service.
 // All implementations must embed UnimplementedWgpayServer
 // for forward compatibility
@@ -246,6 +256,7 @@ type WgpayServer interface {
 	CombineJS(context.Context, *TradeUID) (*JSPayRet, error)
 	QueryTrade(context.Context, *No) (*QueryRet, error)
 	TradeRefund(context.Context, *RefundNo) (*RefundRet, error)
+	AppPay(context.Context, *TradeNo) (*AppPayRet, error)
 	mustEmbedUnimplementedWgpayServer()
 }
 
@@ -306,6 +317,9 @@ func (UnimplementedWgpayServer) QueryTrade(context.Context, *No) (*QueryRet, err
 }
 func (UnimplementedWgpayServer) TradeRefund(context.Context, *RefundNo) (*RefundRet, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TradeRefund not implemented")
+}
+func (UnimplementedWgpayServer) AppPay(context.Context, *TradeNo) (*AppPayRet, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppPay not implemented")
 }
 func (UnimplementedWgpayServer) mustEmbedUnimplementedWgpayServer() {}
 
@@ -644,6 +658,24 @@ func _Wgpay_TradeRefund_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Wgpay_AppPay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TradeNo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WgpayServer).AppPay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Wgpay/AppPay",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WgpayServer).AppPay(ctx, req.(*TradeNo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Wgpay_ServiceDesc is the grpc.ServiceDesc for Wgpay service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -722,6 +754,10 @@ var Wgpay_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TradeRefund",
 			Handler:    _Wgpay_TradeRefund_Handler,
+		},
+		{
+			MethodName: "AppPay",
+			Handler:    _Wgpay_AppPay_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
