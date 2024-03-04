@@ -78,6 +78,8 @@ type AccClient interface {
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	SetContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
+	// Return QKS machine login token
+	GenQKMachToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error)
 }
 
 type accClient struct {
@@ -349,6 +351,15 @@ func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.C
 	return out, nil
 }
 
+func (c *accClient) GenQKMachToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GenQKMachToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -409,6 +420,8 @@ type AccServer interface {
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	SetContact(context.Context, *Contact) (*AEmpty, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
+	// Return QKS machine login token
+	GenQKMachToken(context.Context, *UUID) (*Token, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -502,6 +515,9 @@ func (UnimplementedAccServer) SetContact(context.Context, *Contact) (*AEmpty, er
 }
 func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
+}
+func (UnimplementedAccServer) GenQKMachToken(context.Context, *UUID) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenQKMachToken not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -1038,6 +1054,24 @@ func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_GenQKMachToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GenQKMachToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GenQKMachToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GenQKMachToken(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1160,6 +1194,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BindAccount",
 			Handler:    _Acc_BindAccount_Handler,
+		},
+		{
+			MethodName: "GenQKMachToken",
+			Handler:    _Acc_GenQKMachToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

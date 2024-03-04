@@ -94,6 +94,9 @@ service Acc {
   rpc GetProfile(UUID) returns (Profile);
   rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
+
+  // Return QKS machine login token
+  rpc GenQKMachToken(UUID) returns (Token);
 }
 
 message AEmpty {}       // diferent other server when using together

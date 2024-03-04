@@ -1877,7 +1877,7 @@ var file_proto_acc_proto_rawDesc = []byte{
 	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08, 0x63, 0x61, 0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x12,
 	0x18, 0x0a, 0x07, 0x6b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x07, 0x6b, 0x65, 0x79, 0x77, 0x6f, 0x72, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x72, 0x6f, 0x6c,
-	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x32, 0xa1, 0x0a,
+	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x72, 0x6f, 0x6c, 0x65, 0x32, 0xce, 0x0a,
 	0x0a, 0x03, 0x41, 0x63, 0x63, 0x12, 0x27, 0x0a, 0x08, 0x56, 0x69, 0x61, 0x54, 0x6f, 0x6b, 0x65,
 	0x6e, 0x12, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x1a,
 	0x0d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x63, 0x63, 0x50, 0x77, 0x64, 0x12, 0x25,
@@ -1960,8 +1960,11 @@ var file_proto_acc_proto_rawDesc = []byte{
 	0x6d, 0x70, 0x74, 0x79, 0x12, 0x2b, 0x0a, 0x0b, 0x42, 0x69, 0x6e, 0x64, 0x41, 0x63, 0x63, 0x6f,
 	0x75, 0x6e, 0x74, 0x12, 0x0e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x65, 0x63, 0x75,
 	0x72, 0x65, 0x73, 0x1a, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65,
-	0x6e, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x6e, 0x12, 0x2b, 0x0a, 0x0e, 0x47, 0x65, 0x6e, 0x51, 0x4b, 0x4d, 0x61, 0x63, 0x68, 0x54, 0x6f,
+	0x6b, 0x65, 0x6e, 0x12, 0x0b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x55, 0x55, 0x49, 0x44,
+	0x1a, 0x0c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x42, 0x09,
+	0x5a, 0x07, 0x2e, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -2043,37 +2046,39 @@ var file_proto_acc_proto_depIdxs = []int32{
 	2,  // 31: proto.Acc.GetProfile:input_type -> proto.UUID
 	11, // 32: proto.Acc.SetContact:input_type -> proto.Contact
 	19, // 33: proto.Acc.BindAccount:input_type -> proto.Secures
-	7,  // 34: proto.Acc.ViaToken:output_type -> proto.AccPwd
-	21, // 35: proto.Acc.ViaRole:output_type -> proto.Result
-	7,  // 36: proto.Acc.AccRegister:output_type -> proto.AccPwd
-	1,  // 37: proto.Acc.AccLogin:output_type -> proto.Token
-	27, // 38: proto.Acc.RoleProfiles:output_type -> proto.RoleProfs
-	27, // 39: proto.Acc.SearchInRole:output_type -> proto.RoleProfs
-	0,  // 40: proto.Acc.UpdateEmail:output_type -> proto.AEmpty
-	0,  // 41: proto.Acc.ResetSendPwd:output_type -> proto.AEmpty
-	0,  // 42: proto.Acc.UnbindWechat:output_type -> proto.AEmpty
-	10, // 43: proto.Acc.GetAccEmails:output_type -> proto.IDEMails
-	11, // 44: proto.Acc.GetContact:output_type -> proto.Contact
-	15, // 45: proto.Acc.GetAvatars:output_type -> proto.Avatars
-	15, // 46: proto.Acc.SearchAvatars:output_type -> proto.Avatars
-	0,  // 47: proto.Acc.DeleteAcc:output_type -> proto.AEmpty
-	2,  // 48: proto.Acc.StoreAddMach:output_type -> proto.UUID
-	2,  // 49: proto.Acc.StoreAddComp:output_type -> proto.UUID
-	0,  // 50: proto.Acc.StoreUpComp:output_type -> proto.AEmpty
-	0,  // 51: proto.Acc.StoreBindWx:output_type -> proto.AEmpty
-	0,  // 52: proto.Acc.StoreUnbindWx:output_type -> proto.AEmpty
-	0,  // 53: proto.Acc.CompUnbindWx:output_type -> proto.AEmpty
-	0,  // 54: proto.Acc.CompResetPwd:output_type -> proto.AEmpty
-	0,  // 55: proto.Acc.StoreRename:output_type -> proto.AEmpty
-	16, // 56: proto.Acc.StoreProfile:output_type -> proto.ProfStore
-	17, // 57: proto.Acc.StoreProfiles:output_type -> proto.ProfStores
-	6,  // 58: proto.Acc.GetActiveEmails:output_type -> proto.Emails
-	0,  // 59: proto.Acc.AccActivate:output_type -> proto.AEmpty
-	12, // 60: proto.Acc.GetProfile:output_type -> proto.Profile
-	0,  // 61: proto.Acc.SetContact:output_type -> proto.AEmpty
-	1,  // 62: proto.Acc.BindAccount:output_type -> proto.Token
-	34, // [34:63] is the sub-list for method output_type
-	5,  // [5:34] is the sub-list for method input_type
+	2,  // 34: proto.Acc.GenQKMachToken:input_type -> proto.UUID
+	7,  // 35: proto.Acc.ViaToken:output_type -> proto.AccPwd
+	21, // 36: proto.Acc.ViaRole:output_type -> proto.Result
+	7,  // 37: proto.Acc.AccRegister:output_type -> proto.AccPwd
+	1,  // 38: proto.Acc.AccLogin:output_type -> proto.Token
+	27, // 39: proto.Acc.RoleProfiles:output_type -> proto.RoleProfs
+	27, // 40: proto.Acc.SearchInRole:output_type -> proto.RoleProfs
+	0,  // 41: proto.Acc.UpdateEmail:output_type -> proto.AEmpty
+	0,  // 42: proto.Acc.ResetSendPwd:output_type -> proto.AEmpty
+	0,  // 43: proto.Acc.UnbindWechat:output_type -> proto.AEmpty
+	10, // 44: proto.Acc.GetAccEmails:output_type -> proto.IDEMails
+	11, // 45: proto.Acc.GetContact:output_type -> proto.Contact
+	15, // 46: proto.Acc.GetAvatars:output_type -> proto.Avatars
+	15, // 47: proto.Acc.SearchAvatars:output_type -> proto.Avatars
+	0,  // 48: proto.Acc.DeleteAcc:output_type -> proto.AEmpty
+	2,  // 49: proto.Acc.StoreAddMach:output_type -> proto.UUID
+	2,  // 50: proto.Acc.StoreAddComp:output_type -> proto.UUID
+	0,  // 51: proto.Acc.StoreUpComp:output_type -> proto.AEmpty
+	0,  // 52: proto.Acc.StoreBindWx:output_type -> proto.AEmpty
+	0,  // 53: proto.Acc.StoreUnbindWx:output_type -> proto.AEmpty
+	0,  // 54: proto.Acc.CompUnbindWx:output_type -> proto.AEmpty
+	0,  // 55: proto.Acc.CompResetPwd:output_type -> proto.AEmpty
+	0,  // 56: proto.Acc.StoreRename:output_type -> proto.AEmpty
+	16, // 57: proto.Acc.StoreProfile:output_type -> proto.ProfStore
+	17, // 58: proto.Acc.StoreProfiles:output_type -> proto.ProfStores
+	6,  // 59: proto.Acc.GetActiveEmails:output_type -> proto.Emails
+	0,  // 60: proto.Acc.AccActivate:output_type -> proto.AEmpty
+	12, // 61: proto.Acc.GetProfile:output_type -> proto.Profile
+	0,  // 62: proto.Acc.SetContact:output_type -> proto.AEmpty
+	1,  // 63: proto.Acc.BindAccount:output_type -> proto.Token
+	1,  // 64: proto.Acc.GenQKMachToken:output_type -> proto.Token
+	35, // [35:65] is the sub-list for method output_type
+	5,  // [5:35] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name

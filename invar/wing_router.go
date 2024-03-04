@@ -21,6 +21,8 @@ const (
 	WRoleSComp     = "store-comp"    // Store composer account
 	WRoleSMachine  = "store-machine" // Store machine account
 	WRoleQKPartner = "qk-partner"    // QKS partner account
+	WRoleQKComp    = "qk-comp"       // QKS composer account
+	WRoleQKMachine = "qk-machine"    // QKS machine account
 
 	/* FIXME :
 	 *
@@ -47,11 +49,11 @@ func GetRouterKey(role string) string {
 		return WRGroupAdmin
 	case WRoleUser:
 		return WRGroupUser
-	case WRoleMComp, WRoleSComp:
+	case WRoleMComp, WRoleSComp, WRoleQKComp:
 		return WRGroupComp
 	case WRoleMDesigner:
 		return WRGroupDesigner
-	case WRoleSMachine:
+	case WRoleSMachine, WRoleQKMachine:
 		return WRGroupMachine
 	case WRoleQKPartner:
 		return WRGroupPartner
@@ -68,5 +70,6 @@ func IsValidAdmin(role string) bool {
 func IsValidUser(role string) bool {
 	return role != "" && (role == WRoleUser || role == WRoleMComp ||
 		role == WRoleMDesigner || role == WRoleSComp ||
-		role == WRoleSMachine || role == WRoleQKPartner)
+		role == WRoleSMachine || role == WRoleQKPartner ||
+		role == WRoleQKComp || role == WRoleQKMachine)
 }
