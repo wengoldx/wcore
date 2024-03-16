@@ -17,9 +17,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"github.com/wengoldx/wing/invar"
 	"io/ioutil"
 	"os"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // ### 1. How to encrypt and decrypt by RSA

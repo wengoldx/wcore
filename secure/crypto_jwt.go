@@ -11,10 +11,11 @@
 package secure
 
 import (
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/wengoldx/wing/invar"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/wengoldx/wing/invar"
 )
 
 // Claims jwt claims data

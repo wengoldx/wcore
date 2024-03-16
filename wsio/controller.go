@@ -12,6 +12,7 @@ package wsio
 
 import (
 	"encoding/json"
+
 	sio "github.com/googollee/go-socket.io"
 	"github.com/wengoldx/wing/logger"
 )

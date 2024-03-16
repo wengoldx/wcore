@@ -13,11 +13,12 @@ package mvc
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"time"
 )
 
 // WingRedisConn content provider to support redis utils

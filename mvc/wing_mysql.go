@@ -13,11 +13,12 @@ package mvc
 import (
 	"database/sql"
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/astaxie/beego"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"reflect"
-	"strings"
 	// ----------------------------------------
 	// NOTIC :
 	//

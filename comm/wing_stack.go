@@ -13,8 +13,9 @@ package comm
 import (
 	"container/list"
 	"fmt"
-	"github.com/wengoldx/wing/invar"
 	"sync"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // Stack the type of stack with sync lock

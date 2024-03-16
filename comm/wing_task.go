@@ -12,11 +12,12 @@
 package comm
 
 import (
+	"time"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/toolbox"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"time"
 )
 
 /* --------------------------- */

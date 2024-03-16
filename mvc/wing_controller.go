@@ -13,11 +13,12 @@ package mvc
 import (
 	"encoding/json"
 	"encoding/xml"
+	"strings"
+
 	"github.com/astaxie/beego"
 	"github.com/go-playground/validator/v10"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"strings"
 )
 
 // WingController the base controller to support bee http functions.

@@ -12,12 +12,13 @@ package comm
 
 import (
 	"encoding/json"
+	"os"
+	"reflect"
+	"strings"
+
 	"github.com/astaxie/beego"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
-	"io/ioutil"
-	"reflect"
-	"strings"
 )
 
 // Swagger.json field keywords for version 2.0.0.
@@ -154,7 +155,7 @@ func UpdateChineses(data string, descs []*SvrDesc) (string, error) {
 
 // Load local server routers from swagger.json file.
 func loadSwaggerRouters() (*Routers, error) {
-	buff, err := ioutil.ReadFile(swaggerFile)
+	buff, err := os.ReadFile(swaggerFile)
 	if err != nil {
 		logger.E("Load swagger routers, err:", err)
 		return nil, err

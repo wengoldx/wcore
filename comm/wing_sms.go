@@ -13,15 +13,16 @@ package comm
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/satori/go.uuid"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/secure"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wing/secure"
 )
 
 const (
@@ -95,7 +96,7 @@ func (s *SmsSender) requestRemoteSend(requesturl string) ([]byte, error) {
 	}
 
 	// read executed response data
-	rst, err := ioutil.ReadAll(res.Body)
+	rst, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if err != nil {
 		logger.E("Read get method response err:", err)

@@ -11,8 +11,9 @@
 package invar
 
 import (
-	"github.com/wengoldx/wing/logger"
 	"regexp"
+
+	"github.com/wengoldx/wing/logger"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +225,7 @@ func RegexBtcUpperAddressBech32(src string) bool { return btcUpperAddressRegexBe
 func RegexBtcLowerAddressBech32(src string) bool { return btcLowerAddressRegexBech32.MatchString(src) }
 func RegexEthAddress(src string) bool            { return ethAddressRegex.MatchString(src) }
 func RegexEthAddressUpper(src string) bool       { return ethAddressRegexUpper.MatchString(src) }
-func RegexEthAddressLower(src string) bool       { return uRLEncodedRegex.MatchString(src) }
+func RegexEthAddressLower(src string) bool       { return ethAddressRegexLower.MatchString(src) }
 func RegexURLEncoded(src string) bool            { return uRLEncodedRegex.MatchString(src) }
 func RegexHTMLEncoded(src string) bool           { return hTMLEncodedRegex.MatchString(src) }
 func RegexHTML(src string) bool                  { return hTMLRegex.MatchString(src) }

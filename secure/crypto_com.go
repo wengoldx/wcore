@@ -20,14 +20,15 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/bwmarrin/snowflake"
-	"github.com/wengoldx/wing/invar"
-	"golang.org/x/crypto/scrypt"
 	"io"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bwmarrin/snowflake"
+	"github.com/wengoldx/wing/invar"
+	"golang.org/x/crypto/scrypt"
 )
 
 const (

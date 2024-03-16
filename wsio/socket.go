@@ -11,16 +11,17 @@
 package wsio
 
 import (
-	"github.com/astaxie/beego"
-	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/wsio/clients"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 	"unsafe"
+
+	"github.com/astaxie/beego"
+	sio "github.com/googollee/go-socket.io"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wing/wsio/clients"
 )
 
 // client datas for temp cache

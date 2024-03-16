@@ -17,12 +17,13 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/mozillazg/go-pinyin"
-	"github.com/wengoldx/wing/logger"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/mozillazg/go-pinyin"
+	"github.com/wengoldx/wing/logger"
 )
 
 // Try try-catch-finaly method

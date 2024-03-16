@@ -11,10 +11,11 @@
 package logger
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/logs"
 	"runtime"
 	"strings"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 )
 
 const (

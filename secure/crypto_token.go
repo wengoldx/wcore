@@ -12,10 +12,11 @@ package secure
 
 import (
 	"fmt"
-	"github.com/wengoldx/wing/invar"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // Generate a login token with account and password

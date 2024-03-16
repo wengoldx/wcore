@@ -15,14 +15,14 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
 )
 
 // SetRequest use for set http request before execute http.Client.Do,
@@ -54,7 +54,7 @@ func readResponse(resp *http.Response) ([]byte, error) {
 		return nil, invar.ErrInvalidState
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.E("Failed read response, err:", err)
 		return nil, err

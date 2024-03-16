@@ -16,7 +16,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
@@ -24,7 +24,7 @@ import (
 )
 
 func respError(res *esapi.Response) error {
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return fmt.Errorf("read resp body err:%v", err)
 	}
@@ -182,7 +182,7 @@ func (e *ESClient) SearchIndex(index, query string, page int, limit ...int) (*Re
 		return nil, respError(res)
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read search resp err:%v", err)
 	}

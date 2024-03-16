@@ -13,8 +13,9 @@ package comm
 import (
 	"container/list"
 	"fmt"
-	"github.com/wengoldx/wing/invar"
 	"sync"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // Queue the type of queue with sync lock

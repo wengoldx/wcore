@@ -11,8 +11,9 @@
 package comm
 
 import (
-	"github.com/go-ego/gse"
 	"unicode"
+
+	"github.com/go-ego/gse"
 )
 
 type WordSegment struct {

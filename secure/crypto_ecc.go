@@ -14,8 +14,9 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"github.com/wengoldx/wing/invar"
 	"math/big"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // Generate a ECC private key by origin key text

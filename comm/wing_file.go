@@ -18,9 +18,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/secure"
 	"io"
 	"mime/multipart"
 	"os"
@@ -29,6 +26,10 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wing/secure"
 )
 
 const (

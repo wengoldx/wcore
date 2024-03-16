@@ -11,8 +11,9 @@
 package comm
 
 import (
-	"gopkg.in/gomail.v2"
 	"strings"
+
+	"gopkg.in/gomail.v2"
 )
 
 // MailAgent mail agent informations

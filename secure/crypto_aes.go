@@ -14,10 +14,11 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	crand "crypto/rand"
-	"github.com/wengoldx/wing/invar"
 	"io"
 	"math/rand"
 	"time"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // For other languages, you can use the follows example code to encrypt or decrypt AES.

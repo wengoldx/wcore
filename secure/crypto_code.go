@@ -12,9 +12,10 @@ package secure
 
 import (
 	"fmt"
-	"github.com/wengoldx/wing/invar"
 	"math/rand"
 	"time"
+
+	"github.com/wengoldx/wing/invar"
 )
 
 // Random coder to generate unique number code

@@ -11,12 +11,13 @@
 package clients
 
 import (
-	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
 	"sort"
 	"sync"
 	"time"
+
+	sio "github.com/googollee/go-socket.io"
+	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wing/logger"
 )
 
 // ClientPool client pool

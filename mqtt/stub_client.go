@@ -15,11 +15,12 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/astaxie/beego"
 	mq "github.com/eclipse/paho.mqtt.golang"
 	"github.com/wengoldx/wing/logger"
 	"github.com/wengoldx/wing/secure"
-	"io/ioutil"
 )
 
 // MQTT stub to manager MQTT connection.
@@ -85,11 +86,10 @@ func (stub *MqttStub) GenConfig(mode, svr string) *mq.ClientOptions {
 	options.SetOnConnectHandler(defConnectHandler)
 	options.SetConnectionLostHandler(defConnectLostHandler)
 	return options
-
 }
 
 func newTLSConfig(caPath string, cer ...string) *tls.Config {
-	ca, err := ioutil.ReadFile(caPath)
+	ca, err := os.ReadFile(caPath)
 	if err != nil {
 		logger.E("Read CA file err:", err)
 		return nil
@@ -127,7 +127,7 @@ func (stub *MqttStub) newClient(opt *mq.ClientOptions) (mq.Client, error) {
 	return client, nil
 }
 
-//	Parse all grpc certs from nacos config data, and cache to certs map
+// Parse all grpc certs from nacos config data, and cache to certs map
 func (stub *MqttStub) ParseConfig(data string) error {
 	cfg := &MqttConfig{}
 	if err := json.Unmarshal([]byte(data), &cfg); err != nil {

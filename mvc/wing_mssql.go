@@ -13,6 +13,7 @@ package mvc
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/astaxie/beego"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
