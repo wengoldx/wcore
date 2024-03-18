@@ -158,7 +158,7 @@ func (stub *MqttStub) SetHandlers(conn mq.OnConnectHandler, disc mq.ConnectionLo
 }
 
 // Set default qos for publish or subscribe
-func (stub *MqttStub) SetQos(qos byte) { stub.qos = qos }
+func (stub *MqttStub) SetQos(qos byte) *MqttStub { stub.qos = qos; return stub }
 
 // Publish empty message topic, it same use for just notify
 func (stub *MqttStub) Notify(topic string, Qos ...byte) error {
