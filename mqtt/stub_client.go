@@ -63,6 +63,7 @@ type MqttStub struct {
 	Client            mq.Client
 	ConnectHandler    mq.OnConnectHandler
 	DisconnectHandler mq.ConnectionLostHandler
+	qos               byte // The default qos for publish or subscribe
 }
 
 // Singleton mqtt stub instance
@@ -76,6 +77,7 @@ func Singleton() *MqttStub {
 			Client:            nil,
 			ConnectHandler:    defConnectHandler,
 			DisconnectHandler: defConnectLostHandler,
+			qos:               byte(0),
 		}
 	}
 	return mqttStub
@@ -155,6 +157,9 @@ func (stub *MqttStub) SetHandlers(conn mq.OnConnectHandler, disc mq.ConnectionLo
 	return stub
 }
 
+// Set default qos for publish or subscribe
+func (stub *MqttStub) SetQos(qos byte) { stub.qos = qos }
+
 // Publish empty message topic, it same use for just notify
 func (stub *MqttStub) Notify(topic string, Qos ...byte) error {
 	return stub.Publish(topic, nil, Qos...)
@@ -176,7 +181,7 @@ func (stub *MqttStub) Publish(topic string, data interface{}, Qos ...byte) error
 		}
 	}
 
-	qosv := byte(0)
+	qosv := stub.qos
 	if len(Qos) > 0 && Qos[0] > 0 && Qos[0] <= 2 {
 		qosv = Qos[0]
 	}
@@ -198,7 +203,7 @@ func (stub *MqttStub) Subscribe(topic string, hanlder mq.MessageHandler, Qos ...
 		return invar.ErrInvalidClient
 	}
 
-	qosv := byte(0)
+	qosv := stub.qos
 	if len(Qos) > 0 && Qos[0] > 0 && Qos[0] <= 2 {
 		qosv = Qos[0]
 	}
