@@ -20,7 +20,7 @@ import (
 
 // Queue the type of queue with sync lock
 //
-//				---------
+//				--------- <- Head
 //	Quere Top : |   1   | -> Pop
 //				+-------+
 //				|   2   |
@@ -62,6 +62,16 @@ func (q *Queue) Pop() (interface{}, error) {
 	return nil, invar.ErrEmptyData
 }
 
+// Head push a data to queue top if the data not nil
+func (q *Queue) Head(data interface{}) {
+	if data == nil {
+		return
+	}
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	q.list.PushFront(data)
+}
+
 // Pick pick but not remove the front data of queue,
 // it will return invar.ErrEmptyData error if the queue is empty
 func (q *Queue) Pick() (interface{}, error) {
@@ -89,6 +99,22 @@ func (q *Queue) Clear() {
 // Len return the length of queue
 func (q *Queue) Len() int {
 	return q.list.Len()
+}
+
+// Fetch quere nodes, the callback return remove node and interupt flags
+func (q *Queue) Fetch(callback func(value any) (bool, bool)) {
+	if callback != nil {
+		q.mutex.Lock()
+		defer q.mutex.Unlock()
+
+		for e := q.list.Front(); e != nil; e = e.Next() {
+			if remove, interupt := callback(e); remove {
+				q.list.Remove(e)
+			} else if interupt {
+				return
+			}
+		}
+	}
 }
 
 // Dump print out the queue data.
