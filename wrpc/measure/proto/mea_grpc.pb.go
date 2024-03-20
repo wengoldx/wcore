@@ -24,9 +24,11 @@ const _ = grpc.SupportPackageIsVersion7
 type MeaClient interface {
 	Predict(ctx context.Context, in *BodySimple, opts ...grpc.CallOption) (*ReqID, error)
 	Capture(ctx context.Context, in *BodyCaptures, opts ...grpc.CallOption) (*ReqID, error)
+	Measure(ctx context.Context, in *BodyComplex, opts ...grpc.CallOption) (*ReqID, error)
 	Repredict(ctx context.Context, in *UpSimple, opts ...grpc.CallOption) (*Empty, error)
-	Remeasure(ctx context.Context, in *UpCaptures, opts ...grpc.CallOption) (*Empty, error)
-	Recapture(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error)
+	Recapture(ctx context.Context, in *UpCaptures, opts ...grpc.CallOption) (*Empty, error)
+	Remeasure(ctx context.Context, in *UpComplex, opts ...grpc.CallOption) (*Empty, error)
+	BodyShot(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error)
 	GetBodys(ctx context.Context, in *ReqIDs, opts ...grpc.CallOption) (*BodyList, error)
 	GetBody(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*BodyDetail, error)
 	DelBody(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error)
@@ -58,6 +60,15 @@ func (c *meaClient) Capture(ctx context.Context, in *BodyCaptures, opts ...grpc.
 	return out, nil
 }
 
+func (c *meaClient) Measure(ctx context.Context, in *BodyComplex, opts ...grpc.CallOption) (*ReqID, error) {
+	out := new(ReqID)
+	err := c.cc.Invoke(ctx, "/proto.Mea/Measure", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *meaClient) Repredict(ctx context.Context, in *UpSimple, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/proto.Mea/Repredict", in, out, opts...)
@@ -67,7 +78,16 @@ func (c *meaClient) Repredict(ctx context.Context, in *UpSimple, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *meaClient) Remeasure(ctx context.Context, in *UpCaptures, opts ...grpc.CallOption) (*Empty, error) {
+func (c *meaClient) Recapture(ctx context.Context, in *UpCaptures, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/proto.Mea/Recapture", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *meaClient) Remeasure(ctx context.Context, in *UpComplex, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/proto.Mea/Remeasure", in, out, opts...)
 	if err != nil {
@@ -76,9 +96,9 @@ func (c *meaClient) Remeasure(ctx context.Context, in *UpCaptures, opts ...grpc.
 	return out, nil
 }
 
-func (c *meaClient) Recapture(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error) {
+func (c *meaClient) BodyShot(ctx context.Context, in *ReqID, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/proto.Mea/Recapture", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Mea/BodyShot", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +138,11 @@ func (c *meaClient) DelBody(ctx context.Context, in *ReqID, opts ...grpc.CallOpt
 type MeaServer interface {
 	Predict(context.Context, *BodySimple) (*ReqID, error)
 	Capture(context.Context, *BodyCaptures) (*ReqID, error)
+	Measure(context.Context, *BodyComplex) (*ReqID, error)
 	Repredict(context.Context, *UpSimple) (*Empty, error)
-	Remeasure(context.Context, *UpCaptures) (*Empty, error)
-	Recapture(context.Context, *ReqID) (*Empty, error)
+	Recapture(context.Context, *UpCaptures) (*Empty, error)
+	Remeasure(context.Context, *UpComplex) (*Empty, error)
+	BodyShot(context.Context, *ReqID) (*Empty, error)
 	GetBodys(context.Context, *ReqIDs) (*BodyList, error)
 	GetBody(context.Context, *ReqID) (*BodyDetail, error)
 	DelBody(context.Context, *ReqID) (*Empty, error)
@@ -137,14 +159,20 @@ func (UnimplementedMeaServer) Predict(context.Context, *BodySimple) (*ReqID, err
 func (UnimplementedMeaServer) Capture(context.Context, *BodyCaptures) (*ReqID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Capture not implemented")
 }
+func (UnimplementedMeaServer) Measure(context.Context, *BodyComplex) (*ReqID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Measure not implemented")
+}
 func (UnimplementedMeaServer) Repredict(context.Context, *UpSimple) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Repredict not implemented")
 }
-func (UnimplementedMeaServer) Remeasure(context.Context, *UpCaptures) (*Empty, error) {
+func (UnimplementedMeaServer) Recapture(context.Context, *UpCaptures) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Recapture not implemented")
+}
+func (UnimplementedMeaServer) Remeasure(context.Context, *UpComplex) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remeasure not implemented")
 }
-func (UnimplementedMeaServer) Recapture(context.Context, *ReqID) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Recapture not implemented")
+func (UnimplementedMeaServer) BodyShot(context.Context, *ReqID) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BodyShot not implemented")
 }
 func (UnimplementedMeaServer) GetBodys(context.Context, *ReqIDs) (*BodyList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBodys not implemented")
@@ -204,6 +232,24 @@ func _Mea_Capture_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Mea_Measure_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BodyComplex)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MeaServer).Measure(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Mea/Measure",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MeaServer).Measure(ctx, req.(*BodyComplex))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Mea_Repredict_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpSimple)
 	if err := dec(in); err != nil {
@@ -222,26 +268,8 @@ func _Mea_Repredict_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Mea_Remeasure_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpCaptures)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MeaServer).Remeasure(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Mea/Remeasure",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeaServer).Remeasure(ctx, req.(*UpCaptures))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Mea_Recapture_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReqID)
+	in := new(UpCaptures)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -253,7 +281,43 @@ func _Mea_Recapture_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/proto.Mea/Recapture",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeaServer).Recapture(ctx, req.(*ReqID))
+		return srv.(MeaServer).Recapture(ctx, req.(*UpCaptures))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Mea_Remeasure_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpComplex)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MeaServer).Remeasure(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Mea/Remeasure",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MeaServer).Remeasure(ctx, req.(*UpComplex))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Mea_BodyShot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReqID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MeaServer).BodyShot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Mea/BodyShot",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MeaServer).BodyShot(ctx, req.(*ReqID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -328,16 +392,24 @@ var Mea_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Mea_Capture_Handler,
 		},
 		{
+			MethodName: "Measure",
+			Handler:    _Mea_Measure_Handler,
+		},
+		{
 			MethodName: "Repredict",
 			Handler:    _Mea_Repredict_Handler,
+		},
+		{
+			MethodName: "Recapture",
+			Handler:    _Mea_Recapture_Handler,
 		},
 		{
 			MethodName: "Remeasure",
 			Handler:    _Mea_Remeasure_Handler,
 		},
 		{
-			MethodName: "Recapture",
-			Handler:    _Mea_Recapture_Handler,
+			MethodName: "BodyShot",
+			Handler:    _Mea_BodyShot_Handler,
 		},
 		{
 			MethodName: "GetBodys",
