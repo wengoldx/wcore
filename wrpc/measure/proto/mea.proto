@@ -42,15 +42,16 @@ message BodyCapture {
 
 message BodyComplex {
   int64 sex = 1;
-  int64 height = 2;
-  int64 weight = 3;
-  string fronturl = 4;
-  string sideurl = 5;
-  int64 bust = 6;
-  int64 waist = 7;
-  int64 hipline = 8;
-  int64 wrist = 9;
-  string notifyurl = 10;
+  bool capture = 2;
+  int64 height = 3;
+  int64 weight = 4;
+  string fronturl = 5;
+  string sideurl = 6;
+  int64 bust = 7;
+  int64 waist = 8;
+  int64 hipline = 9;
+  int64 wrist = 10;
+  string notifyurl = 11;
 }
 
 message UpSimple {
