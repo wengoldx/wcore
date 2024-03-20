@@ -4,43 +4,60 @@ package proto;
 option go_package = "./proto";
 
 service Mea {
-  rpc Measure(BodyAdd) returns (ReqID);
-  rpc ReMeasure(BodyMod) returns (Empty);
-  rpc Delete(ReqID) returns (Empty);
-  rpc Capture(ReqID) returns (Empty);
-  rpc GetBody(ReqID) returns (BodyDetail);
+  rpc Predict(BodySimple) returns (ReqID);
+  rpc Capture(BodyCaptures) returns (ReqID);
+  rpc Repredict(UpSimple) returns (Empty);
+  rpc Remeasure(UpCaptures) returns (Empty);
+  rpc Recapture(ReqID) returns (Empty);
   rpc GetBodys(ReqIDs) returns (BodyList);
+  rpc GetBody(ReqID) returns (BodyDetail);
+  rpc DelBody(ReqID) returns (Empty);
 }
 
 message ReqID { string reqid = 1; }
 
 message ReqIDs { repeated string reqids = 1; }
 
-message BodyAdd {
+message BodySimple {
+  int64 sex = 1;
+  int64 height = 2;
+  int64 weight = 3;
+  int64 bust = 4;
+  int64 waist = 5;
+  int64 hipline = 6;
+  int64 wrist = 7;
+  string notifyurl = 8;
+}
+
+message BodyCaptures {
   int64 sex = 1;
   int64 height = 2;
   int64 weight = 3;
   string fronturl = 4;
   string sideurl = 5;
-  int64 bust = 6;
-  int64 waist = 7;
-  int64 hipline = 8;
-  int64 wrist = 9;
-  string notifyurl = 10;
+  string notifyurl = 6;
 }
 
-message BodyMod {
+message UpSimple {
+  string reqid = 1;
+  int64 sex = 2;
+  int64 height = 3;
+  int64 weight = 4;
+  int64 bust = 5;
+  int64 waist = 6;
+  int64 hipline = 7;
+  int64 wrist = 8;
+  string notifyurl = 9;
+}
+
+message UpCaptures {
   string reqid = 1;
   int64 sex = 2;
   int64 height = 3;
   int64 weight = 4;
   string fronturl = 5;
   string sideurl = 6;
-  int64 bust = 7;
-  int64 waist = 8;
-  int64 hipline = 9;
-  int64 wrist = 10;
-  string notifyurl = 11;
+  string notifyurl = 7;
 }
 
 message Empty {}
