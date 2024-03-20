@@ -5,10 +5,10 @@ option go_package = "./proto";
 
 service Mea {
   rpc Predict(BodySimple) returns (ReqID);
-  rpc Capture(BodyCaptures) returns (ReqID);
+  rpc Capture(BodyCapture) returns (ReqID);
   rpc Measure(BodyComplex) returns (ReqID);
   rpc Repredict(UpSimple) returns (Empty);
-  rpc Recapture(UpCaptures) returns (Empty);
+  rpc Recapture(UpCapture) returns (Empty);
   rpc Remeasure(UpComplex) returns (Empty);
   rpc BodyShot(ReqID) returns (Empty);
   rpc GetBodys(ReqIDs) returns (BodyList);
@@ -31,7 +31,7 @@ message BodySimple {
   string notifyurl = 8;
 }
 
-message BodyCaptures {
+message BodyCapture {
   int64 sex = 1;
   int64 height = 2;
   int64 weight = 3;
@@ -65,7 +65,7 @@ message UpSimple {
   string notifyurl = 9;
 }
 
-message UpCaptures {
+message UpCapture {
   string reqid = 1;
   int64 sex = 2;
   int64 height = 3;
