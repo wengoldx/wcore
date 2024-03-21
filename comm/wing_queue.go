@@ -112,7 +112,7 @@ func (q *Queue) Fetch(callback func(value any) (bool, bool)) {
 		defer q.mutex.Unlock()
 
 		for e := q.list.Front(); e != nil; e = e.Next() {
-			remove, interupt := callback(e)
+			remove, interupt := callback(e.Value)
 			if remove { // Delete or remain the node
 				q.list.Remove(e)
 			}
