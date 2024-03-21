@@ -64,6 +64,7 @@ type MqttStub struct {
 	ConnectHandler    mq.OnConnectHandler
 	DisconnectHandler mq.ConnectionLostHandler
 	qos               byte // The default qos for publish or subscribe
+	remain            bool // The default remain flag
 }
 
 // Singleton mqtt stub instance
@@ -78,6 +79,7 @@ func Singleton() *MqttStub {
 			ConnectHandler:    defConnectHandler,
 			DisconnectHandler: defConnectLostHandler,
 			qos:               byte(0),
+			remain:            false,
 		}
 	}
 	return mqttStub
@@ -152,21 +154,35 @@ func (stub *MqttStub) Connect(opt *mq.ClientOptions) error {
 }
 
 // Set mqtt client connect and disconnect handler, it called must before calling GenConfigs()
-func (stub *MqttStub) SetHandlers(conn mq.OnConnectHandler, disc mq.ConnectionLostHandler) *MqttStub {
-	stub.ConnectHandler, stub.DisconnectHandler = conn, disc
+func (stub *MqttStub) SetHandlers(conn mq.OnConnectHandler, disc ...mq.ConnectionLostHandler) *MqttStub {
+	stub.ConnectHandler = conn
+	if len(disc) > 0 {
+		stub.DisconnectHandler = disc[0]
+	}
 	return stub
 }
 
-// Set default qos for publish or subscribe
-func (stub *MqttStub) SetQos(qos byte) *MqttStub { stub.qos = qos; return stub }
+// Set default qos and remain flag
+func (stub *MqttStub) SetOptions(qos byte, remain ...bool) *MqttStub {
+	if len(remain) > 0 {
+		stub.remain = remain[0]
+	}
+	stub.qos = qos
+	return stub
+}
 
 // Publish empty message topic, it same use for just notify
 func (stub *MqttStub) Notify(topic string, Qos ...byte) error {
-	return stub.Publish(topic, nil, Qos...)
+	return stub.PublishOptions(topic, nil, stub.remain, Qos...)
 }
 
 // Publish indicate topic message which formated as bytes array, and can set Qos to 0 ~ 2
 func (stub *MqttStub) Publish(topic string, data any, Qos ...byte) error {
+	return stub.PublishOptions(topic, data, stub.remain, Qos...)
+}
+
+// Publish indicate topic message which formated as bytes array, and can set Qos to 0 ~ 2
+func (stub *MqttStub) PublishOptions(topic string, data any, remain bool, Qos ...byte) error {
 	if stub.Client == nil {
 		logger.E("Abort publish topic:", topic, "on nil client!!")
 		return invar.ErrInvalidClient
@@ -186,7 +202,7 @@ func (stub *MqttStub) Publish(topic string, data any, Qos ...byte) error {
 		qosv = Qos[0]
 	}
 
-	token := stub.Client.Publish(topic, qosv, false, payload)
+	token := stub.Client.Publish(topic, qosv, remain, payload)
 	if token.Wait() && token.Error() != nil {
 		logger.E("Publish topic:", topic, "err:", token.Error())
 		return token.Error()
