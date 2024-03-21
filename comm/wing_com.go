@@ -17,6 +17,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -47,13 +48,13 @@ func Try(do func(), catcher func(error), finaly ...func()) {
 //
 //	// use as follow to return diffrent type value, but the input
 //	// true and false params MUST BE no-nil datas.
-//	a := Condition(condition, trueString, falseString)	// return interface{}
+//	a := Condition(condition, trueString, falseString)	// return any
 //	b := Condition(condition, trueInt, falseInt).(int)
 //	c := Condition(condition, trueInt64, falseInt64).(int64)
 //	d := Condition(condition, trueFloat, falseFloat).(float64)
 //	e := Condition(condition, trueDur, falseDur).(time.Duration)
 //	f := Condition(condition, trueString, falseString).(string)
-func Condition(condition bool, trueData interface{}, falseData interface{}) interface{} {
+func Condition(condition bool, trueData any, falseData any) any {
 	if condition {
 		return trueData
 	}
@@ -71,17 +72,17 @@ func Contain(list *[]string, item string) bool {
 }
 
 // To2Digits fill zero if input digit not enough 2
-func To2Digits(input interface{}) string {
+func To2Digits(input any) string {
 	return fmt.Sprintf("%02d", input)
 }
 
 // To2Digits fill zero if input digit not enough 3
-func To3Digits(input interface{}) string {
+func To3Digits(input any) string {
 	return fmt.Sprintf("%03d", input)
 }
 
 // ToNDigits fill zero if input digit not enough N
-func ToNDigits(input interface{}, n int) string {
+func ToNDigits(input any, n int) string {
 	return fmt.Sprintf("%0"+strconv.Itoa(n)+"d", input)
 }
 
@@ -98,8 +99,8 @@ func ToNDigits(input interface{}, n int) string {
 //	// md data format is {
 //	//     "name" : "name_value"
 //	// }
-func ToMap(input interface{}) (map[string]interface{}, error) {
-	out := make(map[string]interface{})
+func ToMap(input any) (map[string]any, error) {
+	out := make(map[string]any)
 	buf, err := json.Marshal(input)
 	if err != nil {
 		logger.E("Marshal input struct err:", err)
@@ -118,7 +119,7 @@ func ToMap(input interface{}) (map[string]interface{}, error) {
 }
 
 // ToXMLString transform given struct data to xml string
-func ToXMLString(input interface{}) (string, error) {
+func ToXMLString(input any) (string, error) {
 	buf, err := xml.Marshal(input)
 	if err != nil {
 		logger.E("Marshal input to XML err:", err)
@@ -130,7 +131,7 @@ func ToXMLString(input interface{}) (string, error) {
 // ToXMLReplace transform given struct data to xml string, ant then
 // replace indicated fileds or values, to form param must not empty,
 // but the to param allow set empty when use to remove all form keyworlds.
-func ToXMLReplace(input interface{}, from, to string) (string, error) {
+func ToXMLReplace(input any, from, to string) (string, error) {
 	xmlout, err := ToXMLString(input)
 	if err != nil {
 		return "", err
@@ -228,4 +229,17 @@ func RemoveDuplicate(oldArr []string) []string {
 		}
 	}
 	return newArr
+}
+
+// Indicate given object if the target type.
+//
+//	type Car struct {
+//		Bland string
+//	}
+//	car := &Car{Bland : "H5"}
+//	if comm.Instanceof(car, reflect.TypeOf(&Car{})) {
+//		// intvalue is int, but target type is string
+//	}
+func InstanceOf(object any, tagtype reflect.Type) bool {
+	return reflect.TypeOf(object) == tagtype
 }

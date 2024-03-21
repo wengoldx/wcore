@@ -17,6 +17,8 @@ import (
 	"crypto/x509"
 	"encoding/xml"
 	"fmt"
+	"net"
+
 	"github.com/astaxie/beego"
 	"github.com/wengoldx/wing/logger"
 	"github.com/wengoldx/wing/nacos"
@@ -27,7 +29,6 @@ import (
 	pay "github.com/wengoldx/wing/wrpc/wgpay/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"net"
 )
 
 const (
@@ -43,7 +44,7 @@ type GrpcHandlerFunc func(svr *grpc.Server)
 
 type GrpcStub struct {
 	Certs   map[string]*nacos.GrpcCert // Grpc handler certs
-	Clients map[string]interface{}     // Grpc client handlers
+	Clients map[string]any             // Grpc client handlers
 
 	// Current grpc server if registried
 	isRegistried bool
@@ -61,7 +62,7 @@ func Singleton() *GrpcStub {
 		grpcStub = &GrpcStub{
 			isRegistried: false,
 			Certs:        make(map[string]*nacos.GrpcCert),
-			Clients:      make(map[string]interface{}),
+			Clients:      make(map[string]any),
 		}
 	}
 	return grpcStub

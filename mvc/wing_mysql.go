@@ -196,12 +196,12 @@ func (w *WingProvider) Stub() *sql.DB {
 }
 
 // Query call sql.Query()
-func (w *WingProvider) Query(query string, args ...interface{}) (*sql.Rows, error) {
+func (w *WingProvider) Query(query string, args ...any) (*sql.Rows, error) {
 	return w.Conn.Query(query, args...)
 }
 
 // IsEmpty call sql.Query() to check target data if empty
-func (w *WingProvider) IsEmpty(query string, args ...interface{}) (bool, error) {
+func (w *WingProvider) IsEmpty(query string, args ...any) (bool, error) {
 	rows, err := w.Conn.Query(query, args...)
 	if err != nil {
 		return false, err
@@ -211,13 +211,13 @@ func (w *WingProvider) IsEmpty(query string, args ...interface{}) (bool, error) 
 }
 
 // IsExist call sql.Query() to check target data if exist
-func (w *WingProvider) IsExist(query string, args ...interface{}) (bool, error) {
+func (w *WingProvider) IsExist(query string, args ...any) (bool, error) {
 	empty, err := w.IsEmpty(query, args...)
 	return !empty, err
 }
 
 // QueryOne call sql.Query() to query one record
-func (w *WingProvider) QueryOne(query string, cb ScanCallback, args ...interface{}) error {
+func (w *WingProvider) QueryOne(query string, cb ScanCallback, args ...any) error {
 	rows, err := w.Conn.Query(query, args...)
 	if err != nil {
 		return err
@@ -232,7 +232,7 @@ func (w *WingProvider) QueryOne(query string, cb ScanCallback, args ...interface
 }
 
 // QueryArray call sql.Query() to query multi records
-func (w *WingProvider) QueryArray(query string, cb ScanCallback, args ...interface{}) error {
+func (w *WingProvider) QueryArray(query string, cb ScanCallback, args ...any) error {
 	rows, err := w.Conn.Query(query, args...)
 	if err != nil {
 		return err
@@ -251,7 +251,7 @@ func (w *WingProvider) QueryArray(query string, cb ScanCallback, args ...interfa
 // Insert call sql.Prepare() and stmt.Exec() to insert a new record.
 //
 // `@see` Use MultiInsert() to insert multiple values in once database operation.
-func (w *WingProvider) Insert(query string, args ...interface{}) (int64, error) {
+func (w *WingProvider) Insert(query string, args ...any) (int64, error) {
 	stmt, err := w.Conn.Prepare(query)
 	if err != nil {
 		return -1, err
@@ -290,7 +290,7 @@ func (w *WingProvider) MultiInsert(query string, cnt int, cb FormatCallback) err
 }
 
 // Execute call sql.Prepare() and stmt.Exec() to update or delete records
-func (w *WingProvider) Execute(query string, args ...interface{}) error {
+func (w *WingProvider) Execute(query string, args ...any) error {
 	stmt, err := w.Conn.Prepare(query)
 	if err != nil {
 		return err
@@ -304,7 +304,7 @@ func (w *WingProvider) Execute(query string, args ...interface{}) error {
 }
 
 // ExeAffected call sql.Prepare() and stmt.Exec() to update or delete records
-func (w *WingProvider) ExeAffected(query string, args ...interface{}) (int64, error) {
+func (w *WingProvider) ExeAffected(query string, args ...any) (int64, error) {
 	stmt, err := w.Conn.Prepare(query)
 	if err != nil {
 		return 0, err
@@ -353,7 +353,7 @@ func (w *WingProvider) Affected(result sql.Result) (int64, error) {
 //	}{"string", "", " ", " trim ", 123, 32, 64, 32.123, 64.123, true})
 //	// sets: stringfiled='string', trimstring='trim', intfiled=123, i32filed=32, i64filed=64, f32filed=32.123, f64filed=64.123, boolfiled=true
 //	logger.I("sets:", sets)
-func (w *WingProvider) FormatSets(updates interface{}) string {
+func (w *WingProvider) FormatSets(updates any) string {
 	sets := []string{}
 	keys, values := reflect.TypeOf(updates), reflect.ValueOf(updates)
 	for i := 0; i < keys.NumField(); i++ {
@@ -389,7 +389,7 @@ func (w *WingProvider) FormatSets(updates interface{}) string {
 // Transaction execute one sql transaction, it will rollback when operate failed.
 //
 // `@see` Use MultiTransaction() to excute multiple transaction as once.
-func (w *WingProvider) Transaction(query string, args ...interface{}) error {
+func (w *WingProvider) Transaction(query string, args ...any) error {
 	tx, err := w.Conn.Begin()
 	if err != nil {
 		return err

@@ -40,7 +40,7 @@ func GenQueue() *Queue {
 }
 
 // Push push a data to queue back if the data not nil
-func (q *Queue) Push(data interface{}) {
+func (q *Queue) Push(data any) {
 	if data == nil {
 		return
 	}
@@ -51,7 +51,7 @@ func (q *Queue) Push(data interface{}) {
 
 // Pop pick and remove the front data of queue,
 // it will return invar.ErrEmptyData error if the queue is empty
-func (q *Queue) Pop() (interface{}, error) {
+func (q *Queue) Pop() (any, error) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
@@ -64,7 +64,7 @@ func (q *Queue) Pop() (interface{}, error) {
 
 // Pick pick but not remove the front data of queue,
 // it will return invar.ErrEmptyData error if the queue is empty
-func (q *Queue) Pick() (interface{}, error) {
+func (q *Queue) Pick() (any, error) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
@@ -93,6 +93,19 @@ func (q *Queue) Len() int {
 
 // Fetch queue nodes, use callback returns to remove node or interupt fetch.
 // Notice that DO NOT do heavy performence codes in callback, exist a lock here!
+//
+// For example caller code like (Events is a Queue object):
+//
+//	// Try fetch waiting requests to send to idle clusters
+//	h.Events.Fetch(func(request any) (bool, bool) {
+//		if clusterid := h.getIdleCluster(); clusterid != "" {
+//			go h.sendRequest(clusterid, request)
+//			return true /* remove */, false /* continue fetch */
+//		}
+//
+//		// Remain request node and interupt fetch
+//		return false, true
+//	})
 func (q *Queue) Fetch(callback func(value any) (bool, bool)) {
 	if callback != nil {
 		q.mutex.Lock()

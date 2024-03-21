@@ -33,7 +33,7 @@ import (
 //	err := c.Set("foo8", 333555, OptKEEPTTL)
 //
 // see https://redis.io/commands/set
-func (c *WingRedisConn) Set(key string, value interface{}, options ...interface{}) error {
+func (c *WingRedisConn) Set(key string, value any, options ...any) error {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -63,19 +63,19 @@ func (c *WingRedisConn) Set(key string, value interface{}, options ...interface{
 }
 
 // SetEx set a value and expiration in seconds of a key.
-func (c *WingRedisConn) SetEx(key string, value interface{}, expire int64) error {
+func (c *WingRedisConn) SetEx(key string, value any, expire int64) error {
 	return c.setWithExpire(key, "SETEX", value, expire)
 }
 
 // SetPx set a value and expiration in milliseconds of a key.
-func (c *WingRedisConn) SetPx(key string, value interface{}, expire int64) error {
+func (c *WingRedisConn) SetPx(key string, value any, expire int64) error {
 	return c.setWithExpire(key, "PSETEX", value, expire)
 }
 
 // SetNx set a value of a unexist key, it return false when failed set on exist key.
 //
 // see https://redis.io/commands/setnx
-func (c *WingRedisConn) SetNx(key string, value interface{}) (bool, error) {
+func (c *WingRedisConn) SetNx(key string, value any) (bool, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -90,7 +90,7 @@ func (c *WingRedisConn) SetNx(key string, value interface{}) (bool, error) {
 // it will transform the given value to string first, and retuen the memery length.
 //
 // see https://redis.io/commands/setrange
-func (c *WingRedisConn) SetRange(key string, value interface{}, offset int) int {
+func (c *WingRedisConn) SetRange(key string, value any, offset int) int {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -106,7 +106,7 @@ func (c *WingRedisConn) SetRange(key string, value interface{}, offset int) int 
 // than append end of exist string, or set value same as SET commond.
 //
 // see https://redis.io/commands/append
-func (c *WingRedisConn) Append(key string, value interface{}) int {
+func (c *WingRedisConn) Append(key string, value any) int {
 	con := c.redisPool.Get()
 	defer con.Close()
 

@@ -61,7 +61,7 @@ import (
 //	//	@router /login [post]
 //	func (c *AccController) AccLogin() {
 //		ps := &types.Accout{}
-//		c.DoAfterValidated(ps, func() (int, interface{}) {
+//		c.DoAfterValidated(ps, func() (int, any) {
 //			// do same business function
 //			// directe use c and ps param in this methed.
 //			// ...
@@ -76,7 +76,7 @@ type WingController struct {
 }
 
 // NextFunc do action after input params validated.
-type NextFunc func() (int, interface{})
+type NextFunc func() (int, any)
 
 // Validator use for verify the input params on struct level
 var Validator *validator.Validate
@@ -109,51 +109,51 @@ func RegisterFieldValidator(tag string, valfunc validator.Func) {
 
 // ResponJSON sends a json response to client,
 // it may not send data if the state is not status ok
-func (c *WingController) ResponJSON(state int, data ...interface{}) {
+func (c *WingController) ResponJSON(state int, data ...any) {
 	c.responCheckState("json", true, state, data...)
 }
 
 // ResponJSONUncheck sends a json response to client witchout uncheck state code.
-func (c *WingController) ResponJSONUncheck(state int, dataORerr ...interface{}) {
+func (c *WingController) ResponJSONUncheck(state int, dataORerr ...any) {
 	c.responCheckState("json", false, state, dataORerr...)
 }
 
 // ResponJSONP sends a jsonp response to client,
 // it may not send data if the state is not status ok
-func (c *WingController) ResponJSONP(state int, data ...interface{}) {
+func (c *WingController) ResponJSONP(state int, data ...any) {
 	c.responCheckState("jsonp", true, state, data...)
 }
 
 // ResponJSONPUncheck sends a jsonp response to client witchout uncheck state code.
-func (c *WingController) ResponJSONPUncheck(state int, dataORerr ...interface{}) {
+func (c *WingController) ResponJSONPUncheck(state int, dataORerr ...any) {
 	c.responCheckState("jsonp", false, state, dataORerr...)
 }
 
 // ResponXML sends xml response to client,
 // it may not send data if the state is not status ok
-func (c *WingController) ResponXML(state int, data ...interface{}) {
+func (c *WingController) ResponXML(state int, data ...any) {
 	c.responCheckState("xml", true, state, data...)
 }
 
 // ResponXMLUncheck sends xml response to client witchout uncheck state code.
-func (c *WingController) ResponXMLUncheck(state int, dataORerr ...interface{}) {
+func (c *WingController) ResponXMLUncheck(state int, dataORerr ...any) {
 	c.responCheckState("xml", false, state, dataORerr...)
 }
 
 // ResponYAML sends yaml response to client,
 // it may not send data if the state is not status ok
-func (c *WingController) ResponYAML(state int, data ...interface{}) {
+func (c *WingController) ResponYAML(state int, data ...any) {
 	c.responCheckState("yaml", true, state, data...)
 }
 
 // ResponYAML sends yaml response to client witchout uncheck state code.
-func (c *WingController) ResponYAMLUncheck(state int, dataORerr ...interface{}) {
+func (c *WingController) ResponYAMLUncheck(state int, dataORerr ...any) {
 	c.responCheckState("yaml", false, state, dataORerr...)
 }
 
 // ResponData sends YAML, XML OR JSON, depending on the value of the Accept header,
 // it may not send data if the state is not status ok
-func (c *WingController) ResponData(state int, data ...map[interface{}]interface{}) {
+func (c *WingController) ResponData(state int, data ...map[any]any) {
 	if state != invar.StatusOK {
 		c.ErrorState(state)
 		return
@@ -223,7 +223,7 @@ func (c *WingController) E400Unmarshal(err ...string) {
 
 // E400Validate response 400 invalid params error state to client, then print
 // the params data and validate error
-func (c *WingController) E400Validate(ps interface{}, err ...string) {
+func (c *WingController) E400Validate(ps any, err ...string) {
 	logger.E("Invalid input params:", ps)
 	c.ErrorState(invar.E400ParseParams, err...)
 }
@@ -274,7 +274,7 @@ func (c *WingController) ClientFrom() string {
 }
 
 // BindValue bind value with key from url, the dest container must pointer
-func (c *WingController) BindValue(key string, dest interface{}) error {
+func (c *WingController) BindValue(key string, dest any) error {
 	if err := c.Ctx.Input.Bind(dest, key); err != nil {
 		logger.E("Parse", key, "from url, err:", err)
 		return invar.ErrInvalidData
@@ -284,28 +284,28 @@ func (c *WingController) BindValue(key string, dest interface{}) error {
 
 // DoAfterValidated do bussiness action after success validate the given json data.
 //	see WingController
-func (c *WingController) DoAfterValidated(ps interface{}, nextFunc NextFunc, option ...interface{}) {
+func (c *WingController) DoAfterValidated(ps any, nextFunc NextFunc, option ...any) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterValidatedInner("json", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
 //	see DoAfterValidated
-func (c *WingController) DoAfterUnmarshal(ps interface{}, nextFunc NextFunc, option ...interface{}) {
+func (c *WingController) DoAfterUnmarshal(ps any, nextFunc NextFunc, option ...any) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterValidatedInner("json", ps, nextFunc, false, isprotect)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
 //	see DoAfterValidated
-func (c *WingController) DoAfterValidatedXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
+func (c *WingController) DoAfterValidatedXml(ps any, nextFunc NextFunc, option ...any) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterValidatedInner("xml", ps, nextFunc, true, isprotect)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
 //	see DoAfterValidated, DoAfterValidatedXml
-func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, option ...interface{}) {
+func (c *WingController) DoAfterUnmarshalXml(ps any, nextFunc NextFunc, option ...any) {
 	isprotect := !(len(option) > 0 && !option[0].(bool))
 	c.doAfterValidatedInner("xml", ps, nextFunc, false, isprotect)
 }
@@ -315,7 +315,7 @@ func (c *WingController) DoAfterUnmarshalXml(ps interface{}, nextFunc NextFunc, 
 // responCheckState check respon state and print out log, the datatype must
 // range in ['json', 'jsonp', 'xml', 'yaml'], if outof range current controller
 // just return blank string to close http connection.
-func (c *WingController) responCheckState(datatype string, isprotect bool, state int, data ...interface{}) {
+func (c *WingController) responCheckState(datatype string, isprotect bool, state int, data ...any) {
 	if state != invar.StatusOK {
 		/* --------------------------------------------------------------
 		 * Not response error message to frontend when isprotect is true!
@@ -363,7 +363,7 @@ func (c *WingController) responCheckState(datatype string, isprotect bool, state
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
 func (c *WingController) doAfterValidatedInner(datatype string,
-	ps interface{}, nextFunc NextFunc, isvalidate, isprotect bool) {
+	ps any, nextFunc NextFunc, isvalidate, isprotect bool) {
 	if !c.validatrParams(datatype, ps, isvalidate) {
 		return
 	}
@@ -377,7 +377,7 @@ func (c *WingController) doAfterValidatedInner(datatype string,
 }
 
 // validatrParams do bussiness action after success unmarshal params or validate the unmarshaled json data.
-func (c *WingController) validatrParams(datatype string, ps interface{}, isvalidate bool) bool {
+func (c *WingController) validatrParams(datatype string, ps any, isvalidate bool) bool {
 	switch datatype {
 	case "json":
 		if err := json.Unmarshal(c.Ctx.Input.RequestBody, ps); err != nil {

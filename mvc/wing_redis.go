@@ -228,7 +228,7 @@ func (c *WingRedisConn) ServerTime() (int64, int64) {
 //
 // see commands [setex](https://redis.io/commands/setex),
 // [psetex](https://redis.io/commands/psetex).
-func (c *WingRedisConn) setWithExpire(key, commond string, value interface{}, expire int64) error {
+func (c *WingRedisConn) setWithExpire(key, commond string, value any, expire int64) error {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -237,7 +237,7 @@ func (c *WingRedisConn) setWithExpire(key, commond string, value interface{}, ex
 }
 
 // parseGetOptions parse the GETEX, GETDEL commonds options
-func (c *WingRedisConn) parseGetOptions(options ...interface{}) (string, int64) {
+func (c *WingRedisConn) parseGetOptions(options ...any) (string, int64) {
 	if len(options) == 0 {
 		logger.E("Redis: invalid options, parse failed")
 		return "", 0
@@ -266,12 +266,12 @@ func (c *WingRedisConn) parseGetOptions(options ...interface{}) (string, int64) 
 // see commands [get](https://redis.io/commands/get),
 // [getex](https://redis.io/commands/getex),
 // [getdel](https://redis.io/commands/getdel)
-func (c *WingRedisConn) getWithOptions(key string, options ...interface{}) (interface{}, error) {
+func (c *WingRedisConn) getWithOptions(key string, options ...any) (any, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
 	if options != nil {
-		var reply interface{}
+		var reply any
 		err := invar.ErrInvalidRedisOptions
 		if option, expire := c.parseGetOptions(options); option != "" {
 			switch option {

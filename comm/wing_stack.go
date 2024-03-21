@@ -42,7 +42,7 @@ func GenStack() *Stack {
 }
 
 // Push push a data to stack top one if the data not nil
-func (s *Stack) Push(data interface{}) {
+func (s *Stack) Push(data any) {
 	if data == nil {
 		return
 	}
@@ -53,7 +53,7 @@ func (s *Stack) Push(data interface{}) {
 
 // Pop pick and remove the top data of stack,
 // it will return invar.ErrEmptyData error if the stack is empty
-func (s *Stack) Pop() (interface{}, error) {
+func (s *Stack) Pop() (any, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -66,7 +66,7 @@ func (s *Stack) Pop() (interface{}, error) {
 
 // Pick pick but not remove the top data of stack,
 // it will return invar.ErrEmptyData error if the stack is empty
-func (s *Stack) Pick() (interface{}, error) {
+func (s *Stack) Pick() (any, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 

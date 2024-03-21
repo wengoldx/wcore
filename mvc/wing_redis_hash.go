@@ -16,7 +16,7 @@ import (
 )
 
 // HSet set the string value of a hash field.
-func (c *WingRedisConn) HSet(key string, field, value interface{}) bool {
+func (c *WingRedisConn) HSet(key string, field, value any) bool {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -29,7 +29,7 @@ func (c *WingRedisConn) HSet(key string, field, value interface{}) bool {
 }
 
 // HGet get the string value of a hash field.
-func (c *WingRedisConn) HGet(key string, field interface{}) (string, error) {
+func (c *WingRedisConn) HGet(key string, field any) (string, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -37,7 +37,7 @@ func (c *WingRedisConn) HGet(key string, field interface{}) (string, error) {
 }
 
 // HGetInt get the int value of a hash field.
-func (c *WingRedisConn) HGetInt(key string, field interface{}) (int, error) {
+func (c *WingRedisConn) HGetInt(key string, field any) (int, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -45,7 +45,7 @@ func (c *WingRedisConn) HGetInt(key string, field interface{}) (int, error) {
 }
 
 // HGetInt64 get the int64 value of a hash field.
-func (c *WingRedisConn) HGetInt64(key string, field interface{}) (int64, error) {
+func (c *WingRedisConn) HGetInt64(key string, field any) (int64, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -53,7 +53,7 @@ func (c *WingRedisConn) HGetInt64(key string, field interface{}) (int64, error) 
 }
 
 // HGetUint64 get the uint64 value of a hash field.
-func (c *WingRedisConn) HGetUint64(key string, field interface{}) (uint64, error) {
+func (c *WingRedisConn) HGetUint64(key string, field any) (uint64, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -61,7 +61,7 @@ func (c *WingRedisConn) HGetUint64(key string, field interface{}) (uint64, error
 }
 
 // HGetFloat64 get the float value of a hash field.
-func (c *WingRedisConn) HGetFloat64(key string, field interface{}) (float64, error) {
+func (c *WingRedisConn) HGetFloat64(key string, field any) (float64, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -69,7 +69,7 @@ func (c *WingRedisConn) HGetFloat64(key string, field interface{}) (float64, err
 }
 
 // HGetBytes get the bytes array of a hash field.
-func (c *WingRedisConn) HGetBytes(key string, field interface{}) ([]byte, error) {
+func (c *WingRedisConn) HGetBytes(key string, field any) ([]byte, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 
@@ -77,7 +77,7 @@ func (c *WingRedisConn) HGetBytes(key string, field interface{}) ([]byte, error)
 }
 
 // HGetBool get the bool value of a hash field.
-func (c *WingRedisConn) HGetBool(key string, field interface{}) (bool, error) {
+func (c *WingRedisConn) HGetBool(key string, field any) (bool, error) {
 	con := c.redisPool.Get()
 	defer con.Close()
 

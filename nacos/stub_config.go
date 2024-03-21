@@ -65,7 +65,7 @@ func (c *ConfigStub) Setup() error {
 //	@params group  string    group name of nacos defined
 //	@params config interface string or struct type config content
 //	@return - error handle exception
-func (c *ConfigStub) Publish(did, group string, config interface{}) error {
+func (c *ConfigStub) Publish(did, group string, config any) error {
 	if c.Stub == nil {
 		return invar.ErrInvalidClient
 	} else if did == "" || group == "" || config == nil {
@@ -153,7 +153,7 @@ func (c *ConfigStub) GetString(did, group string) (string, error) {
 //	@params group string group name of nacos defined
 //	@return - out   config struct data
 //			- error handle exception
-func (c *ConfigStub) GetStruct(did, group string, out interface{}) error {
+func (c *ConfigStub) GetStruct(did, group string, out any) error {
 	if content, err := c.GetString(did, group); err != nil {
 		return err
 	} else {

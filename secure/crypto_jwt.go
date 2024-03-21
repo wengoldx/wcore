@@ -49,7 +49,7 @@ func GenJwtToken(keyword, salt string, dur time.Duration) (string, error) {
 
 // Verify the encoded jwt token witch salt string
 func ViaJwtToken(signedToken, salt string) (string, error) {
-	token, err := jwt.ParseWithClaims(signedToken, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(signedToken, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(salt), nil
 	})
 	if err != nil {

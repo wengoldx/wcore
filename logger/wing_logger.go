@@ -88,13 +88,13 @@ func readLoggerConfigs() string {
 // ------------------------------------------------------------------------------------
 // 2023/05/31 10:56:36.609 [I] [code_file.go:89]  FuncName() Log output message string
 // ------------------------------------------------------------------------------------
-func appendFuncName(v ...interface{}) []interface{} {
+func appendFuncName(v ...any) []any {
 	/* Fixed the call skipe on 1 to filter current function name */
 	if pc, _, _, ok := runtime.Caller(2); ok {
 		if funcptr := runtime.FuncForPC(pc); funcptr != nil {
 			if funname := funcptr.Name(); funname != "" {
 				fns := strings.SplitAfter(funname, ".")
-				v = append([]interface{}{fns[len(fns)-1] + "()"}, v...)
+				v = append([]any{fns[len(fns)-1] + "()"}, v...)
 			}
 		}
 	}
@@ -125,41 +125,41 @@ func GetLevel() string {
 }
 
 // EM logs a message at emergency level.
-func EM(v ...interface{}) {
+func EM(v ...any) {
 	beego.Emergency(appendFuncName(v...)...)
 }
 
 // AL logs a message at alert level.
-func AL(v ...interface{}) {
+func AL(v ...any) {
 	beego.Alert(appendFuncName(v...)...)
 }
 
 // CR logs a message at critical level.
-func CR(v ...interface{}) {
+func CR(v ...any) {
 	beego.Critical(appendFuncName(v...)...)
 }
 
 // E logs a message at error level.
-func E(v ...interface{}) {
+func E(v ...any) {
 	beego.Error(appendFuncName(v...)...)
 }
 
 // W logs a message at warning level.
-func W(v ...interface{}) {
+func W(v ...any) {
 	beego.Warning(appendFuncName(v...)...)
 }
 
 // N logs a message at notice level.
-func N(v ...interface{}) {
+func N(v ...any) {
 	beego.Notice(appendFuncName(v...)...)
 }
 
 // I logs a message at info level.
-func I(v ...interface{}) {
+func I(v ...any) {
 	beego.Informational(appendFuncName(v...)...)
 }
 
 // D logs a message at debug level.
-func D(v ...interface{}) {
+func D(v ...any) {
 	beego.Debug(appendFuncName(v...)...)
 }

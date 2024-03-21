@@ -59,9 +59,9 @@ import (
 //	//	@router /login [post]
 //	func (c *AccController) AccLogin() {
 //		ps := &types.Accout{}
-//		c.DoAfterValidated(ps, func(uuid string) (int, interface{}) {
+//		c.DoAfterValidated(ps, func(uuid string) (int, any) {
 //		// Or get authed account password as :
-//		// c.DoAfterAuthValidated(ps, func(uuid, pwd string) (int, interface{}) {
+//		// c.DoAfterAuthValidated(ps, func(uuid, pwd string) (int, any) {
 //			// do same business with input NO-EMPTY account uuid,
 //			// directe use c and ps param in this methed.
 //			// ...
@@ -91,7 +91,7 @@ import (
 //	//	@router /update [post]
 //	func (c *AccController) AccUpdate() {
 //		ps := &types.UserInfo{}
-//		c.WingController.DoAfterValidated(ps, func() (int, interface{}) {
+//		c.WingController.DoAfterValidated(ps, func() (int, any) {
 //			// directe use c and ps param in this methed.
 //			// ...
 //			return http.StatusOK, nil
@@ -112,10 +112,10 @@ type WAuthController struct {
 }
 
 // NextFunc2 do action after input params validated, it decode token to get account uuid.
-type NextFunc2 func(uuid string) (int, interface{})
+type NextFunc2 func(uuid string) (int, any)
 
 // NextFunc3 do action after input params validated, it decode token to get account uuid and password.
-type NextFunc3 func(uuid, pwd string) (int, interface{})
+type NextFunc3 func(uuid, pwd string) (int, any)
 
 // AuthHandlerFunc auth request token from http header and returen account secures.
 type AuthHandlerFunc func(token string) (string, string)
@@ -136,7 +136,7 @@ func (c *WAuthController) AuthRequestHeader() string {
 }
 
 // DoAfterValidated do bussiness action after success validate the given json data.
-func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+func (c *WAuthController) DoAfterValidated(ps any, nextFunc2 NextFunc2, option ...any) {
 	if uuid, _ := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, true, isprotect)
@@ -144,7 +144,7 @@ func (c *WAuthController) DoAfterValidated(ps interface{}, nextFunc2 NextFunc2, 
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
-func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+func (c *WAuthController) DoAfterUnmarshal(ps any, nextFunc2 NextFunc2, option ...any) {
 	if uuid, _ := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, false, isprotect)
@@ -152,7 +152,7 @@ func (c *WAuthController) DoAfterUnmarshal(ps interface{}, nextFunc2 NextFunc2, 
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
-func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+func (c *WAuthController) DoAfterValidatedXml(ps any, nextFunc2 NextFunc2, option ...any) {
 	if uuid, _ := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, true, isprotect)
@@ -160,7 +160,7 @@ func (c *WAuthController) DoAfterValidatedXml(ps interface{}, nextFunc2 NextFunc
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-func (c *WAuthController) DoAfterUnmarshalXml(ps interface{}, nextFunc2 NextFunc2, option ...interface{}) {
+func (c *WAuthController) DoAfterUnmarshalXml(ps any, nextFunc2 NextFunc2, option ...any) {
 	if uuid, _ := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, false, isprotect)
@@ -170,7 +170,7 @@ func (c *WAuthController) DoAfterUnmarshalXml(ps interface{}, nextFunc2 NextFunc
 // ------------------------------------------------------
 
 // DoAfterAuthValidated do bussiness action after success validate the given json data.
-func (c *WAuthController) DoAfterAuthValidated(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+func (c *WAuthController) DoAfterAuthValidated(ps any, nextFunc3 NextFunc3, option ...any) {
 	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, true, isprotect)
@@ -178,7 +178,7 @@ func (c *WAuthController) DoAfterAuthValidated(ps interface{}, nextFunc3 NextFun
 }
 
 // DoAfterAuthUnmarshal do bussiness action after success unmarshaled the given json data.
-func (c *WAuthController) DoAfterAuthUnmarshal(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+func (c *WAuthController) DoAfterAuthUnmarshal(ps any, nextFunc3 NextFunc3, option ...any) {
 	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, false, isprotect)
@@ -186,7 +186,7 @@ func (c *WAuthController) DoAfterAuthUnmarshal(ps interface{}, nextFunc3 NextFun
 }
 
 // DoAfterAuthValidatedXml do bussiness action after success validate the given xml data.
-func (c *WAuthController) DoAfterAuthValidatedXml(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+func (c *WAuthController) DoAfterAuthValidatedXml(ps any, nextFunc3 NextFunc3, option ...any) {
 	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, true, isprotect)
@@ -194,7 +194,7 @@ func (c *WAuthController) DoAfterAuthValidatedXml(ps interface{}, nextFunc3 Next
 }
 
 // DoAfterAuthUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-func (c *WAuthController) DoAfterAuthUnmarshalXml(ps interface{}, nextFunc3 NextFunc3, option ...interface{}) {
+func (c *WAuthController) DoAfterAuthUnmarshalXml(ps any, nextFunc3 NextFunc3, option ...any) {
 	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
 		isprotect := !(len(option) > 0 && !option[0].(bool))
 		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, false, isprotect)
@@ -248,7 +248,7 @@ func (c *WAuthController) innerAuthHeader() (string, string) {
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
 func (c *WAuthController) doAfterValidatedInner(datatype string,
-	ps interface{}, nextFunc2 NextFunc2, uuid string, isvalidate, isprotect bool) {
+	ps any, nextFunc2 NextFunc2, uuid string, isvalidate, isprotect bool) {
 	if !c.validatrParams(datatype, ps, isvalidate) {
 		return
 	}
@@ -264,7 +264,7 @@ func (c *WAuthController) doAfterValidatedInner(datatype string,
 // doAfterValidatedInner3 do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
 func (c *WAuthController) doAfterValidatedInner3(datatype string,
-	ps interface{}, nextFunc3 NextFunc3, uuid, pwd string, isvalidate, isprotect bool) {
+	ps any, nextFunc3 NextFunc3, uuid, pwd string, isvalidate, isprotect bool) {
 	if !c.validatrParams(datatype, ps, isvalidate) {
 		return
 	}

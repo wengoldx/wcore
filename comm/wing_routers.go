@@ -161,7 +161,7 @@ func loadSwaggerRouters() (*Routers, error) {
 		return nil, err
 	}
 
-	routers := make(map[string]interface{})
+	routers := make(map[string]any)
 	if err := json.Unmarshal(buff, &routers); err != nil {
 		logger.E("Unmarshal swagger routers err:", err)
 		return nil, err
@@ -171,14 +171,14 @@ func loadSwaggerRouters() (*Routers, error) {
 
 	// parse routers by path keyword
 	if ps, ok := routers[sfPathName]; ok && ps != nil {
-		paths := ps.(map[string]interface{})
+		paths := ps.(map[string]any)
 
 		for path, pathvals := range paths {
 			router := &Router{Router: path} // parse router path
 
 			// parse http method, HERE only support GET or POST methods
-			var mvs interface{}
-			pvs := pathvals.(map[string]interface{})
+			var mvs any
+			pvs := pathvals.(map[string]any)
 			if pmg, ok := pvs[sfMethodGet]; ok && pmg != nil {
 				router.Method, mvs = "GET", pmg
 			} else if pmp, ok := pvs[sfMethodPost]; ok && pmp != nil {
@@ -189,7 +189,7 @@ func loadSwaggerRouters() (*Routers, error) {
 			}
 
 			// parse beego controller group name
-			method := mvs.(map[string]interface{})
+			method := mvs.(map[string]any)
 			if gps, ok := method[sfGroupTags]; ok && gps != nil {
 				groups := reflect.ValueOf(gps)
 				router.Group = groups.Index(0).Interface().(string)
@@ -208,10 +208,10 @@ func loadSwaggerRouters() (*Routers, error) {
 
 	// parse groups by tags keyword
 	if gps, ok := routers[sfGroupTags]; ok && gps != nil {
-		groups := gps.([]interface{}) // parse all group array
+		groups := gps.([]any) // parse all group array
 
 		for _, group := range groups {
-			t := group.(map[string]interface{})
+			t := group.(map[string]any)
 			gp := &Group{}
 
 			// parse group name value

@@ -79,16 +79,16 @@ type QTask struct {
 var ttaskchan = make(chan string)
 
 // TaskCallback task callback function
-type TaskCallback func(data interface{}) error
+type TaskCallback func(data any) error
 
-// Generat a new task monitor instance, you can set the interval duration
-// and interrupt flag as the follow format:
-// [CODE:]
-//   interrupt := 1  // interrupt to execut the remain tasks when case error
-//   interval := 500 // sleep interval between tasks in microseconds
-//   task := comm.GenTask(callback, interrupt, interval)
-//   task.Post(taskdata)
-// [CODE]
+// Generat a new task monitor instance.
+//
+// Custom interval duration and interrupt flag by input params as follow:
+//
+//	interrupt := 1  // interrupt to execut the remain tasks when case error
+//	interval := 500 // sleep interval between tasks in microseconds
+//	task := comm.GenTask(callback, interrupt, interval)
+//	task.Post(taskdata)
 func GenQTask(callback TaskCallback, configs ...int) *QTask {
 	task := &QTask{
 		queue: GenQueue(), interrupt: false, interval: 0, executing: false,
@@ -121,7 +121,7 @@ func (t *QTask) SetInterval(interval int) {
 }
 
 // Push a new task to monitor queue back
-func (t *QTask) Post(taskdata interface{}, maxlimits ...int) error {
+func (t *QTask) Post(taskdata any, maxlimits ...int) error {
 	if taskdata == nil {
 		logger.E("Invalid data, abort push to queue!")
 		return invar.ErrInvalidData

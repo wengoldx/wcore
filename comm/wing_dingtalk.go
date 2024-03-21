@@ -240,7 +240,7 @@ func (s *DTalkSender) checkKeyAndURL(content string, isSecure ...bool) (string, 
 }
 
 // send send given message and check response result
-func (s *DTalkSender) send(posturl string, data interface{}) error {
+func (s *DTalkSender) send(posturl string, data any) error {
 	resp, err := HttpPost(posturl, data)
 	if err != nil {
 		logger.E("Failed send text message to DingTalk group chat")

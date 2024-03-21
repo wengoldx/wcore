@@ -37,7 +37,7 @@ func (c *WordSegment) CutWord(params string) []string {
 	return words
 }
 
-// filterKeyWord filter the spaces and symbols in the string array
+// filterSpaceSymbols filter the spaces and symbols in the string array
 func (c *WordSegment) filterSpaceSymbols(key_words string) string {
 	words := []rune{}
 	for _, v := range key_words {

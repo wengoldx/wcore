@@ -20,7 +20,7 @@ import (
 // Auth client outset, it will disconnect when return no-nil error
 //	@param token client login jwt-token contain uuid or optional data in claims key string
 //	@return - string client uuid
-//			- interface{} client optional data parsed from token
+//			- any client optional data parsed from token
 //			- error Exception message
 type AuthHandler func(token string) (string, string, error)
 

@@ -68,7 +68,7 @@ func readResponse(resp *http.Response) ([]byte, error) {
 
 // unmarshalResponse unmarshal response body after execute request,
 // it may not check the given body if empty.
-func unmarshalResponse(body []byte, out interface{}) error {
+func unmarshalResponse(body []byte, out any) error {
 	if err := json.Unmarshal(body, out); err != nil {
 		logger.E("Unmarshal body to struct err:", err)
 		return err
@@ -81,7 +81,7 @@ func unmarshalResponse(body []byte, out interface{}) error {
 }
 
 // httpPostJson http post method, you can set post data as json struct.
-func httpPostJson(tagurl string, postdata interface{}) ([]byte, error) {
+func httpPostJson(tagurl string, postdata any) ([]byte, error) {
 	params, err := json.Marshal(postdata)
 	if err != nil {
 		logger.E("Marshal post data err:", err)
@@ -167,7 +167,7 @@ func EncodeUrl(rawurl string) string {
 }
 
 // HttpGet handle http get method
-func HttpGet(tagurl string, params ...interface{}) ([]byte, error) {
+func HttpGet(tagurl string, params ...any) ([]byte, error) {
 	if len(params) > 0 {
 		tagurl = fmt.Sprintf(tagurl, params...)
 	}
@@ -198,7 +198,7 @@ func HttpGet(tagurl string, params ...interface{}) ([]byte, error) {
 //	// set post data as form string
 //	data := "key=Value&id=123"
 //	resp, err := comm.HttpPost(tagurl, data, comm.ContentTypeForm)
-func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byte, error) {
+func HttpPost(tagurl string, postdata any, contentType ...string) ([]byte, error) {
 	ct := ContentTypeJson
 	if len(contentType) > 0 {
 		ct = contentType[0]
@@ -218,7 +218,7 @@ func HttpPost(tagurl string, postdata interface{}, contentType ...string) ([]byt
 }
 
 // HttpGetString call HttpGet and trim " char both begin and end
-func HttpGetString(tagurl string, params ...interface{}) (string, error) {
+func HttpGetString(tagurl string, params ...any) (string, error) {
 	resp, err := HttpGet(tagurl, params...)
 	if err != nil {
 		return "", err
@@ -227,7 +227,7 @@ func HttpGetString(tagurl string, params ...interface{}) (string, error) {
 }
 
 // HttpPostString call HttpPost and trim " char both begin and end.
-func HttpPostString(tagurl string, postdata interface{}, contentType ...string) (string, error) {
+func HttpPostString(tagurl string, postdata any, contentType ...string) (string, error) {
 	resp, err := HttpPost(tagurl, postdata, contentType...)
 	if err != nil {
 		return "", err
@@ -236,7 +236,7 @@ func HttpPostString(tagurl string, postdata interface{}, contentType ...string) 
 }
 
 // HttpGetStruct handle http get method and unmarshal data to struct object
-func HttpGetStruct(tagurl string, out interface{}, params ...interface{}) error {
+func HttpGetStruct(tagurl string, out any, params ...any) error {
 	body, err := HttpGet(tagurl, params...)
 	if err != nil {
 		return err
@@ -245,7 +245,7 @@ func HttpGetStruct(tagurl string, out interface{}, params ...interface{}) error 
 }
 
 // HttpPostStruct handle http post method and unmarshal data to struct object
-func HttpPostStruct(tagurl string, postdata, out interface{}, contentType ...string) error {
+func HttpPostStruct(tagurl string, postdata, out any, contentType ...string) error {
 	body, err := HttpPost(tagurl, postdata, contentType...)
 	if err != nil {
 		return err
@@ -265,7 +265,7 @@ func HttpPostStruct(tagurl string, postdata, out interface{}, contentType ...str
 //		req.SetBasicAuth("username", "password") // set auther header
 //		return true, nil  // true is ignore TLS verify of https url
 //	}, "same-params");
-func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface{}) ([]byte, error) {
+func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...any) ([]byte, error) {
 	if len(params) > 0 {
 		tagurl = fmt.Sprintf(tagurl, params...)
 	}
@@ -295,7 +295,7 @@ func HttpClientGet(tagurl string, setRequestFunc SetRequest, params ...interface
 //		req.SetBasicAuth("username", "password") // set auther header
 //		return true, nil  // true is ignore TLS verify of https url
 //	}, "post-data")
-func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interface{}) ([]byte, error) {
+func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...any) ([]byte, error) {
 	var body io.Reader
 	if len(postdata) > 0 {
 		params, err := json.Marshal(postdata[0])
@@ -325,7 +325,7 @@ func HttpClientPost(tagurl string, setRequestFunc SetRequest, postdata ...interf
 }
 
 // HttpClientGetStruct handle http get method and unmarshal data to struct object
-func HttpClientGetStruct(tagurl string, setRequestFunc SetRequest, out interface{}, params ...interface{}) error {
+func HttpClientGetStruct(tagurl string, setRequestFunc SetRequest, out any, params ...any) error {
 	body, err := HttpClientGet(tagurl, setRequestFunc, params...)
 	if err != nil {
 		return err
@@ -334,7 +334,7 @@ func HttpClientGetStruct(tagurl string, setRequestFunc SetRequest, out interface
 }
 
 // HttpClientPostStruct handle http post method and unmarshal data to struct object
-func HttpClientPostStruct(tagurl string, setRequestFunc SetRequest, out interface{}, postdata ...interface{}) error {
+func HttpClientPostStruct(tagurl string, setRequestFunc SetRequest, out any, postdata ...any) error {
 	body, err := HttpClientPost(tagurl, setRequestFunc, postdata...)
 	if err != nil {
 		return err

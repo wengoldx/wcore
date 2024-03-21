@@ -166,7 +166,7 @@ func (stub *MqttStub) Notify(topic string, Qos ...byte) error {
 }
 
 // Publish indicate topic message which formated as bytes array, and can set Qos to 0 ~ 2
-func (stub *MqttStub) Publish(topic string, data interface{}, Qos ...byte) error {
+func (stub *MqttStub) Publish(topic string, data any, Qos ...byte) error {
 	if stub.Client == nil {
 		logger.E("Abort publish topic:", topic, "on nil client!!")
 		return invar.ErrInvalidClient

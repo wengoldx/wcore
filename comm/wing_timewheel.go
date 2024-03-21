@@ -18,12 +18,12 @@ import (
 	"github.com/wengoldx/wing/logger"
 )
 
-type ExecFunc func(data interface{})
+type ExecFunc func(data any)
 
 // delayTask delay task node
 type task struct {
-	cycle_num int64       // number of cycles
-	task_info interface{} // order no or refund no
+	cycle_num int64 // number of cycles
+	task_info any   // order no or refund no
 	execfunc  ExecFunc
 }
 
@@ -52,7 +52,7 @@ func GenTimeWheel() *TimeWheel {
 }
 
 // AddDelayTask insert one new delay task to delay queue
-func (d *TimeWheel) AddDelayTask(exectime time.Duration, data interface{}, f ExecFunc) error {
+func (d *TimeWheel) AddDelayTask(exectime time.Duration, data any, f ExecFunc) error {
 	d.Lock()
 	defer d.Unlock()
 	if exectime == 0 {
