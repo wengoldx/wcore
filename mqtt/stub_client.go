@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/astaxie/beego"
 	mq "github.com/eclipse/paho.mqtt.golang"
@@ -176,25 +177,35 @@ func (stub *MqttStub) Notify(topic string, Qos ...byte) error {
 	return stub.PublishOptions(topic, nil, stub.remain, Qos...)
 }
 
-// Publish indicate topic message which formated as bytes array, and can set Qos to 0 ~ 2
+// Publish indicate topic message, the Qos can be set current call in 0 ~ 2
 func (stub *MqttStub) Publish(topic string, data any, Qos ...byte) error {
 	return stub.PublishOptions(topic, data, stub.remain, Qos...)
 }
 
-// Publish indicate topic message which formated as bytes array, and can set Qos to 0 ~ 2
+// Publish indicate topic message with input remain flag and Qos options,
+//
+// Notice that the data will encode as json bytes array if value type is Struct,
+// Pointer or map, or instead nil data to empty bytes array.
 func (stub *MqttStub) PublishOptions(topic string, data any, remain bool, Qos ...byte) error {
 	if stub.Client == nil {
 		logger.E("Abort publish topic:", topic, "on nil client!!")
 		return invar.ErrInvalidClient
 	}
 
-	payload := []byte{}
+	var payload any
 	if data != nil {
-		if tmpd, err := json.Marshal(data); err != nil {
-			return err
-		} else {
-			payload = tmpd
+		switch reflect.ValueOf(data).Kind() {
+		case reflect.Struct, reflect.Pointer, reflect.Map:
+			if buffer, err := json.Marshal(data); err != nil {
+				return err
+			} else {
+				payload = buffer
+			}
+		default:
+			payload = data
 		}
+	} else {
+		payload = []byte{} // Instead nil to empty bytes
 	}
 
 	qosv := stub.qos
