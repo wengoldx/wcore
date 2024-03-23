@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -12,7 +12,7 @@ package clients
 
 import (
 	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/comm"
+	"github.com/wengoldx/wing/utils"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
 )
@@ -140,7 +140,7 @@ func (c *client) Broadcast(evt, msg string, rooms ...string) error {
 	}
 
 	// get target rooms from input params or joined
-	tagrooms := comm.Condition(len(rooms) > 0, rooms, c.socket.Rooms()).([]string)
+	tagrooms := utils.Condition(len(rooms) > 0, rooms, c.socket.Rooms()).([]string)
 
 	// execute broadcast to valid target rooms
 	for _, room := range tagrooms {

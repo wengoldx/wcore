@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -6,10 +6,9 @@
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
 // 00001       2019/05/22   yangping       New version
-// 00002       2019/06/30   zhaixing       Add function from godfs
 // -------------------------------------------------------------------
 
-package comm
+package utils
 
 import (
 	"fmt"

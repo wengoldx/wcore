@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -13,13 +13,13 @@ package wing
 // package main
 
 // import (
-// 	_ "github.com/wengoldx/wing/comm"
 // 	_ "github.com/wengoldx/wing/invar"
 // 	_ "github.com/wengoldx/wing/logger"
 // 	_ "github.com/wengoldx/wing/mqtt"
 // 	_ "github.com/wengoldx/wing/mvc"
 // 	_ "github.com/wengoldx/wing/nacos"
 // 	_ "github.com/wengoldx/wing/secure"
+// 	_ "github.com/wengoldx/wing/utils"
 // 	_ "github.com/wengoldx/wing/wechat"
 // 	_ "github.com/wengoldx/wing/wrpc"
 // 	_ "github.com/wengoldx/wing/wsio"

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -9,7 +9,7 @@
 // 00002       2022/03/26   yangping       Using toolbox.Task
 // -------------------------------------------------------------------
 
-package comm
+package utils
 
 import (
 	"time"

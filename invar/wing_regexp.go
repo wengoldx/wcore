@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -6,42 +6,12 @@
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
 // 00001       2019/05/22   yangping       New version
-// 00002       2019/06/30   zhaixing       Add function from godfs
 // -------------------------------------------------------------------
 package invar
 
 import (
 	"regexp"
-
-	"github.com/wengoldx/wing/logger"
 )
-
-///////////////////////////////////////////////////////////////////////////////////
-// `DEPRECATED` start /////////////////////////////////////////////////////////////
-
-const (
-	ExpSingleChar      = "[a-zA-Z]"       // only a lower or upper char in a-z
-	ExpOnlyNumbers     = "^[0-9]*$"       // number string
-	ExpOnlyLowerChars  = "^[a-z]*$"       // lower chars string
-	ExpOnlyUpperChars  = "^[A-Z]*$"       // upper chars string
-	ExpOnlyCaseChars   = "^[a-zA-Z]*$"    // lower or upper chars string
-	ExpNumOrLowerChars = "^[0-9a-z]*$"    // number or lower chars string
-	ExpNumOrUpperChars = "^[0-9A-Z]*$"    // number or upper chars string
-	ExpNumOrCaseChars  = "^[0-9a-zA-Z]*$" // contain number, lower or upper chars string
-)
-
-// MatchRegexp `DEPRECATED` : please use RegeXxxx functions instead of it!
-func MatchRegexp(expression, src string) bool {
-	reg, err := regexp.Compile(expression)
-	if err != nil {
-		logger.E("Invalid regexp expression, err:", err)
-		return false
-	}
-	return reg.MatchString(src)
-}
-
-// `DEPRECATED` end ///////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////
 
 /* The follow gegex strings copied from regex.go of Validator */
 

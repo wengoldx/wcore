@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -6,10 +6,9 @@
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
 // 00001       2019/05/22   yangping       New version
-// 00002       2019/06/30   zhaixing       Add function from godfs
 // -------------------------------------------------------------------
 
-package comm
+package utils
 
 import (
 	"fmt"
@@ -35,16 +34,15 @@ import (
 //
 //	// use for restful interface server
 //	func main() {}
-//		// comm.HttpServer(false) or
-//		comm.HttpServer()
+//		utils.HttpServer()   // or utils.HttpServer(false)
 //
 //	// use for both restful and socket.io server
 //	func main() {
-//		comm.HttpServer(true)
+//		utils.SocketServer() // or utils.HttpServer(true)
 //	}
 func HttpServer(allowCredentials ...bool) {
 	ignoreSysSignalPIPE()
-	if len(allowCredentials) > 0 {
+	if len(allowCredentials) > 0 && allowCredentials[0] {
 		accessAllowOriginBy(beego.BeforeRouter, "*", allowCredentials[0])
 		accessAllowOriginBy(beego.BeforeStatic, "*", allowCredentials[0])
 	} else {
@@ -61,7 +59,7 @@ func HttpServer(allowCredentials ...bool) {
 }
 
 // Start and excute both restful and socket.io server
-func Rest4SioServer() {
+func SocketServer() {
 	HttpServer(true)
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -20,9 +20,9 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/model"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
-	"github.com/wengoldx/wing/comm"
 	"github.com/wengoldx/wing/invar"
 	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wing/utils"
 )
 
 // -------- Auto Register Define --------
@@ -79,7 +79,7 @@ func RegisterServer() *ServerStub {
 	}
 
 	// Namespace id of local server, and parse local ip
-	ns := comm.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
+	ns := utils.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
 	addr, err := matchProxyIP(idealip)
 	if err != nil {
 		panic("Find proxy local ip, err:" + err.Error())
@@ -170,7 +170,7 @@ func GenMetaConfig() *MetaConfig {
 	}
 
 	// Namespace id of meta configs
-	ns := comm.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
+	ns := utils.Condition(beego.BConfig.RunMode == "prod", NS_PROD, NS_DEV).(string)
 
 	// Generate nacos config stub and setup it
 	stub := NewConfigStub(ns, svr)
@@ -244,14 +244,14 @@ func (mc *MetaConfig) UploadRouters() error {
 	}
 
 	// update local server swagger routers
-	if routers, err := comm.UpdateRouters(nrouters); err == nil {
+	if routers, err := utils.UpdateRouters(nrouters); err == nil {
 		mc.PushConfig(DID_API_ROUTERS, routers)
 	}
 	return nil
 }
 
 // Update routers chinese descriptions and upload to nacos
-func (mc *MetaConfig) UpdateChineses(descs []*comm.SvrDesc) error {
+func (mc *MetaConfig) UpdateChineses(descs []*utils.SvrDesc) error {
 	nrouters, err := mc.GetConfig(DID_API_ROUTERS)
 	if err != nil {
 		logger.E("Pull nacos routers, err:", err)
@@ -259,7 +259,7 @@ func (mc *MetaConfig) UpdateChineses(descs []*comm.SvrDesc) error {
 	}
 
 	// update routers chineses descriptions
-	routers, err := comm.UpdateChineses(nrouters, descs)
+	routers, err := utils.UpdateChineses(nrouters, descs)
 	if err != nil {
 		logger.E("Update routers chineses, err:", err)
 		return err
@@ -324,7 +324,7 @@ func matchProxyIP(proxy string) (string, error) {
 		return "", err
 	}
 
-	matchips, err := comm.GetLocalIPs()
+	matchips, err := utils.GetLocalIPs()
 	if err != nil {
 		return "", err
 	}

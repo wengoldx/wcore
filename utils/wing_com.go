@@ -6,10 +6,9 @@
 // Prismy.No | Date       | Modified by. | Description
 // -------------------------------------------------------------------
 // 00001       2019/05/22   yangping       New version
-// 00002       2019/06/30   zhaixing       Add function from godfs
 // -------------------------------------------------------------------
 
-package comm
+package utils
 
 import (
 	"bytes"
@@ -61,7 +60,9 @@ func Condition(condition bool, trueData any, falseData any) any {
 	return falseData
 }
 
-// Contain check the given string list if contains item
+// Contain check the given string list if contains item.
+//
+// You should call Distinct() to filter out the repeat items.
 func Contain(list *[]string, item string) bool {
 	for _, v := range *list {
 		if v == item {
@@ -69,6 +70,24 @@ func Contain(list *[]string, item string) bool {
 		}
 	}
 	return false
+}
+
+// Distinct remove duplicate string from given array.
+//
+// You should call Contain() only for check if exist sub string.
+func Distinct(src *[]string) []string {
+	dest := make(map[string]byte)
+	for _, str := range *src {
+		if _, ok := dest[str]; !ok {
+			dest[str] = byte(0)
+		}
+	}
+
+	st := []string{}
+	for str := range dest {
+		st = append(st, str)
+	}
+	return st
 }
 
 // To2Digits fill zero if input digit not enough 2
@@ -165,22 +184,50 @@ func JoinLines(inputs ...string) string {
 	return packet
 }
 
-// SplitVia implement split and return a empty return value when its parameters are empty
-func SplitVia(src, char string) []string {
-	st := strings.Split(strings.TrimSpace(src), char)
+// SplitTrim extend strings.Split to trim space and sub strings before split.
+//
+//	// Use Case 1: head or end maybe exist space chars or sub strings
+//	str := "01/23/34"         // or " 01/23/34", "01/23/34 ", " 01/23/34 "
+//	                          // or "/01/23/34", "01/23/34/", "/01/23/34/"
+//	                          // or " /01/23/34/ "
+//	utils.SplitTrim(str, "/") // output [01 23 34]
+//
+//	// Use Case 2: source string only have space chars or split strings
+//	str := "/"                // or " /", "/ ", " / ", " // ", " //// "
+//	utils.SplitTrim(str, "/") // output []
+func SplitTrim(src, sub string) []string {
+	src = strings.Trim(strings.TrimSpace(src), sub)
+	st := strings.Split(src, sub)
 	if len(st) == 1 && st[0] == "" {
 		return []string{}
 	}
 	return st
 }
 
-// SplitAfterVia implement splitafter and return a empty return value when its parameters are empty
-func SplitAfterVia(src, char string) []string {
-	st := strings.SplitAfter(strings.TrimSpace(src), char)
-	if len(st) == 1 && st[0] == "" {
-		return []string{}
+// SplitAfterTrim extend strings.SplitAfter to trim all space chars and sub strings.
+//
+//	// Use Case 1: remove all space chars and filter out sub string items
+//	str := "01/23/34"              // or "/01/23/34", " /01/23/34 / ", "/0 1/23 /34"
+//	utils.SplitAfterTrim(str, "/") // output [01/ 23/ 34/]
+//
+//	// Use Case 2: source string only have space chars or split strings
+//	str := "/"                     // or " / ", " // ", " / / ", " /// "
+//	utils.SplitAfterTrim(str, "/") // output []
+//
+// `Warning` : DO NOT contain space chars in the sub string!
+func SplitAfterTrim(src, sub string) []string {
+	src = strings.ReplaceAll(src, " ", "")
+	if !strings.HasSuffix(src, sub) {
+		src += sub
 	}
-	return st
+
+	st, rst := strings.SplitAfter(src, sub), []string{}
+	for _, str := range st {
+		if str != "" && str != sub {
+			rst = append(rst, str)
+		}
+	}
+	return rst
 }
 
 // GetSortKey get first letter of Chinese Pinyin
@@ -211,24 +258,6 @@ func GetSortKey(str string) string {
 		}
 	}
 	return sortKey
-}
-
-// RemoveDuplicate remove duplicate data from array
-func RemoveDuplicate(oldArr []string) []string {
-	newArr := make([]string, 0)
-	for i := 0; i < len(oldArr); i++ {
-		repeat := false
-		for j := i + 1; j < len(oldArr); j++ {
-			if oldArr[i] == oldArr[j] {
-				repeat = true
-				break
-			}
-		}
-		if !repeat {
-			newArr = append(newArr, oldArr[i])
-		}
-	}
-	return newArr
 }
 
 // Indicate given object if the target type.

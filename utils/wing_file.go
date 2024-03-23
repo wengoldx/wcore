@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2028 Dunyu All Rights Reserved.
+// Copyright (c) 2018-Now Dunyu All Rights Reserved.
 //
 // Author      : https://www.wengold.net
 // Email       : support@wengold.net
@@ -9,7 +9,7 @@
 // 00002       2019/06/30   zhaixing       Add function from godfs
 // -------------------------------------------------------------------
 
-package comm
+package utils
 
 import (
 	"bufio"
