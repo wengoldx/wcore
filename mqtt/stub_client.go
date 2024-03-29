@@ -41,8 +41,8 @@ import (
 //
 // UseCase 2 : Using nacos MQTT configs and connect with callbacks.
 //
-//	handlers := map[string]any{"connect" : ConnectHandler}
-//	mqtt.SetHandlers(handlers)
+//	stub := mqtt.SetOptions(2)
+//	stub.ConnectHandler = ConnectHandler
 //	if err := mqtt.GenClient(data); err != nil {
 //		logger.E("Connect client err:", err)
 //		return
@@ -58,23 +58,26 @@ import (
 //		return
 //	}
 type MqttStub struct {
-	Options  *Options
-	Client   mq.Client
-	handlers map[string]any // Connect, disconnect, message, reconnect handlers
-	qos      byte           // The default qos for publish or subscribe
-	remain   bool           // The default remain flag
+	Options           *Options
+	Client            mq.Client
+	ConnectHandler    mq.OnConnectHandler      // Connect callback handler
+	DisconnectHandler mq.ConnectionLostHandler // Disconnect callback handler
+	ReconnectHandler  mq.ReconnectHandler      // Reconnect callback handler
+	MessageHandler    mq.MessageHandler        // Default publish message callback handler
+	qos               byte                     // The default qos for publish or subscribe
+	remain            bool                     // The default remain flag
 }
 
 // Singleton mqtt stub instance
 var mqttStub *MqttStub
 
-// Default connect handler, call SetHandlers() to instead other before call GenConfigs().
+// Default connect handler, change it before call GenConfigs().
 var connHandler mq.OnConnectHandler = func(client mq.Client) {
 	serve, opt := beego.BConfig.AppName, client.OptionsReader()
 	logger.I("Server", serve, "connected mqtt as client:", opt.ClientID())
 }
 
-// Default disconnect handler, call SetHandlers() to instead other before call GenConfigs().
+// Default disconnect handler, change it before call GenConfigs().
 var lostHandler mq.ConnectionLostHandler = func(client mq.Client, err error) {
 	serve, opt := beego.BConfig.AppName, client.OptionsReader()
 	logger.W("Server", serve, "disconnect mqtt client:", opt.ClientID())
@@ -85,8 +88,8 @@ func Singleton() *MqttStub {
 	if mqttStub == nil {
 		mqttStub = &MqttStub{
 			Options: &Options{}, Client: nil,
-			handlers: map[string]any{"connect": connHandler, "disconnect": lostHandler},
-			qos:      byte(0), remain: false,
+			ConnectHandler: connHandler, DisconnectHandler: lostHandler,
+			qos: byte(0), remain: false,
 		}
 	}
 	return mqttStub
@@ -112,19 +115,14 @@ func GenClient(configs string, server ...string) error {
 	return nil
 }
 
-// Set client handlers, it called must before calling GenConfigs()
-func SetHandlers(handlers map[string]any) {
-	for key, handler := range handlers {
-		Singleton().handlers[key] = handler
-	}
-}
-
 // Set default qos and remain flag
-func SetOptions(qos byte, remain ...bool) {
+func SetOptions(qos byte, remain ...bool) *MqttStub {
+	stub := Singleton()
 	if len(remain) > 0 {
-		Singleton().remain = remain[0]
+		stub.remain = remain[0]
 	}
-	Singleton().qos = qos
+	stub.qos = qos
+	return stub
 }
 
 // Generate mqtt config, default connection protocol using tcp, you can
@@ -146,20 +144,10 @@ func (stub *MqttStub) GenConfigs(mode ...string) *mq.ClientOptions {
 	options.SetAutoReconnect(true)
 
 	// set callback handlers if exist
-	for k, h := range stub.handlers {
-		if h != nil && reflect.TypeOf(h).Kind() == reflect.Func {
-			switch k {
-			case "connect":
-				options.SetOnConnectHandler(h.(mq.OnConnectHandler))
-			case "disconnect":
-				options.SetConnectionLostHandler(h.(mq.ConnectionLostHandler))
-			case "reconnect":
-				options.SetReconnectingHandler(h.(mq.ReconnectHandler))
-			case "message":
-				options.SetDefaultPublishHandler(h.(mq.MessageHandler))
-			}
-		}
-	}
+	options.SetOnConnectHandler(stub.ConnectHandler)
+	options.SetConnectionLostHandler(stub.DisconnectHandler)
+	options.SetReconnectingHandler(stub.ReconnectHandler)
+	options.SetDefaultPublishHandler(stub.MessageHandler)
 	return options
 }
 
