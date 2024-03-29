@@ -10,29 +10,34 @@
 
 package mqtt
 
-// ClientConfigs mqtt client configs to connect MQTT broker
-type ClientConfigs struct {
-	Broker   string       // remote MQTT broker address
-	Port     int          // remote MQTT broker port number
-	ClientID string       // current client unique id on broker
-	User     *UserConfigs // user account and password to connect broker
-	CAFile   string       // CA cert file for TSL
-	CerFile  string       // certificate/key file for TSL
-	KeyFile  string       // secure key file for TSL
+// Optionals mqtt client configs to connect MQTT broker
+type Options struct {
+	Host     string // remote MQTT broker host
+	Port     int    // remote MQTT broker port number
+	ClientID string // current client unique id on broker
+	User     *User  // user account and password to connect broker
+	CAFile   string // CA cert file for TSL
+	CerFile  string // certificate/key file for TSL
+	KeyFile  string // secure key file for TSL
 }
 
-// MqttConfigs mqtt configs pasered from nacos configs server
+// MQTT configs pasered from nacos configs server
 type MqttConfigs struct {
-	Broker  string                  `json:"broker"`
-	Port    int                     `json:"port"`
-	Users   map[string]*UserConfigs `json:"svrcfg"`
-	CAFile  string                  `json:"ca"`
-	CerFile string                  `json:"certificate"`
-	KeyFile string                  `json:"key"`
+	Brokers map[string]*Broker `json:"brokers"`
+	Users   map[string]*User   `json:"users"`
+	CAFile  string             `json:"ca"`
+	CerFile string             `json:"certificate"`
+	KeyFile string             `json:"key"`
 }
 
-// UserConfigs mqtt client secure datas
-type UserConfigs struct {
+// MQTT broker address
+type Broker struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+}
+
+// MQTT client login user
+type User struct {
 	Account  string `json:"user"`
 	Password string `json:"pwd"`
 }
