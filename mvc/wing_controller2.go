@@ -130,81 +130,81 @@ var GAuthHandlerFunc AuthHandlerFunc
 var GRoleHandlerFunc RoleHandlerFunc
 
 // Get authoration and token from http header, than verify it and return account secures.
-func (c *WAuthController) AuthRequestHeader() string {
-	uuid, _ := c.innerAuthHeader()
+func (c *WAuthController) AuthRequestHeader(hidelog ...bool) string {
+	uuid, _ := c.innerAuthHeader(len(hidelog) > 0 && hidelog[1])
 	return uuid
 }
 
 // DoAfterValidated do bussiness action after success validate the given json data.
-func (c *WAuthController) DoAfterValidated(ps any, nextFunc2 NextFunc2, option ...any) {
-	if uuid, _ := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, true, isprotect)
+func (c *WAuthController) DoAfterValidated(ps any, nextFunc2 NextFunc2, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, _ := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, true, protect, hidelog)
 	}
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
-func (c *WAuthController) DoAfterUnmarshal(ps any, nextFunc2 NextFunc2, option ...any) {
-	if uuid, _ := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, false, isprotect)
+func (c *WAuthController) DoAfterUnmarshal(ps any, nextFunc2 NextFunc2, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, _ := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner("json", ps, nextFunc2, uuid, false, protect, hidelog)
 	}
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
-func (c *WAuthController) DoAfterValidatedXml(ps any, nextFunc2 NextFunc2, option ...any) {
-	if uuid, _ := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, true, isprotect)
+func (c *WAuthController) DoAfterValidatedXml(ps any, nextFunc2 NextFunc2, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, _ := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, true, protect, hidelog)
 	}
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-func (c *WAuthController) DoAfterUnmarshalXml(ps any, nextFunc2 NextFunc2, option ...any) {
-	if uuid, _ := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, false, isprotect)
+func (c *WAuthController) DoAfterUnmarshalXml(ps any, nextFunc2 NextFunc2, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, _ := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner("xml", ps, nextFunc2, uuid, false, protect, hidelog)
 	}
 }
 
 // ------------------------------------------------------
 
 // DoAfterAuthValidated do bussiness action after success validate the given json data.
-func (c *WAuthController) DoAfterAuthValidated(ps any, nextFunc3 NextFunc3, option ...any) {
-	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, true, isprotect)
+func (c *WAuthController) DoAfterAuthValidated(ps any, nextFunc3 NextFunc3, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, pwd := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, true, protect, hidelog)
 	}
 }
 
 // DoAfterAuthUnmarshal do bussiness action after success unmarshaled the given json data.
-func (c *WAuthController) DoAfterAuthUnmarshal(ps any, nextFunc3 NextFunc3, option ...any) {
-	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, false, isprotect)
+func (c *WAuthController) DoAfterAuthUnmarshal(ps any, nextFunc3 NextFunc3, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, pwd := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner3("json", ps, nextFunc3, uuid, pwd, false, protect, hidelog)
 	}
 }
 
 // DoAfterAuthValidatedXml do bussiness action after success validate the given xml data.
-func (c *WAuthController) DoAfterAuthValidatedXml(ps any, nextFunc3 NextFunc3, option ...any) {
-	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, true, isprotect)
+func (c *WAuthController) DoAfterAuthValidatedXml(ps any, nextFunc3 NextFunc3, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, pwd := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, true, protect, hidelog)
 	}
 }
 
 // DoAfterAuthUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-func (c *WAuthController) DoAfterAuthUnmarshalXml(ps any, nextFunc3 NextFunc3, option ...any) {
-	if uuid, pwd := c.innerAuthHeader(); uuid != "" {
-		isprotect := !(len(option) > 0 && !option[0].(bool))
-		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, false, isprotect)
+func (c *WAuthController) DoAfterAuthUnmarshalXml(ps any, nextFunc3 NextFunc3, fs ...bool) {
+	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
+	if uuid, pwd := c.innerAuthHeader(hidelog); uuid != "" {
+		c.doAfterValidatedInner3("xml", ps, nextFunc3, uuid, pwd, false, protect, hidelog)
 	}
 }
 
 // ------------------------------------------------------
 
 // Get authoration and token from http header, than verify it and return account secures.
-func (c *WAuthController) innerAuthHeader() (string, string) {
+func (c *WAuthController) innerAuthHeader(hidelog bool) (string, string) {
 	if GAuthHandlerFunc == nil || GRoleHandlerFunc == nil {
 		c.E405Disabled("Controller not set global handlers!")
 		return "", ""
@@ -233,7 +233,7 @@ func (c *WAuthController) innerAuthHeader() (string, string) {
 				return "", ""
 			}
 
-			if !c.HideRespLogs {
+			if !hidelog {
 				logger.D("Authenticated account:", uuid)
 			}
 			return uuid, pwd
@@ -248,31 +248,31 @@ func (c *WAuthController) innerAuthHeader() (string, string) {
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
 func (c *WAuthController) doAfterValidatedInner(datatype string,
-	ps any, nextFunc2 NextFunc2, uuid string, isvalidate, isprotect bool) {
-	if !c.validatrParams(datatype, ps, isvalidate) {
+	ps any, nextFunc2 NextFunc2, uuid string, validate, protect, hidelog bool) {
+	if !c.validatrParams(datatype, ps, validate) {
 		return
 	}
 
 	// execute business function after unmarshal and validated
 	if status, resp := nextFunc2(uuid); resp != nil {
-		c.responCheckState(datatype, isprotect, status, resp)
+		c.responCheckState(datatype, protect, hidelog, status, resp)
 	} else {
-		c.responCheckState(datatype, isprotect, status)
+		c.responCheckState(datatype, protect, hidelog, status)
 	}
 }
 
 // doAfterValidatedInner3 do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
 func (c *WAuthController) doAfterValidatedInner3(datatype string,
-	ps any, nextFunc3 NextFunc3, uuid, pwd string, isvalidate, isprotect bool) {
-	if !c.validatrParams(datatype, ps, isvalidate) {
+	ps any, nextFunc3 NextFunc3, uuid, pwd string, validate, protect, hidelog bool) {
+	if !c.validatrParams(datatype, ps, validate) {
 		return
 	}
 
 	// execute business function after unmarshal and validated
 	if status, resp := nextFunc3(uuid, pwd); resp != nil {
-		c.responCheckState(datatype, isprotect, status, resp)
+		c.responCheckState(datatype, protect, hidelog, status, resp)
 	} else {
-		c.responCheckState(datatype, isprotect, status)
+		c.responCheckState(datatype, protect, hidelog, status)
 	}
 }
