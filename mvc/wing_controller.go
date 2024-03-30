@@ -198,7 +198,7 @@ func (c *WingController) ResponData(state int, data ...map[any]any) {
 
 // ResponOK sends a empty success response to client
 func (c *WingController) ResponOK(hidelog ...bool) {
-	if !(len(hidelog) > 0 && !hidelog[0]) {
+	if !(len(hidelog) > 0 && hidelog[0]) {
 		ctl, act := c.GetControllerAndAction()
 		logger.I("Respone OK >", ctl+"."+act)
 	}
