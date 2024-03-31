@@ -273,14 +273,11 @@ func (stub *MqttStub) parseConfig(data, svr string) error {
 	}
 
 	// Create client configs and fix the id as 'server@123456789'
-	runmode := beego.BConfig.RunMode
-	if broker, ok := cfgs.Brokers[runmode]; !ok {
-		return errors.New("Notfound broker on run mode:" + runmode)
-	} else if user, ok := cfgs.Users[svr]; !ok {
+	if user, ok := cfgs.Users[svr]; !ok {
 		return errors.New("Notfound mqtt user: " + svr)
 	} else {
 		stub.Options = &Options{
-			Host: broker.Host, Port: broker.Port, User: user,
+			Host: cfgs.Broker.Host, Port: cfgs.Broker.Port, User: user,
 			ClientID: svr + "@" + secure.GenCode(),
 			CAFile:   cfgs.CAFile,
 			CerFile:  cfgs.CerFile,

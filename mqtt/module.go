@@ -23,11 +23,11 @@ type Options struct {
 
 // MQTT configs pasered from nacos configs server
 type MqttConfigs struct {
-	Brokers map[string]*Broker `json:"brokers"`
-	Users   map[string]*User   `json:"users"`
-	CAFile  string             `json:"ca"`
-	CerFile string             `json:"certificate"`
-	KeyFile string             `json:"key"`
+	Broker  Broker           `json:"broker"`
+	Users   map[string]*User `json:"users"`
+	CAFile  string           `json:"ca"`
+	CerFile string           `json:"cert"`
+	KeyFile string           `json:"key"`
 }
 
 // MQTT broker address
