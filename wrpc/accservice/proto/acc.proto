@@ -16,7 +16,7 @@ service Acc {
   rpc ViaRole(Role) returns (Result);
 
   // Add account role excepted admin
-  rpc AddRole(UserRole) returns (AEmpty);
+  rpc AddRole(TagRole) returns (AEmpty);
 
   // Register account with given role, then return uuid and random password
   // NOTICE that this function not create a admin role account
@@ -216,6 +216,11 @@ message Result {
 
 message UserRole {
   string role = 1;      // traget role
+}
+
+message TagRole {
+  string uuid = 1;      // verification request account id
+  string role = 2;      // traget role
 }
 
 message Machine {

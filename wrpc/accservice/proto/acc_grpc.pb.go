@@ -27,7 +27,7 @@ type AccClient interface {
 	// Account role access permission check
 	ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error)
 	// Add account role excepted admin
-	AddRole(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AEmpty, error)
+	AddRole(ctx context.Context, in *TagRole, opts ...grpc.CallOption) (*AEmpty, error)
 	// Register account with given role, then return uuid and random password
 	// NOTICE that this function not create a admin role account
 	AccRegister(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AccPwd, error)
@@ -107,7 +107,7 @@ func (c *accClient) ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOpti
 	return out, nil
 }
 
-func (c *accClient) AddRole(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AEmpty, error) {
+func (c *accClient) AddRole(ctx context.Context, in *TagRole, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AddRole", in, out, opts...)
 	if err != nil {
@@ -350,7 +350,7 @@ type AccServer interface {
 	// Account role access permission check
 	ViaRole(context.Context, *Role) (*Result, error)
 	// Add account role excepted admin
-	AddRole(context.Context, *UserRole) (*AEmpty, error)
+	AddRole(context.Context, *TagRole) (*AEmpty, error)
 	// Register account with given role, then return uuid and random password
 	// NOTICE that this function not create a admin role account
 	AccRegister(context.Context, *UserRole) (*AccPwd, error)
@@ -415,7 +415,7 @@ func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error)
 func (UnimplementedAccServer) ViaRole(context.Context, *Role) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaRole not implemented")
 }
-func (UnimplementedAccServer) AddRole(context.Context, *UserRole) (*AEmpty, error) {
+func (UnimplementedAccServer) AddRole(context.Context, *TagRole) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddRole not implemented")
 }
 func (UnimplementedAccServer) AccRegister(context.Context, *UserRole) (*AccPwd, error) {
@@ -543,7 +543,7 @@ func _Acc_ViaRole_Handler(srv interface{}, ctx context.Context, dec func(interfa
 }
 
 func _Acc_AddRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UserRole)
+	in := new(TagRole)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -555,7 +555,7 @@ func _Acc_AddRole_Handler(srv interface{}, ctx context.Context, dec func(interfa
 		FullMethod: "/proto.Acc/AddRole",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AddRole(ctx, req.(*UserRole))
+		return srv.(AccServer).AddRole(ctx, req.(*TagRole))
 	}
 	return interceptor(ctx, in, info, handler)
 }
