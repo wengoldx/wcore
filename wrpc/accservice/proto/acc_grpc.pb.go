@@ -37,12 +37,12 @@ type AccClient interface {
 	SearchInRole(ctx context.Context, in *Search, opts ...grpc.CallOption) (*RoleProfs, error)
 	// Update account email, it maybe case duplicate entry error when tag email exist in databse
 	UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.CallOption) (*AEmpty, error)
-	// Update account contact, email, phone if not set or bind
-	UpdateContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
 	// Reset account password and send by email
 	ResetSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	// Unbind account wechat unionid (clear unionid field directly)
 	UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
+	// Return account request token by exist user uuid (only for QKS)
+	GetToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error)
 	// Return account emails by given uuids
 	GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
@@ -75,12 +75,13 @@ type AccClient interface {
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error)
-	/// Maybe Deprecated the follows ///
+	// Update account contact, email, phone if not set or bind
+	// and add role as IFSC merchant.
+	AsMerchant(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
+	/// DEPRECATED: Maybe Deprecated the follows ///
 	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
 	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
-	// Return account request token by exist user uuid (only for QKS)
-	GetToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error)
 }
 
 type accClient struct {
@@ -154,15 +155,6 @@ func (c *accClient) UpdateEmail(ctx context.Context, in *IDEMail, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) UpdateContact(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/UpdateContact", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *accClient) ResetSendPwd(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ResetSendPwd", in, out, opts...)
@@ -175,6 +167,15 @@ func (c *accClient) ResetSendPwd(ctx context.Context, in *UUID, opts ...grpc.Cal
 func (c *accClient) UnbindWechat(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/UnbindWechat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) GetToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -325,6 +326,15 @@ func (c *accClient) GetActiveEmails(ctx context.Context, in *Emails, opts ...grp
 	return out, nil
 }
 
+func (c *accClient) AsMerchant(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/AsMerchant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *accClient) AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Acc/AccActivate", in, out, opts...)
@@ -352,15 +362,6 @@ func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.C
 	return out, nil
 }
 
-func (c *accClient) GetToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error) {
-	out := new(Token)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetToken", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -380,12 +381,12 @@ type AccServer interface {
 	SearchInRole(context.Context, *Search) (*RoleProfs, error)
 	// Update account email, it maybe case duplicate entry error when tag email exist in databse
 	UpdateEmail(context.Context, *IDEMail) (*AEmpty, error)
-	// Update account contact, email, phone if not set or bind
-	UpdateContact(context.Context, *Contact) (*AEmpty, error)
 	// Reset account password and send by email
 	ResetSendPwd(context.Context, *UUID) (*AEmpty, error)
 	// Unbind account wechat unionid (clear unionid field directly)
 	UnbindWechat(context.Context, *UUID) (*AEmpty, error)
+	// Return account request token by exist user uuid (only for QKS)
+	GetToken(context.Context, *UUID) (*Token, error)
 	// Return account emails by given uuids
 	GetAccEmails(context.Context, *UIDS) (*IDEMails, error)
 	// Return account contact (contain nickname, phone, email)
@@ -418,12 +419,13 @@ type AccServer interface {
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(context.Context, *Emails) (*Emails, error)
-	/// Maybe Deprecated the follows ///
+	// Update account contact, email, phone if not set or bind
+	// and add role as IFSC merchant.
+	AsMerchant(context.Context, *Contact) (*AEmpty, error)
+	/// DEPRECATED: Maybe Deprecated the follows ///
 	AccActivate(context.Context, *UUID) (*AEmpty, error)
 	GetProfile(context.Context, *UUID) (*Profile, error)
 	BindAccount(context.Context, *Secures) (*Token, error)
-	// Return account request token by exist user uuid (only for QKS)
-	GetToken(context.Context, *UUID) (*Token, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -452,14 +454,14 @@ func (UnimplementedAccServer) SearchInRole(context.Context, *Search) (*RoleProfs
 func (UnimplementedAccServer) UpdateEmail(context.Context, *IDEMail) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateEmail not implemented")
 }
-func (UnimplementedAccServer) UpdateContact(context.Context, *Contact) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateContact not implemented")
-}
 func (UnimplementedAccServer) ResetSendPwd(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetSendPwd not implemented")
 }
 func (UnimplementedAccServer) UnbindWechat(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnbindWechat not implemented")
+}
+func (UnimplementedAccServer) GetToken(context.Context, *UUID) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetToken not implemented")
 }
 func (UnimplementedAccServer) GetAccEmails(context.Context, *UIDS) (*IDEMails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccEmails not implemented")
@@ -509,6 +511,9 @@ func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores
 func (UnimplementedAccServer) GetActiveEmails(context.Context, *Emails) (*Emails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveEmails not implemented")
 }
+func (UnimplementedAccServer) AsMerchant(context.Context, *Contact) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AsMerchant not implemented")
+}
 func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
 }
@@ -517,9 +522,6 @@ func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, erro
 }
 func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
-}
-func (UnimplementedAccServer) GetToken(context.Context, *UUID) (*Token, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetToken not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -660,24 +662,6 @@ func _Acc_UpdateEmail_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_UpdateContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Contact)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).UpdateContact(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/UpdateContact",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).UpdateContact(ctx, req.(*Contact))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Acc_ResetSendPwd_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UUID)
 	if err := dec(in); err != nil {
@@ -710,6 +694,24 @@ func _Acc_UnbindWechat_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).UnbindWechat(ctx, req.(*UUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_GetToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GetToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GetToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GetToken(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1002,6 +1004,24 @@ func _Acc_GetActiveEmails_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_AsMerchant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Contact)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).AsMerchant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/AsMerchant",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).AsMerchant(ctx, req.(*Contact))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Acc_AccActivate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UUID)
 	if err := dec(in); err != nil {
@@ -1056,24 +1076,6 @@ func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_GetToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).GetToken(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/GetToken",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetToken(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1110,16 +1112,16 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_UpdateEmail_Handler,
 		},
 		{
-			MethodName: "UpdateContact",
-			Handler:    _Acc_UpdateContact_Handler,
-		},
-		{
 			MethodName: "ResetSendPwd",
 			Handler:    _Acc_ResetSendPwd_Handler,
 		},
 		{
 			MethodName: "UnbindWechat",
 			Handler:    _Acc_UnbindWechat_Handler,
+		},
+		{
+			MethodName: "GetToken",
+			Handler:    _Acc_GetToken_Handler,
 		},
 		{
 			MethodName: "GetAccEmails",
@@ -1186,6 +1188,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_GetActiveEmails_Handler,
 		},
 		{
+			MethodName: "AsMerchant",
+			Handler:    _Acc_AsMerchant_Handler,
+		},
+		{
 			MethodName: "AccActivate",
 			Handler:    _Acc_AccActivate_Handler,
 		},
@@ -1196,10 +1202,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BindAccount",
 			Handler:    _Acc_BindAccount_Handler,
-		},
-		{
-			MethodName: "GetToken",
-			Handler:    _Acc_GetToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

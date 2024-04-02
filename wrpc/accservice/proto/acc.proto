@@ -31,14 +31,14 @@ service Acc {
   // Update account email, it maybe case duplicate entry error when tag email exist in databse
   rpc UpdateEmail(IDEMail) returns (AEmpty);
 
-  // Update account contact, email, phone if not set or bind
-  rpc UpdateContact(Contact) returns (AEmpty);
-
   // Reset account password and send by email
   rpc ResetSendPwd(UUID) returns (AEmpty);
 
   // Unbind account wechat unionid (clear unionid field directly)
   rpc UnbindWechat(UUID) returns (AEmpty);
+
+  // Return account request token by exist user uuid (only for QKS)
+  rpc GetToken(UUID) returns (Token);
 
   // Return account emails by given uuids
   rpc GetAccEmails(UIDS) returns (IDEMails);
@@ -92,13 +92,18 @@ service Acc {
   // Return uuids and emails
   rpc GetActiveEmails(Emails) returns (Emails);
 
-  /// Maybe Deprecated the follows ///
+  // -----------------------------------
+  // For Measure Module
+  // -----------------------------------
+
+  // Update account contact, email, phone if not set or bind
+  // and add role as IFSC merchant.
+  rpc AsMerchant(Contact) returns (AEmpty);
+  
+  /// DEPRECATED: Maybe Deprecated the follows ///
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
   rpc BindAccount(Secures) returns (Token);
-
-  // Return account request token by exist user uuid (only for QKS)
-  rpc GetToken(UUID) returns (Token);
 }
 
 message AEmpty {}       // diferent other server when using together
