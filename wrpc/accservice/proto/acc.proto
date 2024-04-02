@@ -31,6 +31,9 @@ service Acc {
   // Update account email, it maybe case duplicate entry error when tag email exist in databse
   rpc UpdateEmail(IDEMail) returns (AEmpty);
 
+  // Update account contact, email, phone if not set or bind
+  rpc UpdateContact(Contact) returns (AEmpty);
+
   // Reset account password and send by email
   rpc ResetSendPwd(UUID) returns (AEmpty);
 
@@ -92,11 +95,10 @@ service Acc {
   /// Maybe Deprecated the follows ///
   rpc AccActivate (UUID) returns (AEmpty);
   rpc GetProfile(UUID) returns (Profile);
-  rpc SetContact(Contact) returns (AEmpty);
   rpc BindAccount(Secures) returns (Token);
 
-  // Return QKS machine login token
-  rpc GenQKMachToken(UUID) returns (Token);
+  // Return account request token by exist user uuid (only for QKS)
+  rpc GetToken(UUID) returns (Token);
 }
 
 message AEmpty {}       // diferent other server when using together
