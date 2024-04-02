@@ -15,6 +15,9 @@ service Acc {
   // Account role access permission check
   rpc ViaRole(Role) returns (Result);
 
+  // Add account role excepted admin
+  rpc AddRole(UserRole) returns (AEmpty);
+
   // Register account with given role, then return uuid and random password
   // NOTICE that this function not create a admin role account
   rpc AccRegister(UserRole) returns (AccPwd);
@@ -42,6 +45,9 @@ service Acc {
 
   // Return account emails by given uuids
   rpc GetAccEmails(UIDS) returns (IDEMails);
+
+  // Return account simple profiles
+  rpc GetProfile(UUID) returns (Profile);
 
   // Return account contact (contain nickname, phone, email)
   rpc GetContact(UUID) returns (Contact);
@@ -91,19 +97,6 @@ service Acc {
 
   // Return uuids and emails
   rpc GetActiveEmails(Emails) returns (Emails);
-
-  // -----------------------------------
-  // For Measure Module
-  // -----------------------------------
-
-  // Update account contact, email, phone if not set or bind
-  // and add role as IFSC merchant.
-  rpc AsMerchant(Contact) returns (AEmpty);
-  
-  /// DEPRECATED: Maybe Deprecated the follows ///
-  rpc AccActivate (UUID) returns (AEmpty);
-  rpc GetProfile(UUID) returns (Profile);
-  rpc BindAccount(Secures) returns (Token);
 }
 
 message AEmpty {}       // diferent other server when using together
@@ -209,13 +202,6 @@ message WxBind {
   string uuid = 1;      // account unique id
   string unionid = 2;   // wechat unionid bind with store account
   string pwd =3;        // account login password enripted by RSA + Base64
-}
-
-message Secures {
-  string uuid = 1;      // account unique id
-  string unionid = 2;   // wechat unionid bind with account
-  string email = 3;     // account email address
-  string pwd = 4;       // account login password enripted by RSA + Base64
 }
 
 message Role {

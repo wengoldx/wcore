@@ -26,6 +26,8 @@ type AccClient interface {
 	ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*AccPwd, error)
 	// Account role access permission check
 	ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error)
+	// Add account role excepted admin
+	AddRole(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AEmpty, error)
 	// Register account with given role, then return uuid and random password
 	// NOTICE that this function not create a admin role account
 	AccRegister(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AccPwd, error)
@@ -45,6 +47,8 @@ type AccClient interface {
 	GetToken(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Token, error)
 	// Return account emails by given uuids
 	GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error)
+	// Return account simple profiles
+	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
 	// Return account contact (contain nickname, phone, email)
 	GetContact(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Contact, error)
 	// Return account avatars by given uuids
@@ -75,13 +79,6 @@ type AccClient interface {
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error)
-	// Update account contact, email, phone if not set or bind
-	// and add role as IFSC merchant.
-	AsMerchant(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error)
-	/// DEPRECATED: Maybe Deprecated the follows ///
-	AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error)
-	GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error)
-	BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error)
 }
 
 type accClient struct {
@@ -104,6 +101,15 @@ func (c *accClient) ViaToken(ctx context.Context, in *Token, opts ...grpc.CallOp
 func (c *accClient) ViaRole(ctx context.Context, in *Role, opts ...grpc.CallOption) (*Result, error) {
 	out := new(Result)
 	err := c.cc.Invoke(ctx, "/proto.Acc/ViaRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) AddRole(ctx context.Context, in *UserRole, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/AddRole", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,6 +191,15 @@ func (c *accClient) GetToken(ctx context.Context, in *UUID, opts ...grpc.CallOpt
 func (c *accClient) GetAccEmails(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*IDEMails, error) {
 	out := new(IDEMails)
 	err := c.cc.Invoke(ctx, "/proto.Acc/GetAccEmails", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error) {
+	out := new(Profile)
+	err := c.cc.Invoke(ctx, "/proto.Acc/GetProfile", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -326,42 +341,6 @@ func (c *accClient) GetActiveEmails(ctx context.Context, in *Emails, opts ...grp
 	return out, nil
 }
 
-func (c *accClient) AsMerchant(ctx context.Context, in *Contact, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/AsMerchant", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) AccActivate(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/AccActivate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) GetProfile(ctx context.Context, in *UUID, opts ...grpc.CallOption) (*Profile, error) {
-	out := new(Profile)
-	err := c.cc.Invoke(ctx, "/proto.Acc/GetProfile", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) BindAccount(ctx context.Context, in *Secures, opts ...grpc.CallOption) (*Token, error) {
-	out := new(Token)
-	err := c.cc.Invoke(ctx, "/proto.Acc/BindAccount", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -370,6 +349,8 @@ type AccServer interface {
 	ViaToken(context.Context, *Token) (*AccPwd, error)
 	// Account role access permission check
 	ViaRole(context.Context, *Role) (*Result, error)
+	// Add account role excepted admin
+	AddRole(context.Context, *UserRole) (*AEmpty, error)
 	// Register account with given role, then return uuid and random password
 	// NOTICE that this function not create a admin role account
 	AccRegister(context.Context, *UserRole) (*AccPwd, error)
@@ -389,6 +370,8 @@ type AccServer interface {
 	GetToken(context.Context, *UUID) (*Token, error)
 	// Return account emails by given uuids
 	GetAccEmails(context.Context, *UIDS) (*IDEMails, error)
+	// Return account simple profiles
+	GetProfile(context.Context, *UUID) (*Profile, error)
 	// Return account contact (contain nickname, phone, email)
 	GetContact(context.Context, *UUID) (*Contact, error)
 	// Return account avatars by given uuids
@@ -419,13 +402,6 @@ type AccServer interface {
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(context.Context, *Emails) (*Emails, error)
-	// Update account contact, email, phone if not set or bind
-	// and add role as IFSC merchant.
-	AsMerchant(context.Context, *Contact) (*AEmpty, error)
-	/// DEPRECATED: Maybe Deprecated the follows ///
-	AccActivate(context.Context, *UUID) (*AEmpty, error)
-	GetProfile(context.Context, *UUID) (*Profile, error)
-	BindAccount(context.Context, *Secures) (*Token, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -438,6 +414,9 @@ func (UnimplementedAccServer) ViaToken(context.Context, *Token) (*AccPwd, error)
 }
 func (UnimplementedAccServer) ViaRole(context.Context, *Role) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ViaRole not implemented")
+}
+func (UnimplementedAccServer) AddRole(context.Context, *UserRole) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddRole not implemented")
 }
 func (UnimplementedAccServer) AccRegister(context.Context, *UserRole) (*AccPwd, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AccRegister not implemented")
@@ -465,6 +444,9 @@ func (UnimplementedAccServer) GetToken(context.Context, *UUID) (*Token, error) {
 }
 func (UnimplementedAccServer) GetAccEmails(context.Context, *UIDS) (*IDEMails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccEmails not implemented")
+}
+func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
 func (UnimplementedAccServer) GetContact(context.Context, *UUID) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContact not implemented")
@@ -511,18 +493,6 @@ func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores
 func (UnimplementedAccServer) GetActiveEmails(context.Context, *Emails) (*Emails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveEmails not implemented")
 }
-func (UnimplementedAccServer) AsMerchant(context.Context, *Contact) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AsMerchant not implemented")
-}
-func (UnimplementedAccServer) AccActivate(context.Context, *UUID) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AccActivate not implemented")
-}
-func (UnimplementedAccServer) GetProfile(context.Context, *UUID) (*Profile, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
-}
-func (UnimplementedAccServer) BindAccount(context.Context, *Secures) (*Token, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BindAccount not implemented")
-}
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
 // UnsafeAccServer may be embedded to opt out of forward compatibility for this service.
@@ -568,6 +538,24 @@ func _Acc_ViaRole_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).ViaRole(ctx, req.(*Role))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_AddRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserRole)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).AddRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/AddRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).AddRole(ctx, req.(*UserRole))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -730,6 +718,24 @@ func _Acc_GetAccEmails_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccServer).GetAccEmails(ctx, req.(*UIDS))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).GetProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/GetProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).GetProfile(ctx, req.(*UUID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1004,78 +1010,6 @@ func _Acc_GetActiveEmails_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_AsMerchant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Contact)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).AsMerchant(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/AsMerchant",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AsMerchant(ctx, req.(*Contact))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_AccActivate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).AccActivate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/AccActivate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).AccActivate(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UUID)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).GetProfile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/GetProfile",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).GetProfile(ctx, req.(*UUID))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_BindAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Secures)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).BindAccount(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/BindAccount",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).BindAccount(ctx, req.(*Secures))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1090,6 +1024,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ViaRole",
 			Handler:    _Acc_ViaRole_Handler,
+		},
+		{
+			MethodName: "AddRole",
+			Handler:    _Acc_AddRole_Handler,
 		},
 		{
 			MethodName: "AccRegister",
@@ -1126,6 +1064,10 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAccEmails",
 			Handler:    _Acc_GetAccEmails_Handler,
+		},
+		{
+			MethodName: "GetProfile",
+			Handler:    _Acc_GetProfile_Handler,
 		},
 		{
 			MethodName: "GetContact",
@@ -1186,22 +1128,6 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetActiveEmails",
 			Handler:    _Acc_GetActiveEmails_Handler,
-		},
-		{
-			MethodName: "AsMerchant",
-			Handler:    _Acc_AsMerchant_Handler,
-		},
-		{
-			MethodName: "AccActivate",
-			Handler:    _Acc_AccActivate_Handler,
-		},
-		{
-			MethodName: "GetProfile",
-			Handler:    _Acc_GetProfile_Handler,
-		},
-		{
-			MethodName: "BindAccount",
-			Handler:    _Acc_BindAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
