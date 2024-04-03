@@ -216,33 +216,52 @@ func (w *WingProvider) IsExist(query string, args ...any) (bool, error) {
 	return !empty, err
 }
 
+// Count call sql.Query() to count results
+func (w *WingProvider) Count(query string) (int, error) {
+	if rows, err := w.Conn.Query(query); err != nil {
+		return 0, err
+	} else {
+		defer rows.Close()
+		if !rows.Next() {
+			return 0, invar.ErrNotFound
+		}
+		rows.Columns()
+
+		counts := 0
+		if err := rows.Scan(&counts); err != nil {
+			return 0, err
+		}
+		return counts, nil
+	}
+}
+
 // QueryOne call sql.Query() to query one record
 func (w *WingProvider) QueryOne(query string, cb ScanCallback, args ...any) error {
-	rows, err := w.Conn.Query(query, args...)
-	if err != nil {
+	if rows, err := w.Conn.Query(query, args...); err != nil {
 		return err
-	}
-	defer rows.Close()
+	} else {
+		defer rows.Close()
 
-	if !rows.Next() {
-		return invar.ErrNotFound
+		if !rows.Next() {
+			return invar.ErrNotFound
+		}
+		rows.Columns()
+		return cb(rows)
 	}
-	rows.Columns()
-	return cb(rows)
 }
 
 // QueryArray call sql.Query() to query multi records
 func (w *WingProvider) QueryArray(query string, cb ScanCallback, args ...any) error {
-	rows, err := w.Conn.Query(query, args...)
-	if err != nil {
+	if rows, err := w.Conn.Query(query, args...); err != nil {
 		return err
-	}
-	defer rows.Close()
+	} else {
+		defer rows.Close()
 
-	for rows.Next() {
-		rows.Columns()
-		if err := cb(rows); err != nil {
-			return err
+		for rows.Next() {
+			rows.Columns()
+			if err := cb(rows); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -252,17 +271,17 @@ func (w *WingProvider) QueryArray(query string, cb ScanCallback, args ...any) er
 //
 // `@see` Use MultiInsert() to insert multiple values in once database operation.
 func (w *WingProvider) Insert(query string, args ...any) (int64, error) {
-	stmt, err := w.Conn.Prepare(query)
-	if err != nil {
+	if stmt, err := w.Conn.Prepare(query); err != nil {
 		return -1, err
-	}
-	defer stmt.Close()
+	} else {
+		defer stmt.Close()
 
-	result, err := stmt.Exec(args...)
-	if err != nil {
-		return -1, err
+		result, err := stmt.Exec(args...)
+		if err != nil {
+			return -1, err
+		}
+		return result.LastInsertId()
 	}
-	return result.LastInsertId()
 }
 
 // MultiInsert format and combine multiple values to insert at once, this method can provide
@@ -291,31 +310,30 @@ func (w *WingProvider) MultiInsert(query string, cnt int, cb FormatCallback) err
 
 // Execute call sql.Prepare() and stmt.Exec() to update or delete records
 func (w *WingProvider) Execute(query string, args ...any) error {
-	stmt, err := w.Conn.Prepare(query)
-	if err != nil {
+	if stmt, err := w.Conn.Prepare(query); err != nil {
 		return err
+	} else {
+		defer stmt.Close()
+		if _, err := stmt.Exec(args...); err != nil {
+			return err
+		}
+		return nil
 	}
-
-	defer stmt.Close()
-	if _, err := stmt.Exec(args...); err != nil {
-		return err
-	}
-	return nil
 }
 
 // ExeAffected call sql.Prepare() and stmt.Exec() to update or delete records
 func (w *WingProvider) ExeAffected(query string, args ...any) (int64, error) {
-	stmt, err := w.Conn.Prepare(query)
-	if err != nil {
+	if stmt, err := w.Conn.Prepare(query); err != nil {
 		return 0, err
-	}
-	defer stmt.Close()
+	} else {
+		defer stmt.Close()
 
-	result, err := stmt.Exec(args...)
-	if err != nil {
-		return 0, err
+		result, err := stmt.Exec(args...)
+		if err != nil {
+			return 0, err
+		}
+		return w.Affected(result)
 	}
-	return w.Affected(result)
 }
 
 // AppendLike append like keyword end of sql string, DON'T call it when exist limit key in sql string
@@ -390,18 +408,18 @@ func (w *WingProvider) FormatSets(updates any) string {
 //
 // `@see` Use MultiTransaction() to excute multiple transaction as once.
 func (w *WingProvider) Transaction(query string, args ...any) error {
-	tx, err := w.Conn.Begin()
-	if err != nil {
+	if tx, err := w.Conn.Begin(); err != nil {
 		return err
-	}
-	defer tx.Rollback()
+	} else {
+		defer tx.Rollback()
 
-	if _, err := tx.Exec(query, args...); err != nil {
-		return err
-	}
+		if _, err := tx.Exec(query, args...); err != nil {
+			return err
+		}
 
-	if err := tx.Commit(); err != nil {
-		return err
+		if err := tx.Commit(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -412,25 +430,25 @@ func (w *WingProvider) Transaction(query string, args ...any) error {
 //
 //	// Excute 3 transactions in callback with different query1 ~ 3
 //	err := mvc.MultiTransaction(
-//		func(tx *sqlTx) (sql.Result, error) { return tx.Exec(query1, args...) },
-//		func(tx *sqlTx) (sql.Result, error) { return tx.Exec(query2, args...) },
-//		func(tx *sqlTx) (sql.Result, error) { return tx.Exec(query3, args...) })
+//		func(tx *sql.Tx) (sql.Result, error) { return tx.Exec(query1, args...) },
+//		func(tx *sql.Tx) (sql.Result, error) { return tx.Exec(query2, args...) },
+//		func(tx *sql.Tx) (sql.Result, error) { return tx.Exec(query3, args...) })
 func (w *WingProvider) MultiTransaction(cbs ...TransactionCallback) error {
-	tx, err := w.Conn.Begin()
-	if err != nil {
+	if tx, err := w.Conn.Begin(); err != nil {
 		return err
-	}
-	defer tx.Rollback()
+	} else {
+		defer tx.Rollback()
 
-	// start excute multiple transactions in callback
-	for _, cb := range cbs {
-		if _, err := cb(tx); err != nil {
+		// start excute multiple transactions in callback
+		for _, cb := range cbs {
+			if _, err := cb(tx); err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Commit(); err != nil {
 			return err
 		}
-	}
-
-	if err := tx.Commit(); err != nil {
-		return err
 	}
 	return nil
 }
