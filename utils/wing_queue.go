@@ -111,12 +111,18 @@ func (q *Queue) Fetch(callback func(value any) (bool, bool)) {
 		q.mutex.Lock()
 		defer q.mutex.Unlock()
 
-		for e := q.list.Front(); e != nil; e = e.Next() {
+		for e := q.list.Front(); e != nil; {
 			remove, interupt := callback(e.Value)
-			if remove { // Delete or remain the node
+
+			// Delete or remain the node
+			en := e.Next()
+			if remove {
 				q.list.Remove(e)
 			}
-			if interupt { // Interupt fetch or continue
+			e = en
+
+			// Interupt fetch or continue
+			if interupt {
 				return
 			}
 		}
@@ -126,9 +132,10 @@ func (q *Queue) Fetch(callback func(value any) (bool, bool)) {
 // Dump print out the queue data.
 // this method maybe just use for debug to out put queue items
 func (q *Queue) Dump() {
-	fmt.Println("-- dump the queue: (front -> back)")
+	fmt.Println(">>> Dump queue: (front -> back)")
 	for e := q.list.Front(); e != nil; e = e.Next() {
-		logs := fmt.Sprintf("   : %v", e.Value)
+		logs := fmt.Sprintf("    : %v", e.Value)
 		fmt.Println(logs)
 	}
+	fmt.Println("<<< End dump!")
 }
