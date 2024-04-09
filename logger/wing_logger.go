@@ -52,21 +52,20 @@ const (
 // - maxdays is the max days to hold logs cache, default is 7 days.
 func init() {
 	config := readLoggerConfigs()
-	beego.SetLogger(logs.AdapterFile, config)
-	beego.SetLogFuncCall(true)
-	logs.SetLogFuncCallDepth(5)
-	logs.Async(3) // allow asynchronous
+	logs.SetLogger(logs.AdapterFile, config)
+	logs.SetLogFuncCall(true) // use the default func depth
+	logs.Async(3)             // allow 3 asynchronous chanels
 
 	// set application logger level
 	switch beego.AppConfig.String(logConfigLevel) {
 	case LevelDebug:
-		beego.SetLevel(beego.LevelDebug)
+		logs.SetLevel(beego.LevelDebug)
 	case LevelInfo:
-		beego.SetLevel(beego.LevelInformational)
+		logs.SetLevel(beego.LevelInformational)
 	case LevelWarn:
-		beego.SetLevel(beego.LevelWarning)
+		logs.SetLevel(beego.LevelWarning)
 	case LevelError:
-		beego.SetLevel(beego.LevelError)
+		logs.SetLevel(beego.LevelError)
 	}
 }
 
@@ -84,21 +83,26 @@ func readLoggerConfigs() string {
 	return "{\"filename\":\"logs/" + app + ".log\", \"daily\":true, \"maxdays\":" + maxdays + "}"
 }
 
-// appendFuncName append runtime calling function name start log prefix, it format as :
-// ------------------------------------------------------------------------------------
-// 2023/05/31 10:56:36.609 [I] [code_file.go:89]  FuncName() Log output message string
-// ------------------------------------------------------------------------------------
-func appendFuncName(v ...any) []any {
-	/* Fixed the call skipe on 1 to filter current function name */
+// Return log format string like '%v %v %v' when n is 3.
+// Here will set logger perfix as outside caller function name.
+func logFormatString(n int) string {
+
+	// append runtime calling function name as logger prefix, it format like :
+	// -----------------------------------------------------------------------
+	// 2023/05/31 10:56:36.609 [I] [code_file.go:89] FuncName() Log messages
+	// -----------------------------------------------------------------------
+
+	/* Fixed the call skipe on 2 to filter inner functions name */
 	if pc, _, _, ok := runtime.Caller(2); ok {
 		if funcptr := runtime.FuncForPC(pc); funcptr != nil {
 			if funname := funcptr.Name(); funname != "" {
 				fns := strings.SplitAfter(funname, ".")
-				v = append([]any{fns[len(fns)-1] + "()"}, v...)
+				logs.SetPrefix(fns[len(fns)-1] + "()")
 			}
 		}
 	}
-	return v
+
+	return strings.Repeat("%v ", n)
 }
 
 // SetOutputLogger close console logger on prod mode and only remain file logger.
@@ -126,40 +130,40 @@ func GetLevel() string {
 
 // EM logs a message at emergency level.
 func EM(v ...any) {
-	beego.Emergency(appendFuncName(v...)...)
+	logs.Emergency(logFormatString(len(v)), v...)
 }
 
 // AL logs a message at alert level.
 func AL(v ...any) {
-	beego.Alert(appendFuncName(v...)...)
+	logs.Alert(logFormatString(len(v)), v...)
 }
 
 // CR logs a message at critical level.
 func CR(v ...any) {
-	beego.Critical(appendFuncName(v...)...)
+	logs.Critical(logFormatString(len(v)), v...)
 }
 
 // E logs a message at error level.
 func E(v ...any) {
-	beego.Error(appendFuncName(v...)...)
+	logs.Error(logFormatString(len(v)), v...)
 }
 
 // W logs a message at warning level.
 func W(v ...any) {
-	beego.Warning(appendFuncName(v...)...)
+	logs.Warn(logFormatString(len(v)), v...)
 }
 
 // N logs a message at notice level.
 func N(v ...any) {
-	beego.Notice(appendFuncName(v...)...)
+	logs.Notice(logFormatString(len(v)), v...)
 }
 
 // I logs a message at info level.
 func I(v ...any) {
-	beego.Informational(appendFuncName(v...)...)
+	logs.Info(logFormatString(len(v)), v...)
 }
 
 // D logs a message at debug level.
 func D(v ...any) {
-	beego.Debug(appendFuncName(v...)...)
+	logs.Debug(logFormatString(len(v)), v...)
 }
