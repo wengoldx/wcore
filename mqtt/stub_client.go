@@ -278,10 +278,11 @@ func (stub *MqttStub) parseConfig(data, svr string) error {
 	} else {
 		stub.Options = &Options{
 			Host: cfgs.Broker.Host, Port: cfgs.Broker.Port, User: user,
-			ClientID: svr + "@" + secure.GenCode(),
-			CAFile:   cfgs.CAFile,
-			CerFile:  cfgs.CerFile,
-			KeyFile:  cfgs.KeyFile,
+			CAFile: cfgs.CAFile, CerFile: cfgs.CerFile, KeyFile: cfgs.KeyFile,
+		}
+		// Random client id if not fixed
+		if stub.Options.ClientID == "" {
+			stub.Options.ClientID = svr + "@" + secure.GenCode()
 		}
 	}
 	return nil
