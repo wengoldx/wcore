@@ -136,11 +136,6 @@ func (stub *MqttStub) GenConfigs(mode ...string) *mq.ClientOptions {
 		}
 	}
 
-	// Random client id if not fixed
-	if stub.Options.ClientID == "" {
-		stub.Options.ClientID = secure.GenCode()
-	}
-
 	broker := fmt.Sprintf(protocol, stub.Options.Host, stub.Options.Port)
 	options.AddBroker(broker)
 	options.SetClientID(stub.Options.ClientID)
@@ -281,9 +276,16 @@ func (stub *MqttStub) parseConfig(data, svr string) error {
 	if user, ok := cfgs.Users[svr]; !ok {
 		return errors.New("Notfound mqtt user: " + svr)
 	} else {
-		stub.Options = &Options{
-			Host: cfgs.Broker.Host, Port: cfgs.Broker.Port, User: user,
-			CAFile: cfgs.CAFile, CerFile: cfgs.CerFile, KeyFile: cfgs.KeyFile,
+		stub.Options.Host = cfgs.Broker.Host
+		stub.Options.Port = cfgs.Broker.Port
+		stub.Options.User = user
+		stub.Options.CAFile = cfgs.CAFile
+		stub.Options.CerFile = cfgs.CerFile
+		stub.Options.KeyFile = cfgs.KeyFile
+
+		// Random client id if not fixed
+		if stub.Options.ClientID == "" {
+			stub.Options.ClientID = svr + "." + secure.GenCode()
 		}
 	}
 	return nil
