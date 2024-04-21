@@ -308,28 +308,28 @@ func (c *WingController) BindValue(key string, dest any) error {
 }
 
 // DoAfterValidated do bussiness action after success validate the given json data.
-//	see WingController
+//	@Return 400, 404 codes returned on error.
 func (c *WingController) DoAfterValidated(ps any, nextFunc NextFunc, fs ...bool) {
 	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
 	c.doAfterValidatedInner("json", ps, nextFunc, true, protect, hidelog)
 }
 
 // DoAfterUnmarshal do bussiness action after success unmarshaled the given json data.
-//	see DoAfterValidated
+//	@Return 400, 404 codes returned on error.
 func (c *WingController) DoAfterUnmarshal(ps any, nextFunc NextFunc, fs ...bool) {
 	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
 	c.doAfterValidatedInner("json", ps, nextFunc, false, protect, hidelog)
 }
 
 // DoAfterValidatedXml do bussiness action after success validate the given xml data.
-//	see DoAfterValidated
+//	@Return 400, 404 codes returned on error.
 func (c *WingController) DoAfterValidatedXml(ps any, nextFunc NextFunc, fs ...bool) {
 	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
 	c.doAfterValidatedInner("xml", ps, nextFunc, true, protect, hidelog)
 }
 
 // DoAfterUnmarshalXml do bussiness action after success unmarshaled the given xml data.
-//	see DoAfterValidated, DoAfterValidatedXml
+//	@Return 400, 404 codes returned on error.
 func (c *WingController) DoAfterUnmarshalXml(ps any, nextFunc NextFunc, fs ...bool) {
 	protect, hidelog := !(len(fs) > 0 && !fs[0]), (len(fs) > 1 && fs[1])
 	c.doAfterValidatedInner("xml", ps, nextFunc, false, protect, hidelog)
@@ -390,6 +390,7 @@ func (c *WingController) responCheckState(datatype string, protect, hidelog bool
 
 // doAfterValidatedInner do bussiness action after success unmarshal params or
 // validate the unmarshaled json data.
+//	@See validatrParams() for more 400, 404 error code returned.
 func (c *WingController) doAfterValidatedInner(datatype string, ps any, nextFunc NextFunc, validate, protect, hidelog bool) {
 	if !c.validatrParams(datatype, ps, validate) {
 		return
@@ -404,6 +405,8 @@ func (c *WingController) doAfterValidatedInner(datatype string, ps any, nextFunc
 }
 
 // validatrParams do bussiness action after success unmarshal params or validate the unmarshaled json data.
+//	@Return 400: Invalid input params(Unmarshal error or invalid params value).
+//	@Return 404: Internale server error(not support content type unless json and xml).
 func (c *WingController) validatrParams(datatype string, ps any, validate bool) bool {
 	switch datatype {
 	case "json":
