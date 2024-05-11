@@ -52,14 +52,15 @@ import (
 // UseCase 3 : Using singleton stub set custom configs and connect.
 //
 //	stub := mqtt.Singleton()
-//	// Here use stub.Client to set your client configs
-//	if err := stub.Connect(stub.GenConfigs()); err != nil {
+//	// Here use stub.Options to set broker configs
+//	//      use stub.xxxHandler to set connect, disconnect, message handlers
+//	if err := stub.Connect(stub.GetConnOptions()); err != nil {
 //		logger.E("Connect client err:", err)
 //		return
 //	}
 type MqttStub struct {
-	Options           *Options
-	Client            mq.Client
+	Options           *Options                 // Broker host and port, login secure datas, client id
+	Client            mq.Client                // MQTT client instance
 	ConnectHandler    mq.OnConnectHandler      // Connect callback handler
 	DisconnectHandler mq.ConnectionLostHandler // Disconnect callback handler
 	ReconnectHandler  mq.ReconnectHandler      // Reconnect callback handler
@@ -71,13 +72,13 @@ type MqttStub struct {
 // Singleton mqtt stub instance
 var mqttStub *MqttStub
 
-// Default connect handler, change it before call GenConfigs().
+// Default connect handler, change it before call GetConnOptions().
 var connHandler mq.OnConnectHandler = func(client mq.Client) {
 	serve, opt := beego.BConfig.AppName, client.OptionsReader()
 	logger.I("Server", serve, "connected mqtt as client:", opt.ClientID())
 }
 
-// Default disconnect handler, change it before call GenConfigs().
+// Default disconnect handler, change it before call GetConnOptions().
 var lostHandler mq.ConnectionLostHandler = func(client mq.Client, err error) {
 	serve, opt := beego.BConfig.AppName, client.OptionsReader()
 	logger.W("Server", serve, "disconnect mqtt client:", opt.ClientID())
@@ -97,17 +98,31 @@ func Singleton() *MqttStub {
 
 // Generate mqtt client and connect with MQTT broker, the client using
 // 'tcp' protocol and fixed id as format 'server@12345678'.
-func GenClient(configs string, server ...string) error {
+//
+//	* The configs input param mabe set as json string from Nacos Configs Server
+//	* Or input Options object refrence created at local
+func GenClient(configs any, server ...string) error {
 	stub, svr := Singleton(), beego.BConfig.AppName
 	if len(server) > 0 && server[0] != "" {
 		svr = server[0]
 	}
 
-	if err := stub.parseConfig(configs, svr); err != nil {
-		return err
+	// parse MQTT connect configs from json string or Options object refrence
+	switch reflect.ValueOf(configs).Interface().(type) {
+	case string:
+		if err := stub.parseConfig(configs.(string), svr); err != nil {
+			return err
+		}
+	case *Options:
+		stub.Options = configs.(*Options)
+		if stub.Options.ClientID == "" {
+			stub.Options.ClientID = svr + "." + secure.GenCode()
+		}
+	default:
+		return invar.ErrInvalidConfigs
 	}
 
-	opt := stub.GenConfigs() // using default tcp protocol
+	opt := stub.GetConnOptions() // using default tcp protocol
 	if err := stub.Connect(opt); err != nil {
 		logger.E("Generate", svr, "mqtt client err:", err)
 		return err
@@ -127,7 +142,7 @@ func SetOptions(qos byte, remain ...bool) *MqttStub {
 
 // Generate mqtt config, default connection protocol using tcp, you can
 // set mode 'tls' and cert files to using ssl protocol.
-func (stub *MqttStub) GenConfigs(mode ...string) *mq.ClientOptions {
+func (stub *MqttStub) GetConnOptions(mode ...string) *mq.ClientOptions {
 	options, protocol := mq.NewClientOptions(), "tcp://%s:%v"
 	if len(mode) > 0 && mode[0] == "tls" {
 		protocol = "ssl://%s:%v"
@@ -274,7 +289,7 @@ func (stub *MqttStub) parseConfig(data, svr string) error {
 
 	// Create client configs and fix the id as 'server@123456789'
 	if user, ok := cfgs.Users[svr]; !ok {
-		return errors.New("Notfound mqtt user: " + svr)
+		return errors.New("Not found mqtt user: " + svr)
 	} else {
 		stub.Options.Host = cfgs.Broker.Host
 		stub.Options.Port = cfgs.Broker.Port
