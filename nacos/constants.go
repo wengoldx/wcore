@@ -51,6 +51,7 @@ const (
 	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Fixed group, data id of mqtt agents
 	DID_OTA_BUILDS   = "dunyu.ota.builds"   // Fixed group, data id of all projects OTA informations
 	DID_WX_AGENTS    = "dunyu.wx.agents"    // Fixed group, data id of wechat agents
+	DID_QKS_CERT     = "dunyu.qks.cert"     // Fixed group, data id of qks rsa cert public key
 )
 
 /* -------------------------- */
