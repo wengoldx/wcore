@@ -21,7 +21,6 @@ const (
 	nacosDirCache  = "./nacos/cache" // default nacos caches dir
 
 	configKeySvr   = "nacossvr"  // Nacos remote server IP address
-	configKeyGroup = "nacosgp"   // Local server group
 	configKeyAddr  = "nacosaddr" // Local server access IP address
 	configKeyPort  = "nacosport" // Local server access port for grpc connect
 	configKeyHPort = "httpport"  // Local server http port
@@ -42,16 +41,16 @@ const GP_WENGOLD = "group.wengold"
 
 // Nacos data id for wing/nacos
 const (
-	DID_ACC_CONFIGS  = "dunyu.acc.configs"  // Group by BASIC, data id of accservice cofnigs
-	DID_API_ROUTERS  = "dunyu.api.routers"  // Group by BASIC, data id of swagger restful routers
-	DID_DTALK_NTFERS = "dunyu.dtalk.ntfers" // Group by BASIC, data id of dingtalk notifiers
-	DID_ES_AGENTS    = "dunyu.es.agents"    // Group by IFSC,  data id of elastic search agents
-	DID_GRPC_CERTS   = "dunyu.grpc.certs"   // Group by BASIC, data id of grpc certs, the data format as xml
-	DID_MIO_PATHS    = "dunyu.mio.paths"    // Group by BASIC, data id of minio source paths
-	DID_MIO_USERS    = "dunyu.mio.users"    // Group by BASIC, data id of minio account key
-	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Group by IFSC,  data id of mqtt agents
-	DID_OTA_BUILDS   = "dunyu.ota.builds"   // Group by BASIC, data id of all projects OTA informations
-	DID_WX_AGENTS    = "dunyu.wx.agents"    // Group by BASIC, data id of wechat agents
+	DID_ACC_CONFIGS  = "dunyu.acc.configs"  // Fixed group, data id of accservice cofnigs
+	DID_API_ROUTERS  = "dunyu.api.routers"  // Fixed group, data id of swagger restful routers
+	DID_DTALK_NTFERS = "dunyu.dtalk.ntfers" // Fixed group, data id of dingtalk notifiers
+	DID_ES_AGENTS    = "dunyu.es.agents"    // Fixed group, data id of elastic search agents
+	DID_GRPC_CERTS   = "dunyu.grpc.certs"   // Fixed group, data id of grpc certs that datas format as xml
+	DID_MIO_PATHS    = "dunyu.mio.paths"    // Fixed group, data id of minio source paths
+	DID_MIO_USERS    = "dunyu.mio.users"    // Fixed group, data id of minio account key
+	DID_MQTT_AGENTS  = "dunyu.mqtt.agents"  // Fixed group, data id of mqtt agents
+	DID_OTA_BUILDS   = "dunyu.ota.builds"   // Fixed group, data id of all projects OTA informations
+	DID_WX_AGENTS    = "dunyu.wx.agents"    // Fixed group, data id of wechat agents
 )
 
 /* -------------------------- */
