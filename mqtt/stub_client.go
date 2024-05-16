@@ -168,13 +168,12 @@ func (stub *MqttStub) GetConnOptions(mode ...string) *mq.ClientOptions {
 
 // New client from given options and connect with broker
 func (stub *MqttStub) Connect(opt *mq.ClientOptions) error {
-	client := mq.NewClient(opt)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
+	stub.Client = mq.NewClient(opt)
+	if token := stub.Client.Connect(); token.Wait() && token.Error() != nil {
+		stub.Client = nil
 		logger.E("Connect mqtt client, err:", token.Error())
 		return token.Error()
 	}
-
-	stub.Client = client
 	return nil
 }
 
