@@ -28,6 +28,7 @@ type WebssClient interface {
 	AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
 	GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
 	GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error)
+	RemainGetUrls(ctx context.Context, in *SignRemain, opts ...grpc.CallOption) (*SignUrls, error)
 }
 
 type webssClient struct {
@@ -92,6 +93,15 @@ func (c *webssClient) GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *webssClient) RemainGetUrls(ctx context.Context, in *SignRemain, opts ...grpc.CallOption) (*SignUrls, error) {
+	out := new(SignUrls)
+	err := c.cc.Invoke(ctx, "/proto.Webss/RemainGetUrls", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebssServer is the server API for Webss service.
 // All implementations must embed UnimplementedWebssServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type WebssServer interface {
 	AddTag(context.Context, *Tag) (*WEmpty, error)
 	GetUrl(context.Context, *Sign) (*SignUrl, error)
 	GetUrls(context.Context, *Signs) (*SignUrls, error)
+	RemainGetUrls(context.Context, *SignRemain) (*SignUrls, error)
 	mustEmbedUnimplementedWebssServer()
 }
 
@@ -126,6 +137,9 @@ func (UnimplementedWebssServer) GetUrl(context.Context, *Sign) (*SignUrl, error)
 }
 func (UnimplementedWebssServer) GetUrls(context.Context, *Signs) (*SignUrls, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUrls not implemented")
+}
+func (UnimplementedWebssServer) RemainGetUrls(context.Context, *SignRemain) (*SignUrls, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemainGetUrls not implemented")
 }
 func (UnimplementedWebssServer) mustEmbedUnimplementedWebssServer() {}
 
@@ -248,6 +262,24 @@ func _Webss_GetUrls_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Webss_RemainGetUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignRemain)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebssServer).RemainGetUrls(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Webss/RemainGetUrls",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebssServer).RemainGetUrls(ctx, req.(*SignRemain))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Webss_ServiceDesc is the grpc.ServiceDesc for Webss service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +310,10 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUrls",
 			Handler:    _Webss_GetUrls_Handler,
+		},
+		{
+			MethodName: "RemainGetUrls",
+			Handler:    _Webss_RemainGetUrls_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
