@@ -60,6 +60,23 @@ func Condition(condition bool, trueData any, falseData any) any {
 	return falseData
 }
 
+// Check the variable params, return the first value if exist any,
+// or return default string
+//
+// `USAGE` :
+//
+//	func sample(params ...string) {
+//		a := GetVariable(params, "def-value").(string)
+//		// Do saming here
+//	}
+func GetVariable(params any, defvalue any) any {
+	pv := reflect.ValueOf(params)
+	if pv.Len() > 0 {
+		return pv.Index(0).Interface()
+	}
+	return defvalue
+}
+
 // Contain check the given string list if contains item.
 //
 // You should call Distinct() to filter out the repeat items.
