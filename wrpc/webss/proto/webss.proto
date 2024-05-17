@@ -10,7 +10,7 @@ service Webss {
     rpc AddTag (Tag) returns (WEmpty);
     rpc GetUrl (Sign) returns (SignUrl);
     rpc GetUrls (Signs) returns (SignUrls);
-    rpc RemainGetUrls (SignRemain) returns (SignUrls);
+    rpc OriUrls (FNames) returns (SignUrls);
 }
 
 message WEmpty{}       // diferent other server when using together
@@ -64,13 +64,13 @@ message SignUrls {
     repeated SignUrl urls = 1;
 }
 
-message SignRemain {
+message FNames {
     string res = 1;
     string add = 2;
-    repeated FileName remainname = 3;
+    repeated FName remainname = 3;
 }
 
-message FileName{
+message FName{
     string name = 1;
     string suffix = 2;
 }
