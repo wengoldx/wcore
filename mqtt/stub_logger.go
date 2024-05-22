@@ -91,9 +91,9 @@ func (w *mqttLogger) Init(config string) error {
 	return nil
 }
 
-// Publish logs above error level after mqtt client connected
+// Publish logs above warning level after mqtt client connected
 func (w *mqttLogger) WriteMsg(when time.Time, msg string, level int) error {
-	if w.Stub != nil && level >= logs.LevelError && msg != "" {
+	if w.Stub != nil && level <= logs.LevelWarning && msg != "" {
 		msg = when.Format("2006/01/02 15:04:05.000") + " " + msg
 		w.Stub.Publish(w.Topic, 0, false, msg)
 	}
