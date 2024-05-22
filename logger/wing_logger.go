@@ -51,8 +51,7 @@ const (
 //
 // - maxdays is the max days to hold logs cache, default is 7 days.
 func init() {
-	config := readLoggerConfigs()
-	logs.SetLogger(logs.AdapterFile, config)
+	setupFileLogger()
 	logs.SetLogFuncCall(true) // use the default func depth
 	logs.Async(3)             // allow 3 asynchronous chanels
 
@@ -69,18 +68,19 @@ func init() {
 	}
 }
 
-// readLoggerConfigs get logger configs
-func readLoggerConfigs() string {
+// setupFileLogger init and set logger output to file
+func setupFileLogger() {
 	app := beego.BConfig.AppName
 	if app == "" || app == "beego" {
-		app = "wing"
+		return
 	}
 
 	maxdays := beego.AppConfig.String(logConfigMaxDays)
 	if maxdays == "" {
 		maxdays = "7"
 	}
-	return "{\"filename\":\"logs/" + app + ".log\", \"daily\":true, \"maxdays\":" + maxdays + "}"
+	config := "{\"filename\":\"logs/" + app + ".log\", \"daily\":true, \"maxdays\":" + maxdays + "}"
+	logs.SetLogger(logs.AdapterFile, config)
 }
 
 // Return log format string like '%v %v %v' when n is 3.

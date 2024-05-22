@@ -249,6 +249,15 @@ func (stub *MqttStub) Subscribe(topic string, hanlder mq.MessageHandler, Qos ...
 	return nil
 }
 
+// Return mqtt broker host, port and login user after mqttStub established
+func (stub *MqttStub) GetOptions() *Options {
+	return &Options{
+		Host: stub.Options.Host,
+		Port: stub.Options.Port,
+		User: stub.Options.User,
+	}
+}
+
 // Load and create secure configs for TLS protocol to connect.
 func (stub *MqttStub) newTLSConfig() *tls.Config {
 	opts := stub.Options
