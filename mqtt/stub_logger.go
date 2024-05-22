@@ -75,7 +75,7 @@ func (w *mqttLogger) Init(config string) error {
 	options, protocol := mq.NewClientOptions(), "tcp://%s:%v"
 	broker := fmt.Sprintf(protocol, w.Options.Host, w.Options.Port)
 	options.AddBroker(broker)
-	options.SetClientID(beego.BConfig.AppName + ".logger")
+	options.SetClientID("logger." + beego.BConfig.AppName)
 	options.SetUsername(w.Options.User.Account)
 	options.SetPassword(w.Options.User.Password)
 	options.SetAutoReconnect(true)
