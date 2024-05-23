@@ -84,6 +84,11 @@ var lostHandler mq.ConnectionLostHandler = func(client mq.Client, err error) {
 	logger.W("Server", serve, "disconnect mqtt client:", opt.ClientID())
 }
 
+const (
+	protFormatTCP = "tcp://%s:%v" // Mqtt protocol of TCP
+	protFormatSSL = "ssl://%s:%v" // Mqtt protocel of SSL
+)
+
 // Return Mqtt global singleton
 func Singleton() *MqttStub {
 	if mqttStub == nil {
@@ -143,9 +148,9 @@ func SetOptions(qos byte, remain ...bool) *MqttStub {
 // Generate mqtt config, default connection protocol using tcp, you can
 // set mode 'tls' and cert files to using ssl protocol.
 func (stub *MqttStub) GetConnOptions(mode ...string) *mq.ClientOptions {
-	options, protocol := mq.NewClientOptions(), "tcp://%s:%v"
+	options, protocol := mq.NewClientOptions(), protFormatTCP
 	if len(mode) > 0 && mode[0] == "tls" {
-		protocol = "ssl://%s:%v"
+		protocol = protFormatSSL
 		if tlscfg := stub.newTLSConfig(); tlscfg != nil {
 			options.SetTLSConfig(tlscfg)
 		}

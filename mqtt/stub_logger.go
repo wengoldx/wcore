@@ -22,12 +22,43 @@ import (
 )
 
 const (
-	adapterMqtt  = "mqtt"          // Adapter name of logger ouput by mqtt
-	logTopicPre  = "wengold/logs/" // mqtt logger publish topic prefix
-	appPrefixLen = 12              // Fixed app prefix length
+	adapterMqtt   = "mqtt"                    // Adapter name of logger ouput by mqtt
+	logTopicPre   = "wengold/logs/"           // Mqtt logger publish topic prefix
+	logTimeLayout = "2006/01/02 15:04:05.000" // Format string for time output
+	appPrefixLen  = 12                        // Fixed app prefix length
 )
 
-// custom mqtt logger
+// Custom logger to output logs by mqtt on single connected client chanel.
+//
+// NOTICE:
+//	- It will not print out error event logger failed generated!
+//	- The logger just output logs over level of INFO.
+//
+// UseCase 1 : Using the custom broker options to setup logger
+//
+//	mqtt.SetupLogger(&mqtt.Options {
+//		Host: "192.168.1.10", Port: 1883,
+//		User: &mqtt.User {
+//			Account: "username", Password: "password"
+//		}
+//	})
+//
+//
+// UseCase 2 : Get broker options from nacos configs buffer
+//
+//	// the data is mqtt configs received from nacos server
+//	mqtt.SetupLogger(mqtt.GetOptions(data))        // use current app name as user key
+//	mqtt.SetupLogger(mqtt.GetOptions(data, "svr")) // input indicated user key, e.g. 'svr'
+//
+//
+// UseCase 3 : Get broker options from exist mqttStub singleton
+//
+//	stub := mqtt.Singleton()
+//	// Do samething to setup mqttStub
+//	mqtt.SetupLogger(stub.GetOptions())
+//
+// All of the usecase must caller call mqtt.SetupLogger() to set options,
+// connect with remote broker and then register logger as beego logger.
 type mqttLogger struct {
 	Options   *Options  // mqtt broker configs
 	Stub      mq.Client // mqtt client instanse
@@ -36,13 +67,14 @@ type mqttLogger struct {
 }
 
 // Register mqtt logger as a beego logs, it will create
-// single mqtt client to output logs only for prod mode
+// single mqtt client to output logs
 func SetupLogger(opts *Options) {
-	if beego.BConfig.RunMode == "prod" && opts != nil {
+	if opts != nil {
+		runmode := beego.BConfig.RunMode + "/"
 		getMqttLogger := func() logs.Logger {
 			return &mqttLogger{
 				AppPerfix: getAppPrefix(),
-				Topic:     logTopicPre + beego.BConfig.AppName,
+				Topic:     logTopicPre + runmode + beego.BConfig.AppName,
 				Options:   opts,
 			}
 		}
@@ -74,7 +106,7 @@ func GetOptions(data string, svr ...string) *Options {
 }
 
 // Return fixed length app name string as log message prefix at format of:
-// Fixed-App-name  | 2024/05/23 11:15:03:246 [E] [ctrl_exercise.go:189] QRCode() xxxxxxxx
+// App-Name    | 2024/05/23 11:15:03:246 [E] [ctrl_exercise.go:189] QRCode() xxxxxxxx
 func getAppPrefix() string {
 	prefix := beego.BConfig.AppName
 	if pl := len(prefix); pl < appPrefixLen {
@@ -89,8 +121,8 @@ func getAppPrefix() string {
 
 // Init mqtt logger topic and connect client with id of 'appname.logger'
 func (w *mqttLogger) Init(config string) error {
-	options, protocol := mq.NewClientOptions(), "tcp://%s:%v"
-	broker := fmt.Sprintf(protocol, w.Options.Host, w.Options.Port)
+	options := mq.NewClientOptions()
+	broker := fmt.Sprintf(protFormatTCP, w.Options.Host, w.Options.Port)
 	options.AddBroker(broker)
 	options.SetClientID("logger." + beego.BConfig.AppName)
 	options.SetUsername(w.Options.User.Account)
@@ -108,10 +140,10 @@ func (w *mqttLogger) Init(config string) error {
 	return nil
 }
 
-// Publish logs above warning level after mqtt client connected
+// Publish logs above info level after mqtt client connected
 func (w *mqttLogger) WriteMsg(when time.Time, msg string, level int) error {
-	if w.Stub != nil && level <= logs.LevelWarning && msg != "" {
-		msg = w.AppPerfix + when.Format("2006/01/02 15:04:05.000") + " " + msg
+	if w.Stub != nil && level <= logs.LevelInfo && msg != "" {
+		msg = w.AppPerfix + when.Format(logTimeLayout) + " " + msg
 		w.Stub.Publish(w.Topic, 0, false, msg)
 	}
 	return nil
