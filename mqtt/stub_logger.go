@@ -70,11 +70,10 @@ type mqttLogger struct {
 // single mqtt client to output logs
 func SetupLogger(opts *Options) {
 	if opts != nil {
-		runmode := beego.BConfig.RunMode + "/"
 		getMqttLogger := func() logs.Logger {
 			return &mqttLogger{
 				AppPerfix: getAppPrefix(),
-				Topic:     logTopicPre + runmode + beego.BConfig.AppName,
+				Topic:     logTopicPre + beego.BConfig.AppName,
 				Options:   opts,
 			}
 		}
