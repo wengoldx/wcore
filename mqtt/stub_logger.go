@@ -22,15 +22,17 @@ import (
 )
 
 const (
-	adapterMqtt = "mqtt"          // Adapter name of logger ouput by mqtt
-	logTopicPre = "wengold/logs/" // mqtt logger publish topic prefix
+	adapterMqtt  = "mqtt"          // Adapter name of logger ouput by mqtt
+	logTopicPre  = "wengold/logs/" // mqtt logger publish topic prefix
+	appPrefixLen = 12              // Fixed app prefix length
 )
 
 // custom mqtt logger
 type mqttLogger struct {
-	Options *Options  // mqtt broker configs
-	Stub    mq.Client // mqtt client instanse
-	Topic   string    // publish topic
+	Options   *Options  // mqtt broker configs
+	Stub      mq.Client // mqtt client instanse
+	Topic     string    // publish topic
+	AppPerfix string    // app name as log message prefix in fixed len string
 }
 
 // Register mqtt logger as a beego logs, it will create
@@ -39,8 +41,9 @@ func SetupLogger(opts *Options) {
 	if beego.BConfig.RunMode == "prod" && opts != nil {
 		getMqttLogger := func() logs.Logger {
 			return &mqttLogger{
-				Topic:   logTopicPre + beego.BConfig.AppName,
-				Options: opts,
+				AppPerfix: getAppPrefix(),
+				Topic:     logTopicPre + beego.BConfig.AppName,
+				Options:   opts,
 			}
 		}
 		logs.Register(adapterMqtt, getMqttLogger)
@@ -70,6 +73,20 @@ func GetOptions(data string, svr ...string) *Options {
 	return nil
 }
 
+// Return fixed length app name string as log message prefix at format of:
+// Fixed-App-name  | 2024/05/23 11:15:03:246 [E] [ctrl_exercise.go:189] QRCode() xxxxxxxx
+func getAppPrefix() string {
+	prefix := beego.BConfig.AppName
+	if pl := len(prefix); pl < appPrefixLen {
+		for i := appPrefixLen - pl; i > 0; i-- {
+			prefix += " "
+		}
+	} else if pl >= appPrefixLen {
+		prefix = prefix[:appPrefixLen]
+	}
+	return prefix + " | "
+}
+
 // Init mqtt logger topic and connect client with id of 'appname.logger'
 func (w *mqttLogger) Init(config string) error {
 	options, protocol := mq.NewClientOptions(), "tcp://%s:%v"
@@ -94,7 +111,7 @@ func (w *mqttLogger) Init(config string) error {
 // Publish logs above warning level after mqtt client connected
 func (w *mqttLogger) WriteMsg(when time.Time, msg string, level int) error {
 	if w.Stub != nil && level <= logs.LevelWarning && msg != "" {
-		msg = when.Format("2006/01/02 15:04:05.000") + " " + msg
+		msg = w.AppPerfix + when.Format("2006/01/02 15:04:05.000") + " " + msg
 		w.Stub.Publish(w.Topic, 0, false, msg)
 	}
 	return nil
