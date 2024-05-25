@@ -1,4 +1,5 @@
-# wing
+# Core module of Wengold backend service
+
 Golang后台开发的工具集，涵盖了Elastic分词系统、日志、MQTT、HTTP Rest4接口调用、Nacos配置中心、GRPC服务间调用、Wechat支付、Socket.IO等常用逻辑和模块的二次封装，使用beego能够快速便捷搭建后台微服务。
 
 * `elastic` : 分词服务
@@ -12,5 +13,3 @@ Golang后台开发的工具集，涵盖了Elastic分词系统、日志、MQTT、
 * `wechat` : 微信支付v3的整合、封装
 * `wrpc` : 各种grpc的使用
 * `wsio` : Socket.IO功能操作的封装
-
-
