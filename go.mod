@@ -1,4 +1,4 @@
-module github.com/wengoldx/wing
+module github.com/wengoldx/wcore
 
 go 1.22
 

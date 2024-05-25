@@ -17,8 +17,8 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/gomodule/redigo/redis"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // WingRedisConn content provider to support redis utils

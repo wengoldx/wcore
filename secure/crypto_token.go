@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Generate a login token with account and password

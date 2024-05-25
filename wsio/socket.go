@@ -19,9 +19,9 @@ import (
 
 	"github.com/astaxie/beego"
 	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/wsio/clients"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
+	"github.com/wengoldx/wcore/wsio/clients"
 )
 
 // client datas for temp cache
@@ -49,7 +49,7 @@ type clientOpt struct {
 // `USAGE` :
 //
 //	// routers.go : register socket events
-//	import "github.com/wengoldx/wing/wsio"
+//	import "github.com/wengoldx/wcore/wsio"
 //
 //	init() {
 //		// set socket io handler and signalings

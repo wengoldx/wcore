@@ -23,7 +23,7 @@ import (
 	"unicode"
 
 	"github.com/mozillazg/go-pinyin"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // Try try-catch-finaly method

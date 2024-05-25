@@ -12,7 +12,7 @@ package mvc
 
 import (
 	"github.com/gomodule/redigo/redis"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // HSet set the string value of a hash field.

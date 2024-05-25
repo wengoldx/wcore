@@ -19,7 +19,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	"github.com/astaxie/beego/plugins/cors"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // ===========================

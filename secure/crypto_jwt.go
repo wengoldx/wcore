@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Claims jwt claims data

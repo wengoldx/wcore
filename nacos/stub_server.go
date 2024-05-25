@@ -18,7 +18,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/v2/model"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Nacos naming client stub

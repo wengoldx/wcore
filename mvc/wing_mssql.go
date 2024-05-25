@@ -15,8 +15,8 @@ import (
 	"fmt"
 
 	"github.com/astaxie/beego"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
 	// ----------------------------------------
 	// NOTIC :
 	//

@@ -18,7 +18,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
 	mq "github.com/eclipse/paho.mqtt.golang"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/logger"
 )
 
 const (

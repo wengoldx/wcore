@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/snowflake"
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 	"golang.org/x/crypto/scrypt"
 )
 

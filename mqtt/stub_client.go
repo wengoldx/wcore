@@ -21,9 +21,9 @@ import (
 
 	"github.com/astaxie/beego"
 	mq "github.com/eclipse/paho.mqtt.golang"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/secure"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
+	"github.com/wengoldx/wcore/secure"
 )
 
 // MQTT stub to manager MQTT connection.

@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8/esapi"
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Read search response data or error reason

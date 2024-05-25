@@ -20,9 +20,9 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/model"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/utils"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
+	"github.com/wengoldx/wcore/utils"
 )
 
 // -------- Auto Register Define --------

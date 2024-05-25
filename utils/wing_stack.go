@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Stack the type of stack with sync lock

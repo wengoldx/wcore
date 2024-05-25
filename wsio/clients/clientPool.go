@@ -16,8 +16,8 @@ import (
 	"time"
 
 	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // ClientPool client pool

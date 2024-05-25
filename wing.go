@@ -8,21 +8,21 @@
 // 00001       2019/05/22   yangping       New version
 // -------------------------------------------------------------------
 
-package wing
+package wcore
 
 // package main
 
 // import (
-// 	_ "github.com/wengoldx/wing/invar"
-// 	_ "github.com/wengoldx/wing/logger"
-// 	_ "github.com/wengoldx/wing/mqtt"
-// 	_ "github.com/wengoldx/wing/mvc"
-// 	_ "github.com/wengoldx/wing/nacos"
-// 	_ "github.com/wengoldx/wing/secure"
-// 	_ "github.com/wengoldx/wing/utils"
-// 	_ "github.com/wengoldx/wing/wechat"
-// 	_ "github.com/wengoldx/wing/wrpc"
-// 	_ "github.com/wengoldx/wing/wsio"
+// 	_ "github.com/wengoldx/wcore/invar"
+// 	_ "github.com/wengoldx/wcore/logger"
+// 	_ "github.com/wengoldx/wcore/mqtt"
+// 	_ "github.com/wengoldx/wcore/mvc"
+// 	_ "github.com/wengoldx/wcore/nacos"
+// 	_ "github.com/wengoldx/wcore/secure"
+// 	_ "github.com/wengoldx/wcore/utils"
+// 	_ "github.com/wengoldx/wcore/wechat"
+// 	_ "github.com/wengoldx/wcore/wrpc"
+// 	_ "github.com/wengoldx/wcore/wsio"
 // )
 
 // func main() {}

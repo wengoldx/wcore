@@ -16,7 +16,7 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Generate a ECC private key by origin key text

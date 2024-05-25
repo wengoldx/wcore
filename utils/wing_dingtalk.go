@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
-	"github.com/wengoldx/wing/secure"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
+	"github.com/wengoldx/wcore/secure"
 )
 
 const (
@@ -521,7 +521,7 @@ func (s *DTalkSender) SendFeedCard(links []DTFeedLink, isSecure ...bool) error {
 //
 // import (
 // 	"fmt"
-// 	"github.com/wengoldx/wing/comm"
+// 	"github.com/wengoldx/wcore/comm"
 // )
 //
 // func main() {

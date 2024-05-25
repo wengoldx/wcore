@@ -17,8 +17,8 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/go-playground/validator/v10"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // WingController the base controller to support bee http functions.

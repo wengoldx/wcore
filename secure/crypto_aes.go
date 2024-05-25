@@ -18,7 +18,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // For other languages, you can use the follows example code to encrypt or decrypt AES.

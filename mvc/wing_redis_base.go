@@ -12,8 +12,8 @@ package mvc
 
 import (
 	"github.com/gomodule/redigo/redis"
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // Set set a value of a key.

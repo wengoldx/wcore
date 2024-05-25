@@ -14,8 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wengoldx/wing/invar"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/invar"
+	"github.com/wengoldx/wcore/logger"
 )
 
 type ExecFunc func(data any)

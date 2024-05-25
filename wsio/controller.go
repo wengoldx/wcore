@@ -14,7 +14,7 @@ import (
 	"encoding/json"
 
 	sio "github.com/googollee/go-socket.io"
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // Auth client outset, it will disconnect when return no-nil error

@@ -15,7 +15,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/wengoldx/wing/invar"
+	"github.com/wengoldx/wcore/invar"
 )
 
 // Random coder to generate unique number code

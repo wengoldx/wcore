@@ -13,7 +13,7 @@ package mvc
 import (
 	"strings"
 
-	"github.com/wengoldx/wing/logger"
+	"github.com/wengoldx/wcore/logger"
 )
 
 // WAuthController the extend controller base on WingController to support

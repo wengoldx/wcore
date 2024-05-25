@@ -30,7 +30,7 @@ const (
 /* Export constants defines   */
 /* -------------------------- */
 
-// Nacos namespace string for wing/nacos
+// Nacos namespace string for wcore/nacos
 const (
 	NS_PROD = "dunyu-server-prod" // PROD namespace id
 	NS_DEV  = "dunyu-server-dev"  // DEV  namespace id
@@ -39,7 +39,7 @@ const (
 // Fixed all registered servers and configs named 'wengold' group
 const GP_WENGOLD = "group.wengold"
 
-// Nacos data id for wing/nacos
+// Nacos data id for wcore/nacos
 const (
 	DID_ACC_CONFIGS  = "dunyu.acc.configs"  // Fixed group, data id of accservice cofnigs
 	DID_API_ROUTERS  = "dunyu.api.routers"  // Fixed group, data id of swagger restful routers
