@@ -86,6 +86,7 @@ func SetupLogger(opts *Options) {
 func GetOptions(data string, svr ...string) *Options {
 	cfgs := &MqttConfigs{}
 	if err := json.Unmarshal([]byte(data), &cfgs); err != nil {
+		logger.E("Unmarshal mqtt options err:", err)
 		return nil
 	}
 
@@ -95,6 +96,7 @@ func GetOptions(data string, svr ...string) *Options {
 	}
 
 	if user, ok := cfgs.Users[userkey]; ok {
+		logger.I("Got mqtt options of user:", userkey)
 		return &Options{
 			Host: cfgs.Broker.Host,
 			Port: cfgs.Broker.Port,
@@ -135,7 +137,10 @@ func (w *mqttLogger) Init(config string) error {
 		// Delete mqtt logger from beego logs when connect failed
 		logs.GetBeeLogger().DelLogger(adapterMqtt)
 		logger.E("Setup mqtt logger err:", token.Error())
+		return nil // not return error
 	}
+
+	logger.I("Connected mqtt logger!")
 	return nil
 }
 
