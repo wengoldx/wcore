@@ -34,6 +34,7 @@ service Wgpay {
     rpc QueryTrade(No) returns (QueryRet);
     rpc TradeRefund(RefundNo) returns (RefundRet);
     rpc AppPay(TradeNo) returns (AppPayRet);
+    rpc QueryRefund(No) returns (QueryRef);
 }
 
 message PayEmpty{}
@@ -129,6 +130,18 @@ message QueryRet{
   string trade_state = 4;
   string trade_state_desc = 5;
   string success_time = 6;
+}
+
+message QueryRef {
+  string refund_id = 1;
+  string out_refund_no = 2;
+  string transaction_id = 3;
+  string out_trade_no = 4;
+  string channel = 5;
+  string user_received_account = 6;
+  string success_time = 7;
+  string create_time = 8;
+  string status = 9;
 }
 
 message RefundNo{
