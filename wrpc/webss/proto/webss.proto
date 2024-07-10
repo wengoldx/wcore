@@ -11,12 +11,17 @@ service Webss {
     rpc GetUrl (Sign) returns (SignUrl);
     rpc GetUrls (Signs) returns (SignUrls);
     rpc OriUrls (FNames) returns (SignUrls);
+    rpc TagInfo (File) returns (Info);
 }
 
 message WEmpty{}       // diferent other server when using together
 
 message ID {
     string id =1;
+}
+
+message File {
+    string path = 1;
 }
 
 message Files {
@@ -73,4 +78,11 @@ message FNames {
 message FName{
     string name = 1;
     string suffix = 2;
+}
+
+message Info{
+    string name = 1;
+    string etag = 2;
+    string last = 3;
+    int64 size = 4;
 }
