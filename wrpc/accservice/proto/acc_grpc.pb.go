@@ -79,6 +79,10 @@ type AccClient interface {
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error)
+	// Return uuids and emails
+	SendTradeMail(ctx context.Context, in *TraMail, opts ...grpc.CallOption) (*AEmpty, error)
+	// Return uuids and emails
+	SendSuggestMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error)
 }
 
 type accClient struct {
@@ -341,6 +345,24 @@ func (c *accClient) GetActiveEmails(ctx context.Context, in *Emails, opts ...grp
 	return out, nil
 }
 
+func (c *accClient) SendTradeMail(ctx context.Context, in *TraMail, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/SendTradeMail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *accClient) SendSuggestMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error) {
+	out := new(AEmpty)
+	err := c.cc.Invoke(ctx, "/proto.Acc/SendSuggestMail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccServer is the server API for Acc service.
 // All implementations must embed UnimplementedAccServer
 // for forward compatibility
@@ -402,6 +424,10 @@ type AccServer interface {
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(context.Context, *Emails) (*Emails, error)
+	// Return uuids and emails
+	SendTradeMail(context.Context, *TraMail) (*AEmpty, error)
+	// Return uuids and emails
+	SendSuggestMail(context.Context, *SugMail) (*AEmpty, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -492,6 +518,12 @@ func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores
 }
 func (UnimplementedAccServer) GetActiveEmails(context.Context, *Emails) (*Emails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveEmails not implemented")
+}
+func (UnimplementedAccServer) SendTradeMail(context.Context, *TraMail) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendTradeMail not implemented")
+}
+func (UnimplementedAccServer) SendSuggestMail(context.Context, *SugMail) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendSuggestMail not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -1010,6 +1042,42 @@ func _Acc_GetActiveEmails_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Acc_SendTradeMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TraMail)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).SendTradeMail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/SendTradeMail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).SendTradeMail(ctx, req.(*TraMail))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Acc_SendSuggestMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SugMail)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccServer).SendSuggestMail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Acc/SendSuggestMail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccServer).SendSuggestMail(ctx, req.(*SugMail))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Acc_ServiceDesc is the grpc.ServiceDesc for Acc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1128,6 +1196,14 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetActiveEmails",
 			Handler:    _Acc_GetActiveEmails_Handler,
+		},
+		{
+			MethodName: "SendTradeMail",
+			Handler:    _Acc_SendTradeMail_Handler,
+		},
+		{
+			MethodName: "SendSuggestMail",
+			Handler:    _Acc_SendSuggestMail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

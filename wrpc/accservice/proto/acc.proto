@@ -97,6 +97,16 @@ service Acc {
 
   // Return uuids and emails
   rpc GetActiveEmails(Emails) returns (Emails);
+
+  // -----------------------------------
+  // For QKS Send Mail
+  // -----------------------------------
+
+  // Return uuids and emails
+  rpc SendTradeMail(TraMail) returns (AEmpty);
+
+  // Return uuids and emails
+  rpc SendSuggestMail(SugMail) returns (AEmpty);
 }
 
 message AEmpty {}       // diferent other server when using together
@@ -255,4 +265,18 @@ message Search {
   int64  category = 1;  // category for search
   string keyword = 2;   // search keyword
   string role = 3;      // target role
+}
+
+message TraMail {
+  string from = 1;      // email address of user
+  string content = 2;   // feedback message content
+}
+
+message SugMail {
+  string name = 1;      // acc of user
+  string from = 2;      // email address of user
+  string qa = 3;        // QA category label
+  string phone = 4;     // phone number of user
+  string content = 5;   // feedback message content
+  string links = 6;     // uploaded image links
 }
