@@ -102,10 +102,10 @@ service Acc {
   // For QKS Send Mail
   // -----------------------------------
 
-  // Return uuids and emails
+  // Send contact trade mail from QKS web page on pay.
   rpc SendTradeMail(TraMail) returns (AEmpty);
 
-  // Return uuids and emails
+  // Send suggestion mail from QKS web page on custom request.
   rpc SendSuggestMail(SugMail) returns (AEmpty);
 }
 

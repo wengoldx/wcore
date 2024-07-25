@@ -79,9 +79,9 @@ type AccClient interface {
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error)
-	// Return uuids and emails
+	// Send contact trade mail from QKS web page on pay.
 	SendTradeMail(ctx context.Context, in *TraMail, opts ...grpc.CallOption) (*AEmpty, error)
-	// Return uuids and emails
+	// Send suggestion mail from QKS web page on custom request.
 	SendSuggestMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error)
 }
 
@@ -424,9 +424,9 @@ type AccServer interface {
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(context.Context, *Emails) (*Emails, error)
-	// Return uuids and emails
+	// Send contact trade mail from QKS web page on pay.
 	SendTradeMail(context.Context, *TraMail) (*AEmpty, error)
-	// Return uuids and emails
+	// Send suggestion mail from QKS web page on custom request.
 	SendSuggestMail(context.Context, *SugMail) (*AEmpty, error)
 	mustEmbedUnimplementedAccServer()
 }
