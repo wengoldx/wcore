@@ -79,10 +79,8 @@ type AccClient interface {
 	StoreProfiles(ctx context.Context, in *UIDS, opts ...grpc.CallOption) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(ctx context.Context, in *Emails, opts ...grpc.CallOption) (*Emails, error)
-	// Send contact trade mail from QKS web page on pay.
-	SendTradeMail(ctx context.Context, in *TraMail, opts ...grpc.CallOption) (*AEmpty, error)
-	// Send suggestion mail from QKS web page on custom request.
-	SendSuggestMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error)
+	// Send custom mail from QKS web page on custom request.
+	SendCustomMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error)
 }
 
 type accClient struct {
@@ -345,18 +343,9 @@ func (c *accClient) GetActiveEmails(ctx context.Context, in *Emails, opts ...grp
 	return out, nil
 }
 
-func (c *accClient) SendTradeMail(ctx context.Context, in *TraMail, opts ...grpc.CallOption) (*AEmpty, error) {
+func (c *accClient) SendCustomMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error) {
 	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/SendTradeMail", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *accClient) SendSuggestMail(ctx context.Context, in *SugMail, opts ...grpc.CallOption) (*AEmpty, error) {
-	out := new(AEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Acc/SendSuggestMail", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Acc/SendCustomMail", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -424,10 +413,8 @@ type AccServer interface {
 	StoreProfiles(context.Context, *UIDS) (*ProfStores, error)
 	// Return uuids and emails
 	GetActiveEmails(context.Context, *Emails) (*Emails, error)
-	// Send contact trade mail from QKS web page on pay.
-	SendTradeMail(context.Context, *TraMail) (*AEmpty, error)
-	// Send suggestion mail from QKS web page on custom request.
-	SendSuggestMail(context.Context, *SugMail) (*AEmpty, error)
+	// Send custom mail from QKS web page on custom request.
+	SendCustomMail(context.Context, *SugMail) (*AEmpty, error)
 	mustEmbedUnimplementedAccServer()
 }
 
@@ -519,11 +506,8 @@ func (UnimplementedAccServer) StoreProfiles(context.Context, *UIDS) (*ProfStores
 func (UnimplementedAccServer) GetActiveEmails(context.Context, *Emails) (*Emails, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveEmails not implemented")
 }
-func (UnimplementedAccServer) SendTradeMail(context.Context, *TraMail) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendTradeMail not implemented")
-}
-func (UnimplementedAccServer) SendSuggestMail(context.Context, *SugMail) (*AEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendSuggestMail not implemented")
+func (UnimplementedAccServer) SendCustomMail(context.Context, *SugMail) (*AEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendCustomMail not implemented")
 }
 func (UnimplementedAccServer) mustEmbedUnimplementedAccServer() {}
 
@@ -1042,38 +1026,20 @@ func _Acc_GetActiveEmails_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Acc_SendTradeMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TraMail)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AccServer).SendTradeMail(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/proto.Acc/SendTradeMail",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).SendTradeMail(ctx, req.(*TraMail))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Acc_SendSuggestMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Acc_SendCustomMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SugMail)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AccServer).SendSuggestMail(ctx, in)
+		return srv.(AccServer).SendCustomMail(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Acc/SendSuggestMail",
+		FullMethod: "/proto.Acc/SendCustomMail",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AccServer).SendSuggestMail(ctx, req.(*SugMail))
+		return srv.(AccServer).SendCustomMail(ctx, req.(*SugMail))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1198,12 +1164,8 @@ var Acc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Acc_GetActiveEmails_Handler,
 		},
 		{
-			MethodName: "SendTradeMail",
-			Handler:    _Acc_SendTradeMail_Handler,
-		},
-		{
-			MethodName: "SendSuggestMail",
-			Handler:    _Acc_SendSuggestMail_Handler,
+			MethodName: "SendCustomMail",
+			Handler:    _Acc_SendCustomMail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

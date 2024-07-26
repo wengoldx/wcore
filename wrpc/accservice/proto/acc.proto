@@ -102,11 +102,8 @@ service Acc {
   // For QKS Send Mail
   // -----------------------------------
 
-  // Send contact trade mail from QKS web page on pay.
-  rpc SendTradeMail(TraMail) returns (AEmpty);
-
-  // Send suggestion mail from QKS web page on custom request.
-  rpc SendSuggestMail(SugMail) returns (AEmpty);
+  // Send custom mail from QKS web page on custom request.
+  rpc SendCustomMail(SugMail) returns (AEmpty);
 }
 
 message AEmpty {}       // diferent other server when using together
@@ -267,16 +264,11 @@ message Search {
   string role = 3;      // target role
 }
 
-message TraMail {
-  string from = 1;      // email address of user
-  string content = 2;   // feedback message content
-}
-
 message SugMail {
   string name = 1;      // acc of user
-  string from = 2;      // email address of user
-  string qa = 3;        // QA category label
-  string phone = 4;     // phone number of user
+  string from = 2;      // user uuid to request send mail
+  int64 qa = 3;         // QA categories, range 1 ~ 6, 6 is custom design
+  string email = 4;     // user input custom email address
   string content = 5;   // feedback message content
   string links = 6;     // uploaded image links
 }
