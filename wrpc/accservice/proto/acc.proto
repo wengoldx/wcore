@@ -265,10 +265,9 @@ message Search {
 }
 
 message SugMail {
-  string name = 1;      // acc of user
-  string from = 2;      // user uuid to request send mail
-  int64 qa = 3;         // QA categories, range 1 ~ 6, 6 is custom design
-  string email = 4;     // user input custom email address
-  string content = 5;   // feedback message content
-  string links = 6;     // uploaded image links
+  string email = 1;     // user input custom email address
+  string content = 2;   // feedback message content
+  string name = 3;      // user input contact name
+  string links = 4;     // uploaded image links
+  int32  isbuy = 5;     // 0 for feedback, 1 for custom desing
 }
