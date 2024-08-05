@@ -23,13 +23,13 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebssClient interface {
 	DeleteFiles(ctx context.Context, in *Files, opts ...grpc.CallOption) (*WEmpty, error)
-	SetLifecycle(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error)
-	DelLifecycle(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error)
-	AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
-	GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
-	GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error)
-	OriUrls(ctx context.Context, in *FNames, opts ...grpc.CallOption) (*SignUrls, error)
-	ObjInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error)
+	SetBucketLife(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error)
+	DelBucketLife(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error)
+	SetFileLife(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
+	SignFileUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
+	SignFileUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error)
+	OriginalUrls(ctx context.Context, in *FNames, opts ...grpc.CallOption) (*SignUrls, error)
+	GetFileInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error)
 }
 
 type webssClient struct {
@@ -49,63 +49,63 @@ func (c *webssClient) DeleteFiles(ctx context.Context, in *Files, opts ...grpc.C
 	return out, nil
 }
 
-func (c *webssClient) SetLifecycle(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error) {
+func (c *webssClient) SetBucketLife(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error) {
 	out := new(ID)
-	err := c.cc.Invoke(ctx, "/proto.Webss/SetLifecycle", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/SetBucketLife", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) DelLifecycle(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error) {
+func (c *webssClient) DelBucketLife(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error) {
 	out := new(WEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Webss/DelLifecycle", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/DelBucketLife", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) AddTag(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error) {
+func (c *webssClient) SetFileLife(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error) {
 	out := new(WEmpty)
-	err := c.cc.Invoke(ctx, "/proto.Webss/AddTag", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/SetFileLife", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error) {
+func (c *webssClient) SignFileUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error) {
 	out := new(SignUrl)
-	err := c.cc.Invoke(ctx, "/proto.Webss/GetUrl", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/SignFileUrl", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error) {
+func (c *webssClient) SignFileUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error) {
 	out := new(SignUrls)
-	err := c.cc.Invoke(ctx, "/proto.Webss/GetUrls", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/SignFileUrls", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) OriUrls(ctx context.Context, in *FNames, opts ...grpc.CallOption) (*SignUrls, error) {
+func (c *webssClient) OriginalUrls(ctx context.Context, in *FNames, opts ...grpc.CallOption) (*SignUrls, error) {
 	out := new(SignUrls)
-	err := c.cc.Invoke(ctx, "/proto.Webss/OriUrls", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/OriginalUrls", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *webssClient) ObjInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error) {
+func (c *webssClient) GetFileInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error) {
 	out := new(Info)
-	err := c.cc.Invoke(ctx, "/proto.Webss/ObjInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/GetFileInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,13 +117,13 @@ func (c *webssClient) ObjInfo(ctx context.Context, in *File, opts ...grpc.CallOp
 // for forward compatibility
 type WebssServer interface {
 	DeleteFiles(context.Context, *Files) (*WEmpty, error)
-	SetLifecycle(context.Context, *Lifecycle) (*ID, error)
-	DelLifecycle(context.Context, *Lifecycles) (*WEmpty, error)
-	AddTag(context.Context, *Tag) (*WEmpty, error)
-	GetUrl(context.Context, *Sign) (*SignUrl, error)
-	GetUrls(context.Context, *Signs) (*SignUrls, error)
-	OriUrls(context.Context, *FNames) (*SignUrls, error)
-	ObjInfo(context.Context, *File) (*Info, error)
+	SetBucketLife(context.Context, *Lifecycle) (*ID, error)
+	DelBucketLife(context.Context, *Lifecycles) (*WEmpty, error)
+	SetFileLife(context.Context, *Tag) (*WEmpty, error)
+	SignFileUrl(context.Context, *Sign) (*SignUrl, error)
+	SignFileUrls(context.Context, *Signs) (*SignUrls, error)
+	OriginalUrls(context.Context, *FNames) (*SignUrls, error)
+	GetFileInfo(context.Context, *File) (*Info, error)
 	mustEmbedUnimplementedWebssServer()
 }
 
@@ -134,26 +134,26 @@ type UnimplementedWebssServer struct {
 func (UnimplementedWebssServer) DeleteFiles(context.Context, *Files) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFiles not implemented")
 }
-func (UnimplementedWebssServer) SetLifecycle(context.Context, *Lifecycle) (*ID, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetLifecycle not implemented")
+func (UnimplementedWebssServer) SetBucketLife(context.Context, *Lifecycle) (*ID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetBucketLife not implemented")
 }
-func (UnimplementedWebssServer) DelLifecycle(context.Context, *Lifecycles) (*WEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelLifecycle not implemented")
+func (UnimplementedWebssServer) DelBucketLife(context.Context, *Lifecycles) (*WEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelBucketLife not implemented")
 }
-func (UnimplementedWebssServer) AddTag(context.Context, *Tag) (*WEmpty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddTag not implemented")
+func (UnimplementedWebssServer) SetFileLife(context.Context, *Tag) (*WEmpty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetFileLife not implemented")
 }
-func (UnimplementedWebssServer) GetUrl(context.Context, *Sign) (*SignUrl, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUrl not implemented")
+func (UnimplementedWebssServer) SignFileUrl(context.Context, *Sign) (*SignUrl, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignFileUrl not implemented")
 }
-func (UnimplementedWebssServer) GetUrls(context.Context, *Signs) (*SignUrls, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUrls not implemented")
+func (UnimplementedWebssServer) SignFileUrls(context.Context, *Signs) (*SignUrls, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignFileUrls not implemented")
 }
-func (UnimplementedWebssServer) OriUrls(context.Context, *FNames) (*SignUrls, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method OriUrls not implemented")
+func (UnimplementedWebssServer) OriginalUrls(context.Context, *FNames) (*SignUrls, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OriginalUrls not implemented")
 }
-func (UnimplementedWebssServer) ObjInfo(context.Context, *File) (*Info, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ObjInfo not implemented")
+func (UnimplementedWebssServer) GetFileInfo(context.Context, *File) (*Info, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFileInfo not implemented")
 }
 func (UnimplementedWebssServer) mustEmbedUnimplementedWebssServer() {}
 
@@ -186,128 +186,128 @@ func _Webss_DeleteFiles_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_SetLifecycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_SetBucketLife_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Lifecycle)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).SetLifecycle(ctx, in)
+		return srv.(WebssServer).SetBucketLife(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/SetLifecycle",
+		FullMethod: "/proto.Webss/SetBucketLife",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).SetLifecycle(ctx, req.(*Lifecycle))
+		return srv.(WebssServer).SetBucketLife(ctx, req.(*Lifecycle))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_DelLifecycle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_DelBucketLife_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Lifecycles)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).DelLifecycle(ctx, in)
+		return srv.(WebssServer).DelBucketLife(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/DelLifecycle",
+		FullMethod: "/proto.Webss/DelBucketLife",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).DelLifecycle(ctx, req.(*Lifecycles))
+		return srv.(WebssServer).DelBucketLife(ctx, req.(*Lifecycles))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_AddTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_SetFileLife_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Tag)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).AddTag(ctx, in)
+		return srv.(WebssServer).SetFileLife(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/AddTag",
+		FullMethod: "/proto.Webss/SetFileLife",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).AddTag(ctx, req.(*Tag))
+		return srv.(WebssServer).SetFileLife(ctx, req.(*Tag))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_GetUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_SignFileUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Sign)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).GetUrl(ctx, in)
+		return srv.(WebssServer).SignFileUrl(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/GetUrl",
+		FullMethod: "/proto.Webss/SignFileUrl",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).GetUrl(ctx, req.(*Sign))
+		return srv.(WebssServer).SignFileUrl(ctx, req.(*Sign))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_GetUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_SignFileUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Signs)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).GetUrls(ctx, in)
+		return srv.(WebssServer).SignFileUrls(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/GetUrls",
+		FullMethod: "/proto.Webss/SignFileUrls",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).GetUrls(ctx, req.(*Signs))
+		return srv.(WebssServer).SignFileUrls(ctx, req.(*Signs))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_OriUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_OriginalUrls_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FNames)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).OriUrls(ctx, in)
+		return srv.(WebssServer).OriginalUrls(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/OriUrls",
+		FullMethod: "/proto.Webss/OriginalUrls",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).OriUrls(ctx, req.(*FNames))
+		return srv.(WebssServer).OriginalUrls(ctx, req.(*FNames))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_ObjInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_GetFileInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(File)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).ObjInfo(ctx, in)
+		return srv.(WebssServer).GetFileInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/ObjInfo",
+		FullMethod: "/proto.Webss/GetFileInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).ObjInfo(ctx, req.(*File))
+		return srv.(WebssServer).GetFileInfo(ctx, req.(*File))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -324,32 +324,32 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Webss_DeleteFiles_Handler,
 		},
 		{
-			MethodName: "SetLifecycle",
-			Handler:    _Webss_SetLifecycle_Handler,
+			MethodName: "SetBucketLife",
+			Handler:    _Webss_SetBucketLife_Handler,
 		},
 		{
-			MethodName: "DelLifecycle",
-			Handler:    _Webss_DelLifecycle_Handler,
+			MethodName: "DelBucketLife",
+			Handler:    _Webss_DelBucketLife_Handler,
 		},
 		{
-			MethodName: "AddTag",
-			Handler:    _Webss_AddTag_Handler,
+			MethodName: "SetFileLife",
+			Handler:    _Webss_SetFileLife_Handler,
 		},
 		{
-			MethodName: "GetUrl",
-			Handler:    _Webss_GetUrl_Handler,
+			MethodName: "SignFileUrl",
+			Handler:    _Webss_SignFileUrl_Handler,
 		},
 		{
-			MethodName: "GetUrls",
-			Handler:    _Webss_GetUrls_Handler,
+			MethodName: "SignFileUrls",
+			Handler:    _Webss_SignFileUrls_Handler,
 		},
 		{
-			MethodName: "OriUrls",
-			Handler:    _Webss_OriUrls_Handler,
+			MethodName: "OriginalUrls",
+			Handler:    _Webss_OriginalUrls_Handler,
 		},
 		{
-			MethodName: "ObjInfo",
-			Handler:    _Webss_ObjInfo_Handler,
+			MethodName: "GetFileInfo",
+			Handler:    _Webss_GetFileInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

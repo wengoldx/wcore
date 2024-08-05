@@ -4,14 +4,14 @@ package proto;
 option go_package = "./proto";
 
 service Webss {
-    rpc DeleteFiles (Files) returns (WEmpty);
-    rpc SetLifecycle (Lifecycle) returns (ID);
-    rpc DelLifecycle (Lifecycles) returns (WEmpty);
-    rpc AddTag (Tag) returns (WEmpty);
-    rpc GetUrl (Sign) returns (SignUrl);
-    rpc GetUrls (Signs) returns (SignUrls);
-    rpc OriUrls (FNames) returns (SignUrls);
-    rpc ObjInfo (File) returns (Info);
+    rpc DeleteFiles (Files) returns (WEmpty);           // Delete exist files
+    rpc SetBucketLife (Lifecycle) returns (ID);         // Enable  bucket lifecycle
+    rpc DelBucketLife (Lifecycles) returns (WEmpty);    // Disable bucket lifecycle
+    rpc SetFileLife (Tag) returns (WEmpty);             // Set file tag to apply bucket lifecycle
+    rpc SignFileUrl (Sign) returns (SignUrl);           // Get sign url  to upload file
+    rpc SignFileUrls (Signs) returns (SignUrls);        // Get sign urls to upload multiple files
+    rpc OriginalUrls (FNames) returns (SignUrls);       // Get sign urls to upload multiple files remained original file name
+    rpc GetFileInfo (File) returns (Info);              // Get exist uploaded file informations
 }
 
 // diferent other server when using together
