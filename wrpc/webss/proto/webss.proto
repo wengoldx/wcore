@@ -11,75 +11,87 @@ service Webss {
     rpc GetUrl (Sign) returns (SignUrl);
     rpc GetUrls (Signs) returns (SignUrls);
     rpc OriUrls (FNames) returns (SignUrls);
-    rpc TagInfo (File) returns (Info);
+    rpc ObjInfo (File) returns (Info);
 }
 
-message WEmpty{}       // diferent other server when using together
+// diferent other server when using together
+message WEmpty{}
 
+// Unique id to indicate lifecycle
 message ID {
     string id =1;
 }
 
+// Object file path releative bucket
 message File {
     string path = 1;
 }
 
+// Multiple object files of indicate bucket
 message Files {
     string bucket = 1;
     repeated string files = 2;
 }
 
+// Lifecycle status
 message Lifecycle {
     string id = 1;
     string bucket = 2;
-    string key = 3;
-    string value = 4;
+    string status = 3;
 }
 
+// Lifesycle ids for delete
 message Lifecycles {
     repeated string ids = 1;
     string bucket = 2;
 }
 
+// Object file tag infos
 message Tag {
     string bucket = 1;
     repeated string paths = 2;
-    string key = 3;
-    string value = 4;
+    string status = 3;
 }
 
+// Sign datas to get upload sign url
 message Sign {
     string res = 1;
     string add = 2;
     string suffix = 3;
 }
 
+// Multiple sign urls to upload
 message Signs {
     string res = 1;
     string add = 2;
     repeated string suffixes = 3;
 }
 
+// Sign url to upload
 message SignUrl {
     string url = 1;
     string path = 2;
 }
 
+// Multiple sign urls to upload
 message SignUrls {
     repeated SignUrl urls = 1;
 }
 
+// Multiple original file names
 message FNames {
     string res = 1;
     string add = 2;
-    repeated FName remainname = 3;
+    repeated FName names = 3;
 }
 
+// Original uploaded file name
 message FName{
     string name = 1;
     string suffix = 2;
 }
 
+// Object file infos
 message Info{
     string name = 1;
     string etag = 2;

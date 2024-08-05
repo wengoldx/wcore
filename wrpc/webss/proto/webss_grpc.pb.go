@@ -29,7 +29,7 @@ type WebssClient interface {
 	GetUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
 	GetUrls(ctx context.Context, in *Signs, opts ...grpc.CallOption) (*SignUrls, error)
 	OriUrls(ctx context.Context, in *FNames, opts ...grpc.CallOption) (*SignUrls, error)
-	TagInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error)
+	ObjInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error)
 }
 
 type webssClient struct {
@@ -103,9 +103,9 @@ func (c *webssClient) OriUrls(ctx context.Context, in *FNames, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *webssClient) TagInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error) {
+func (c *webssClient) ObjInfo(ctx context.Context, in *File, opts ...grpc.CallOption) (*Info, error) {
 	out := new(Info)
-	err := c.cc.Invoke(ctx, "/proto.Webss/TagInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.Webss/ObjInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ type WebssServer interface {
 	GetUrl(context.Context, *Sign) (*SignUrl, error)
 	GetUrls(context.Context, *Signs) (*SignUrls, error)
 	OriUrls(context.Context, *FNames) (*SignUrls, error)
-	TagInfo(context.Context, *File) (*Info, error)
+	ObjInfo(context.Context, *File) (*Info, error)
 	mustEmbedUnimplementedWebssServer()
 }
 
@@ -152,8 +152,8 @@ func (UnimplementedWebssServer) GetUrls(context.Context, *Signs) (*SignUrls, err
 func (UnimplementedWebssServer) OriUrls(context.Context, *FNames) (*SignUrls, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OriUrls not implemented")
 }
-func (UnimplementedWebssServer) TagInfo(context.Context, *File) (*Info, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TagInfo not implemented")
+func (UnimplementedWebssServer) ObjInfo(context.Context, *File) (*Info, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ObjInfo not implemented")
 }
 func (UnimplementedWebssServer) mustEmbedUnimplementedWebssServer() {}
 
@@ -294,20 +294,20 @@ func _Webss_OriUrls_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Webss_TagInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Webss_ObjInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(File)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WebssServer).TagInfo(ctx, in)
+		return srv.(WebssServer).ObjInfo(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Webss/TagInfo",
+		FullMethod: "/proto.Webss/ObjInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WebssServer).TagInfo(ctx, req.(*File))
+		return srv.(WebssServer).ObjInfo(ctx, req.(*File))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -348,8 +348,8 @@ var Webss_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Webss_OriUrls_Handler,
 		},
 		{
-			MethodName: "TagInfo",
-			Handler:    _Webss_TagInfo_Handler,
+			MethodName: "ObjInfo",
+			Handler:    _Webss_ObjInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
