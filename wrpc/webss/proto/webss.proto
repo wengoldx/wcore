@@ -5,7 +5,7 @@ option go_package = "./proto";
 
 service Webss {
     rpc DeleteFiles (Files) returns (WEmpty);           // Delete exist files
-    rpc SetBucketLife (Lifecycle) returns (ID);         // Enable  bucket lifecycle
+    rpc SetBucketLife (Lifecycle) returns (WEmpty);     // Enable  bucket lifecycle
     rpc DelBucketLife (Lifecycles) returns (WEmpty);    // Disable bucket lifecycle
     rpc SetFileLife (Tag) returns (WEmpty);             // Set file tag to apply bucket lifecycle
     rpc SignFileUrl (Sign) returns (SignUrl);           // Get sign url  to upload file

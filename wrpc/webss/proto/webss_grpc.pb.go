@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WebssClient interface {
 	DeleteFiles(ctx context.Context, in *Files, opts ...grpc.CallOption) (*WEmpty, error)
-	SetBucketLife(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error)
+	SetBucketLife(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*WEmpty, error)
 	DelBucketLife(ctx context.Context, in *Lifecycles, opts ...grpc.CallOption) (*WEmpty, error)
 	SetFileLife(ctx context.Context, in *Tag, opts ...grpc.CallOption) (*WEmpty, error)
 	SignFileUrl(ctx context.Context, in *Sign, opts ...grpc.CallOption) (*SignUrl, error)
@@ -49,8 +49,8 @@ func (c *webssClient) DeleteFiles(ctx context.Context, in *Files, opts ...grpc.C
 	return out, nil
 }
 
-func (c *webssClient) SetBucketLife(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*ID, error) {
-	out := new(ID)
+func (c *webssClient) SetBucketLife(ctx context.Context, in *Lifecycle, opts ...grpc.CallOption) (*WEmpty, error) {
+	out := new(WEmpty)
 	err := c.cc.Invoke(ctx, "/proto.Webss/SetBucketLife", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (c *webssClient) GetFileInfo(ctx context.Context, in *File, opts ...grpc.Ca
 // for forward compatibility
 type WebssServer interface {
 	DeleteFiles(context.Context, *Files) (*WEmpty, error)
-	SetBucketLife(context.Context, *Lifecycle) (*ID, error)
+	SetBucketLife(context.Context, *Lifecycle) (*WEmpty, error)
 	DelBucketLife(context.Context, *Lifecycles) (*WEmpty, error)
 	SetFileLife(context.Context, *Tag) (*WEmpty, error)
 	SignFileUrl(context.Context, *Sign) (*SignUrl, error)
@@ -134,7 +134,7 @@ type UnimplementedWebssServer struct {
 func (UnimplementedWebssServer) DeleteFiles(context.Context, *Files) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFiles not implemented")
 }
-func (UnimplementedWebssServer) SetBucketLife(context.Context, *Lifecycle) (*ID, error) {
+func (UnimplementedWebssServer) SetBucketLife(context.Context, *Lifecycle) (*WEmpty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetBucketLife not implemented")
 }
 func (UnimplementedWebssServer) DelBucketLife(context.Context, *Lifecycles) (*WEmpty, error) {
