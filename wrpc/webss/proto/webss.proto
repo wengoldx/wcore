@@ -4,14 +4,14 @@ package proto;
 option go_package = "./proto";
 
 service Webss {
-    rpc DeleteFiles (Files) returns (WEmpty);           // Delete exist files
-    rpc SetBucketLife (Lifecycle) returns (WEmpty);     // Enable  bucket lifecycle
-    rpc DelBucketLife (Lifecycles) returns (WEmpty);    // Disable bucket lifecycle
-    rpc SetFileLife (Tag) returns (WEmpty);             // Set file tag to apply bucket lifecycle
-    rpc SignFileUrl (Sign) returns (SignUrl);           // Get sign url  to upload file
-    rpc SignFileUrls (Signs) returns (SignUrls);        // Get sign urls to upload multiple files
-    rpc OriginalUrls (FNames) returns (SignUrls);       // Get sign urls to upload multiple files remained original file name
-    rpc GetFileInfo (File) returns (Info);              // Get exist uploaded file informations
+    rpc DeleteFiles (Files) returns (WEmpty);       // Delete exist files
+    rpc SetBucketLife (Life) returns (WEmpty);      // Enable  bucket lifecycle
+    rpc DelBucketLife (Lifes) returns (WEmpty);     // Disable bucket lifecycle
+    rpc SetFileLife (Tag) returns (WEmpty);         // Set file tag to apply bucket lifecycle
+    rpc SignFileUrl (Sign) returns (SignUrl);       // Get sign url  to upload file
+    rpc SignFileUrls (Signs) returns (SignUrls);    // Get sign urls to upload multiple files
+    rpc OriginalUrls (FNames) returns (SignUrls);   // Get sign urls to upload multiple files remained original file name
+    rpc GetFileInfo (File) returns (Info);          // Get exist uploaded file informations
 }
 
 // diferent other server when using together
@@ -34,14 +34,14 @@ message Files {
 }
 
 // Lifecycle status
-message Lifecycle {
+message Life {
     string id = 1;
     string bucket = 2;
     string status = 3;
 }
 
 // Lifesycle ids for delete
-message Lifecycles {
+message Lifes {
     repeated string ids = 1;
     string bucket = 2;
 }
