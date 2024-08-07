@@ -366,5 +366,15 @@ func ToMD5Lower(original string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return strings.ToUpper(md5sign), nil
+	return strings.ToLower(md5sign), nil
+}
+
+// Encode string to md5 and then transform to uppers without check error.
+func MD5Upper(original string) string {
+	return strings.ToUpper(EncodeMD5(original))
+}
+
+// Encode string to md5 and then transform to lowers without check error.
+func MD5Lower(original string) string {
+	return strings.ToLower(EncodeMD5(original))
 }
